@@ -52,7 +52,7 @@ function EditMode({ name, meals, setEditMode }: DayProps & { setEditMode: (value
     const [bgColor, setBgColor] = useState("bg-gray-200");
 
     return (
-        <div className={`${bgColor} border border-gray-200 rounded p-3`}>
+        <div className={`${bgColor} border border-gray-200 rounded p-3 transition duration-200`}>
             <h3 className="text-lg font-medium text-gray-600 mb-2">
                 {name} (Edit Mode)
             </h3>

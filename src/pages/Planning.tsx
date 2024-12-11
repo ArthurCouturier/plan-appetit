@@ -18,7 +18,7 @@ const config: WeekProps[] = [
 
 export default function Planning() {
     return (
-        <div className="p-6 bg-gray-100 h-[80vh]">
+        <div className="p-6 bg-gray-100">
             <h1 className="text-3xl font-bold mb-4 text-gray-800">Planning</h1>
             <div className="flex">
                 {config.map((week) => (

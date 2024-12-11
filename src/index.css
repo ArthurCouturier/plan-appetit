@@ -14,3 +14,14 @@
   -ms-overflow-style: none; /* Cache la scrollbar sur Internet Explorer et Edge */
   scrollbar-width: none; /* Cache la scrollbar sur Firefox */
 }
+
+/* Remove input up/down buttons */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+}
+

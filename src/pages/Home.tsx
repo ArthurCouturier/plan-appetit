@@ -8,6 +8,9 @@ export default function Home() {
             <button className="rounded-md border-4 border-coutPurple bg-coutYellow">
                 <Link to="/about">About Page</Link>
             </button>
+            <button className="rounded-md border-4 border-coutPurple bg-coutYellow">
+                <Link to="/planning">Planning</Link>
+            </button>
         </div>
     )
 }

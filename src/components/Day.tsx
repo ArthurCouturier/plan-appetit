@@ -1,22 +1,29 @@
 import Meal from "./Meal";
-import { DayProps } from "../api/WeekInterface";
+import { DayProps, MealProps } from "../api/ConfigurationInterface";
 import { useState } from "react";
 
-export default function Day({ name, meals }: DayProps) {
+export default function Day({
+    day,
+    saveConfig
+}: {
+    day: DayProps;
+    saveConfig: (day: DayProps) => void;
+}) {
     const [editMode, setEditMode] = useState(false);
 
     return (
         <>
             {editMode ? (
                 <EditMode
-                    name={name}
-                    meals={meals}
+                    day={day}
                     setEditMode={setEditMode}
+                    saveConfig={(mealsState: MealProps[]) =>
+                        saveConfig({ name: day.name, meals: mealsState })
+                    }
                 />
             ) : (
                 <DefaultMode
-                    name={name}
-                    meals={meals}
+                    day={day}
                     setEditMode={setEditMode}
                 />
             )}
@@ -24,7 +31,14 @@ export default function Day({ name, meals }: DayProps) {
     );
 }
 
-function DefaultMode({ name, meals, setEditMode }: DayProps & { setEditMode: (value: boolean) => void }) {
+function DefaultMode({
+    day,
+    setEditMode
+}: {
+    day: DayProps;
+    setEditMode: (value: boolean) => void;
+}) {
+    const { name, meals }: { name: string, meals: MealProps[] } = day;
     return (
         <button
             className="bg-gray-50 border border-gray-200 rounded p-3 hover:scale-105 transition duration-200"
@@ -34,42 +48,68 @@ function DefaultMode({ name, meals, setEditMode }: DayProps & { setEditMode: (va
                 {name}
             </h3>
             <div className="space-y-2">
-                {meals.map((meal, index) => (
-                    <Meal
-                        key={index}
-                        covers={meal.covers}
-                        price={meal.price}
-                        editMode={false}
-                    />
-                ))}
+                {Array.isArray(meals) ? (
+                    meals.map((meal, index) => (
+                        <Meal
+                            key={index}
+                            covers={meal.covers}
+                            lunchPrice={meal.lunchPrice}
+                            drinkPrice={meal.drinkPrice}
+                            editMode={false}
+                        />
+                    ))
+                ) : (
+                    <p className="text-sm text-red-500">No meals available</p>
+                )}
             </div>
         </button>
     );
 }
 
-function EditMode({ name, meals, setEditMode }: DayProps & { setEditMode: (value: boolean) => void }) {
-
+function EditMode({
+    day,
+    setEditMode,
+    saveConfig
+}: {
+    day: DayProps;
+    setEditMode: (value: boolean) => void;
+    saveConfig: (meals: MealProps[]) => void;
+}) {
     const [bgColor, setBgColor] = useState("bg-gray-200");
+    const [mealsState, setMealsState] = useState<MealProps[]>(day.meals);
+
+    const handleMealChange = (index: number, updatedMeal: MealProps) => {
+        const updatedMeals = [...mealsState];
+        updatedMeals[index] = updatedMeal;
+        setMealsState(updatedMeals);
+    };
 
     return (
         <div className={`${bgColor} border border-gray-200 rounded p-3 transition duration-200`}>
             <h3 className="text-lg font-medium text-gray-600 mb-2">
-                {name} (Edit Mode)
+                {day.name} (Modif)
             </h3>
             <div className="space-y-2">
-                {meals.map((meal, index) => (
+                {mealsState.map((meal, index) => (
                     <Meal
                         key={index}
                         covers={meal.covers}
-                        price={meal.price}
+                        lunchPrice={meal.lunchPrice}
+                        drinkPrice={meal.drinkPrice}
                         editMode={true}
+                        onChange={(updatedMeal: MealProps) =>
+                            handleMealChange(index, updatedMeal)
+                        }
                     />
                 ))}
             </div>
             <div className="mt-4 flex space-x-4 my-auto">
                 <button
                     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                    onClick={() => setEditMode(false)}
+                    onClick={() => {
+                        saveConfig(mealsState);
+                        setEditMode(false);
+                    }}
                     onMouseOver={() => setBgColor("bg-green-300")}
                     onMouseLeave={() => setBgColor("bg-gray-200")}
                 >

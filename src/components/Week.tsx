@@ -1,17 +1,28 @@
-import WeekProps from "../api/WeekInterface";
+import ConfigurationInterface, { DayProps } from "../api/ConfigurationInterface";
 import Day from "./Day";
 
-export default function Week({ name, days }: WeekProps) {
+export default function Week({
+    config,
+    saveConfig,
+}: {
+    config: ConfigurationInterface;
+    saveConfig: (config: ConfigurationInterface) => void;
+}) {
     return (
-        <div key={name} className="bg-white shadow rounded-lg p-4 w-[900vw]">
+        <div key={config.week.name} className="bg-white shadow rounded-lg p-4 w-full">
             <h2 className="text-xl font-semibold text-gray-700 mb-3">
-                {name === "weekA" ? "Week A" : "Week B"}
+                {config.week.name}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {days.map((day) => (
-                    <Day name={day.name} meals={day.meals} />
+                {config.week.days.map((day: DayProps, index: number) => (
+                    <Day key={index} day={day} saveConfig={
+                        (day: DayProps) => {
+                            config.week.days[index] = day;
+                            saveConfig(config);
+                        }
+                    } />
                 ))}
             </div>
         </div>
-    )
+    );
 }

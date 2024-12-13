@@ -55,4 +55,24 @@ export default class Configurator {
         Configurator.saveConfigurations(configurations);
         return configurations;
     }
+
+    static deleteConfiguration(configuration: ConfigurationInterface): void {
+        const configurations = Configurator.fetchConfigurations();
+        const newConfigurations = configurations.filter((config) => config.name !== configuration.name);
+        Configurator.saveConfigurations(newConfigurations);
+    }
+
+    static changeConfigName(configuration: ConfigurationInterface): ConfigurationInterface | null {
+        const newConfigName = prompt("Nouveau nom de la configuration", configuration.name);
+        const configurations = this.fetchConfigurations();
+        if (newConfigName) {
+            configurations.find((config: ConfigurationInterface) => config.name === configuration.name)!.name = newConfigName;
+            this.saveConfigurations(configurations);
+            const newConfig: ConfigurationInterface | undefined = configurations.find((config: ConfigurationInterface) => config.name === newConfigName);
+            if (newConfig) {
+                return newConfig;
+            }
+        }
+        return null;
+    }
 }

@@ -38,25 +38,25 @@ export default function ConfigurationSelector({
     return (
         <div className="relative w-full max-w-xs" ref={dropdownRef}>
             <button
-                className="w-full bg-gray-50 border border-gray-200 rounded px-4 py-2 text-left hover:scale-105 transition duration-200 shadow"
+                className="w-full bg-secondary border border-borderColor rounded px-4 py-2 text-left text-textSecondary hover:scale-105 transition duration-200 shadow"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 {selectedConfig.name}
             </button>
             {isOpen && (
-                <ul className="absolute bg-white border border-gray-200 rounded shadow mt-2 w-full z-10">
+                <ul className="absolute bg-primary border border-borderColor rounded shadow mt-2 w-full z-10">
                     {configurations.map((config, index) => (
                         <li
                             key={index}
-                            className="px-4 py-2 cursor-pointer text-gray-700 flex"
+                            className="px-4 py-2 cursor-pointer text-textSecondary flex"
                         >
                             <div
-                                className="hover:bg-gray-100 w-full pr-3"
+                                className="hover:bg-bgColor w-full pr-3"
                                 onClick={() => handleSelect(config)}
                             >
                                 {config.name}
                                 <button
-                                    className="bg-gray-200 w-6 h-6 rounded-full float-right"
+                                    className="bg-borderColor w-6 h-6 rounded-full float-right"
                                     onClick={(e) => {
                                         const newConfig = Configurator.changeConfigName(config)
                                         if (newConfig) {
@@ -71,7 +71,7 @@ export default function ConfigurationSelector({
                                 </button>
                             </div>
                             <button
-                                className="bg-gray-200 float-right ml-2"
+                                className="bg-borderColor float-right ml-2"
                                 onClick={() => {
                                     Configurator.deleteConfiguration(config);
                                     if (actualConfig === config) {
@@ -86,7 +86,7 @@ export default function ConfigurationSelector({
                     ))}
                     <li>
                         <button
-                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-700 w-full"
+                            className="px-4 py-2 hover:bg-bgColor cursor-pointer text-textSecondary w-full"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 const newConfig = Configurator.getEmptyConfiguration();

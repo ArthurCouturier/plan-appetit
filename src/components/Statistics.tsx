@@ -1,14 +1,17 @@
 // import { useState } from "react"
+import ConfigurationInterface from "../api/ConfigurationInterface"
+import ModuleCard from "./ModuleCard"
+import WeekStatistics from "./modules/WeekStatistics"
 
-export default function Statistics() {
-
-    // const [configurations, setConfigurations] = useState<ConfigurationInterface[]>([])
-
+export default function Statistics({
+    actualConfig
+}: {
+    actualConfig: ConfigurationInterface
+}) {
     return (
         <div>
             <div>
-                Panier moyen journalier:
-                {/* {configurations.map((config) => <p>{config.week.name}</p>)} */}
+                <WeekStatistics config={actualConfig} />
             </div>
         </div>
     )

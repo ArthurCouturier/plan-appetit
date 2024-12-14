@@ -19,7 +19,7 @@ export default function NumberField({ label, value, onChange }: NumberFieldProps
 
     return (
         <div className="flex items-center space-x-2">
-            <label htmlFor="number" className="text-sm text-gray-600">{label}</label>
+            <label htmlFor="number" className="text-sm text-textSecondary">{label}</label>
             <input
                 type="number"
                 id="number"

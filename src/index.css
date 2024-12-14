@@ -25,3 +25,30 @@ input[type="number"] {
     -moz-appearance: textfield; /* Firefox */
 }
 
+/* Thème 1 */
+.theme1 {
+  --coutYellow: #f4cf77;
+  --coutPurple: #2f2e6e;
+  --coutBase: #a5b4fc;
+  --bgColor: #f3f4f6; /* gray-100 */
+  --primary: #ffffff; /* white */
+  --textPrimary: #1f2937; /* gray-800 */
+  --secondary: #f9fafb; /* gray-50 */
+  --textSecondary: #374151; /* gray-700 */
+  --thirdary: #d1d5db; /* gray-300 */
+  --borderColor: #e5e7eb; /* gray-200 */
+}
+
+/* Thème 2 */
+.theme2 {
+  --coutYellow: #f4cf77;
+  --coutPurple: #2f2e6e;
+  --coutBase: #a5b4fc;
+  --bgColor: #1f2937; /* gray-800 */
+  --primary: #111827; /* gray-900 */
+  --textPrimary: #f3f4f6; /* gray-100 */
+  --secondary: #374151; /* gray-700 */
+  --textSecondary: #d1d5db; /* gray-300 */
+  --thirdary: #4b5563; /* gray-600 */
+  --borderColor: #6b7280; /* gray-500 */
+}

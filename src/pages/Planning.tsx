@@ -18,9 +18,9 @@ export default function Planning() {
 
     return (
         <div>
-            <div className="p-6 bg-gray-100">
+            <div className="p-6 bg-bgColor">
                 <div className="flex w-full items-center p-2">
-                    <h1 className="flex-1 text-3xl font-bold text-gray-800">Plan'Appétit</h1>
+                    <h1 className="flex-1 text-3xl font-bold text-textPrimary">Plan'Appétit</h1>
                     <div className="flex flex-1 justify-center">
                         <ConfigurationSelector actualConfig={actualConfig} onSelect={setActualConfig} />
                     </div>
@@ -29,9 +29,9 @@ export default function Planning() {
                     <Week config={actualConfig} saveConfig={handleSaveConfig} />
                 </div>
             </div>
-            <div className="p-6 bg-gray-100 my-4">
+            <div className="p-6 bg-bgColor my-4">
                 <h1 className="text-3xl font-bold mb-4 text-gray-800">Statistiques</h1>
-                <Statistics />
+                <Statistics actualConfig={actualConfig} />
             </div>
         </div>
     );

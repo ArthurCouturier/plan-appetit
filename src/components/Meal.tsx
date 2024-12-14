@@ -25,7 +25,7 @@ export default function Meal({
     };
 
     return (
-        <div className="border-4 border-gray-300 rounded-md p-2">
+        <div className="border-4 border-thirdary rounded-md p-2">
             {editMode ? (
                 <EditMode
                     covers={covers}
@@ -48,7 +48,7 @@ export default function Meal({
 
 function DefaultMode({ covers, lunchPrice, drinkPrice }: MealProps) {
     return (
-        <div className="flex justify-between items-center text-sm text-gray-600 mx-2">
+        <div className="flex justify-between items-center text-sm text-textSecondary mx-2">
             <div className="flex">
                 <p className="mr-4">Couverts: {covers}</p>
                 <p className="mr-4">Nourriture: {lunchPrice}</p>

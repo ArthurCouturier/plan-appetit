@@ -41,10 +41,10 @@ function DefaultMode({
     const { name, meals }: { name: string, meals: MealProps[] } = day;
     return (
         <button
-            className="bg-gray-50 border border-gray-200 rounded p-3 hover:scale-105 transition duration-200"
+            className="bg-secondary border border-borderColor rounded p-3 hover:scale-105 transition duration-200"
             onClick={() => setEditMode(true)}
         >
-            <h3 className="text-lg font-medium text-gray-600 mb-2">
+            <h3 className="text-lg font-medium text-textSecondary mb-2">
                 {name}
             </h3>
             <div className="space-y-2">
@@ -75,7 +75,7 @@ function EditMode({
     setEditMode: (value: boolean) => void;
     saveConfig: (meals: MealProps[]) => void;
 }) {
-    const [bgColor, setBgColor] = useState("bg-gray-200");
+    const [bgColor, setBgColor] = useState("bg-borderColor");
     const [mealsState, setMealsState] = useState<MealProps[]>(day.meals);
 
     const handleMealChange = (index: number, updatedMeal: MealProps) => {
@@ -85,8 +85,8 @@ function EditMode({
     };
 
     return (
-        <div className={`${bgColor} border border-gray-200 rounded p-3 transition duration-200`}>
-            <h3 className="text-lg font-medium text-gray-600 mb-2">
+        <div className={`${bgColor} border border-borderColor rounded p-3 transition duration-200`}>
+            <h3 className="text-lg font-medium text-textSecondary mb-2">
                 {day.name} (Modif)
             </h3>
             <div className="space-y-2">
@@ -111,7 +111,7 @@ function EditMode({
                         setEditMode(false);
                     }}
                     onMouseOver={() => setBgColor("bg-green-300")}
-                    onMouseLeave={() => setBgColor("bg-gray-200")}
+                    onMouseLeave={() => setBgColor("bg-borderColor")}
                 >
                     Confirm
                 </button>
@@ -120,7 +120,7 @@ function EditMode({
                     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
                     onClick={() => setEditMode(false)}
                     onMouseOver={() => setBgColor("bg-red-300")}
-                    onMouseLeave={() => setBgColor("bg-gray-200")}
+                    onMouseLeave={() => setBgColor("bg-borderColor")}
                 >
                     Cancel
                 </button>

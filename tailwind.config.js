@@ -7,11 +7,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        coutYellow: '#f4cf77',
-        coutPurple: '#2f2e6e',
-        coutBase: '#a5b4fc',
+        primary: 'var(--primary)',
+        secondary: 'var(--secondary)',
+        textPrimary: 'var(--textPrimary)',
+        textSecondary: 'var(--textSecondary)',
+        thirdary: 'var(--thirdary)',
+        bgColor: 'var(--bgColor)',
+        coutYellow: 'var(--coutYellow)',
+        coutPurple: 'var(--coutPurple)',
+        coutBase: 'var(--coutBase)',
+        borderColor: 'var(--borderColor)',
       },
     },
   },
   plugins: [],
-}
+};

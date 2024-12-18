@@ -14,7 +14,8 @@ export default function Statistics({
                 <WeekStatistics config={actualConfig} />
             </div>
             <div className="flex justify-center items-center">
-                <DayStatistics config={actualConfig} />
+                {/* <DaySelector days={actualConfig.week.days} selectedDay={day} setSelectedDay={setSelectedDay} /> */}
+                <DayStatistics day={actualConfig.week.days[0]} />
             </div>
         </div>
     )

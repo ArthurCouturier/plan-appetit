@@ -11,6 +11,7 @@ export default function Week({
 }) {
 
     const [open, setOpen] = useState(true);
+
     const handleOpen = () => {
         setOpen(!open);
     }
@@ -39,14 +40,16 @@ export default function Week({
                 </svg>
             </h2>
             {open && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
                     {config.week.days.map((day: DayProps, index: number) => (
-                        <Day key={index} day={day} saveConfig={
-                            (day: DayProps) => {
-                                config.week.days[index] = day;
-                                saveConfig(config);
-                            }
-                        } />
+                        <div className="h-full">
+                            <Day key={index} day={day} saveConfig={
+                                (day: DayProps) => {
+                                    config.week.days[index] = day;
+                                    saveConfig(config);
+                                }
+                            } />
+                        </div>
                     ))}
                 </div>
             )}

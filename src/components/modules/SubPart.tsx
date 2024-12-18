@@ -7,7 +7,7 @@ export default function SubPart({
 }) {
     return (
         <div className="my-2">
-            <h2 className="text-textSecondary font-semibold">{title}</h2>
+            <h2 className="text-textPrimary font-semibold">{title}</h2>
             {children}
         </div>
     );

@@ -38,7 +38,7 @@ export default function ConfigurationSelector({
     return (
         <div className="relative w-full max-w-xs" ref={dropdownRef}>
             <button
-                className="w-full bg-secondary border border-borderColor rounded px-4 py-2 text-left text-textSecondary hover:scale-105 transition duration-200 shadow"
+                className="w-full bg-secondary border border-borderColor rounded px-4 py-2 text-left text-textSecondary hover:scale-[1.03] transition duration-200 shadow"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 {selectedConfig.name}

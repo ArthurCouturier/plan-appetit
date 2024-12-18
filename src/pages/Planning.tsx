@@ -17,7 +17,7 @@ export default function Planning() {
     }
 
     return (
-        <div>
+        <div className="w-full">
             <div className="p-6 bg-bgColor">
                 <div className="flex w-full items-center p-2">
                     <h1 className="flex-1 text-3xl font-bold text-textPrimary">Plan'Appétit</h1>

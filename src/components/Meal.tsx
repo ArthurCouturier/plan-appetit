@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { MealProps } from "../api/ConfigurationInterface";
+import { getAverageOfTheMeal } from "../api/modules/StatisticsPerMeal";
 import NumberField from "./NumberField";
 
 export default function Meal({
@@ -25,7 +27,7 @@ export default function Meal({
     };
 
     return (
-        <div className="border-4 border-thirdary rounded-md p-2">
+        <div className="">
             {editMode ? (
                 <EditMode
                     covers={covers}
@@ -47,12 +49,21 @@ export default function Meal({
 }
 
 function DefaultMode({ covers, lunchPrice, drinkPrice }: MealProps) {
+    const [average, setAverage] = useState<number>(getAverageOfTheMeal({ covers, lunchPrice, drinkPrice }));
+
+    useEffect(() => {
+        setAverage(getAverageOfTheMeal({ covers, lunchPrice, drinkPrice }))
+    }, [covers, lunchPrice, drinkPrice]);
+
     return (
-        <div className="flex justify-between items-center text-sm text-textSecondary mx-2">
+        <div className="flex justify-between items-center text-sm text-textSecondary">
             <div className="flex">
                 <p className="mr-4">Couverts: {covers}</p>
                 <p className="mr-4">Nourriture: {lunchPrice}</p>
                 <p>Boisson: {drinkPrice}</p>
+            </div>
+            <div className="">
+                <p className="mr-2 md:mr-5 lg:mr-10 xl:mr-16">moy.: {average}</p>
             </div>
         </div>
     );

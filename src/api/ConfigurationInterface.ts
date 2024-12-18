@@ -1,6 +1,7 @@
 export default interface ConfigurationInterface {
     name: string;
     week: WeekProps;
+    stats: StatsProps;
 }
 
 export interface WeekProps {
@@ -17,4 +18,8 @@ export interface MealProps {
     covers: number;
     lunchPrice: number;
     drinkPrice: number;
+}
+
+export interface StatsProps {
+    workedWeeks: number | 0;
 }

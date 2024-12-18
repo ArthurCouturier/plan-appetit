@@ -1,21 +1,22 @@
 // import { useState } from "react"
 import ConfigurationInterface from "../api/ConfigurationInterface"
-import DayStatistics from "./modules/DayStatistics"
+import AnnualStatistics from "./modules/AnnualStatistics"
 import WeekStatistics from "./modules/WeekStatistics"
 
 export default function Statistics({
-    actualConfig
+    actualConfig,
+    saveConfig
 }: {
-    actualConfig: ConfigurationInterface
+    actualConfig: ConfigurationInterface,
+    saveConfig: (config: ConfigurationInterface) => void
 }) {
     return (
         <div className="grid grid-cols-2">
-            <div className="flex justify-center items-center">
-                <WeekStatistics config={actualConfig} />
+            <div className="mx-2">
+                <AnnualStatistics config={actualConfig} saveConfig={saveConfig} />
             </div>
-            <div className="flex justify-center items-center">
-                {/* <DaySelector days={actualConfig.week.days} selectedDay={day} setSelectedDay={setSelectedDay} /> */}
-                <DayStatistics day={actualConfig.week.days[0]} />
+            <div className="mx-2">
+                <WeekStatistics config={actualConfig} />
             </div>
         </div>
     )

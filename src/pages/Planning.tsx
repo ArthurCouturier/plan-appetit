@@ -31,7 +31,7 @@ export default function Planning() {
             </div>
             <div className="p-6 bg-bgColor my-4">
                 <h1 className="text-3xl font-bold mb-4 text-textPrimary">Statistiques</h1>
-                <Statistics actualConfig={actualConfig} />
+                <Statistics actualConfig={actualConfig} saveConfig={handleSaveConfig} />
             </div>
         </div>
     );

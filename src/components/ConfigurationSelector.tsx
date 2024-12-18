@@ -56,7 +56,7 @@ export default function ConfigurationSelector({
                             >
                                 {config.name}
                                 <button
-                                    className="bg-borderColor w-6 h-6 rounded-full float-right"
+                                    className="bg-borderColor w-6 h-6 rounded-full float-right rotate-90"
                                     onClick={(e) => {
                                         const newConfig = Configurator.changeConfigName(config)
                                         if (newConfig) {
@@ -67,7 +67,7 @@ export default function ConfigurationSelector({
                                         }
                                     }}
                                 >
-                                    ✍🏻
+                                    ✏️
                                 </button>
                             </div>
                             <button
@@ -80,7 +80,7 @@ export default function ConfigurationSelector({
                                     setConfigurations(Configurator.fetchConfigurations());
                                 }}
                             >
-                                🚮
+                                ❌
                             </button>
                         </li>
                     ))}

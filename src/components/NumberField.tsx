@@ -2,15 +2,17 @@ interface NumberFieldProps {
     label: string;
     value: number;
     onChange: (newValue: number) => void;
+    min: number;
+    max: number;
 }
 
-export default function NumberField({ label, value, onChange }: NumberFieldProps) {
+export default function NumberField({ label, value, onChange, min = 0, max = 9999 }: NumberFieldProps) {
     const increment = () => {
-        onChange(Math.min(value + 1, 9999));
+        onChange(Math.min(value + 1, max));
     };
 
     const decrement = () => {
-        onChange(Math.max(value - 1, 0));
+        onChange(Math.max(value - 1, min));
     };
 
     const zero = () => {
@@ -24,10 +26,10 @@ export default function NumberField({ label, value, onChange }: NumberFieldProps
                 type="number"
                 id="number"
                 value={value}
-                max={9999}
-                min={0}
+                max={max}
+                min={min}
                 onChange={(e) => {
-                    const newValue = Math.min(Math.max(Number(e.target.value), 0), 9999);
+                    const newValue = Math.min(Math.max(Number(e.target.value), min), max);
                     onChange(newValue);
                 }}
                 className="border border-gray-200 rounded p-1 w-16 text-center"

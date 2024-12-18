@@ -64,7 +64,7 @@ function DefaultMode({
             </h3>
             <div className="space-y-2">
                 <div className="my-2 rounded border-2 border-borderColor p-2">
-                    <h3 className="text-textSecondary text-left">Midi ☀️</h3>
+                    <h3 className="text-textSecondary text-left">Service du midi ☀️</h3>
                     <Meal
                         covers={day.meals[0].covers}
                         lunchPrice={day.meals[0].lunchPrice}
@@ -73,7 +73,7 @@ function DefaultMode({
                     />
                 </div>
                 <div className="my-2 rounded border-2 border-borderColor p-2">
-                    <h3 className="text-textSecondary text-left">Soir 🌙</h3>
+                    <h3 className="text-textSecondary text-left">Service du soir 🌙</h3>
                     <Meal
                         covers={day.meals[1].covers}
                         lunchPrice={day.meals[1].lunchPrice}

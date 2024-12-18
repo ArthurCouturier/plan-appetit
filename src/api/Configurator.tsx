@@ -15,6 +15,9 @@ export default class Configurator {
                     { name: "Samedi", meals: [{ covers: 0, lunchPrice: 0, drinkPrice: 0 }, { covers: 0, lunchPrice: 0, drinkPrice: 0 }] },
                     { name: "Dimanche", meals: [{ covers: 0, lunchPrice: 0, drinkPrice: 0 }, { covers: 0, lunchPrice: 0, drinkPrice: 0 }] },
                 ]
+            },
+            stats: {
+                workedWeeks: 0
             }
         };
     }
@@ -28,7 +31,6 @@ export default class Configurator {
                 console.error("Invalid configurations in localStorage. Resetting to default.");
             }
         }
-        // Return default configuration if localStorage is empty or invalid
         return [Configurator.getEmptyConfiguration()];
     }
 

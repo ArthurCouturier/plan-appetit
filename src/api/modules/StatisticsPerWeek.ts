@@ -51,3 +51,35 @@ export function getCoversPerWeek(week: WeekProps): number {
     });
     return total;
 }
+
+export function workedDaysPerWeek(week: WeekProps): number {
+    let total = 0;
+    week.days.forEach(day => {
+        if (day.meals[0].covers > 0 || day.meals[1].covers > 0) {
+            total++;
+        }
+    });
+    return total;
+}
+
+export function workedMealsPerWeek(week: WeekProps): number {
+    let total = 0;
+    week.days.forEach(day => {
+        day.meals.forEach(meal => {
+            if (meal.covers > 0) {
+                total++;
+            }
+        });
+    });
+    return total;
+}
+
+export function mealsCookedPerWeek(week: WeekProps): number {
+    let total = 0;
+    week.days.forEach(day => {
+        day.meals.forEach(meal => {
+            total += meal.covers;
+        });
+    });
+    return total;
+}

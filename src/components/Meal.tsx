@@ -86,9 +86,9 @@ function EditMode({
 }) {
     return (
         <div className="flex flex-col space-y-2">
-            <NumberField label="Couverts" value={covers} onChange={setCovers} />
-            <NumberField label="Nourriture" value={lunchPrice} onChange={setLunchPrice} />
-            <NumberField label="Boisson" value={drinkPrice} onChange={setDrinkPrice} />
+            <NumberField label="Couverts" value={covers} onChange={setCovers} min={0} max={9999} />
+            <NumberField label="Nourriture" value={lunchPrice} onChange={setLunchPrice} min={0} max={9999} />
+            <NumberField label="Boisson" value={drinkPrice} onChange={setDrinkPrice} min={0} max={9999} />
         </div>
     );
 }

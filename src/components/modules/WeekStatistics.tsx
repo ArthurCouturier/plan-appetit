@@ -1,6 +1,7 @@
 import ModuleCard from "../ModuleCard";
 import ConfigurationInterface from "../../api/ConfigurationInterface";
-import { getAverageBasketPerWeek, getAverageDrinkBasketPerWeek, getAverageLunchBasketPerWeek, getCoversPerWeek } from "../../api/modules/Statistics";
+import { getAverageBasketPerWeek, getAverageDrinkBasketPerWeek, getAverageLunchBasketPerWeek, getCoversPerWeek } from "../../api/modules/StatisticsPerWeek";
+import SubPart from "./SubPart";
 
 export default function WeekStatistics({
     config
@@ -26,20 +27,5 @@ export default function WeekStatistics({
                 <p>Moyenne de couverts par jour: {(nbCovers / config.week.days.length).toFixed(2)}</p>
             </SubPart>
         </ModuleCard>
-    );
-}
-
-function SubPart({
-    title,
-    children
-}: {
-    title: string,
-    children?: React.ReactNode
-}) {
-    return (
-        <div className="my-2">
-            <h2 className="text-textSecondary font-semibold">{title}</h2>
-            {children}
-        </div>
     );
 }

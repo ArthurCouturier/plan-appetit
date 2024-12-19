@@ -83,3 +83,13 @@ export function mealsCookedPerWeek(week: WeekProps): number {
     });
     return total;
 }
+
+export function totalWeeklySales(week: WeekProps): number {
+    let total = 0;
+    week.days.forEach(day => {
+        day.meals.forEach(meal => {
+            total += meal.covers * (meal.lunchPrice + meal.drinkPrice);
+        });
+    });
+    return total;
+}

@@ -85,10 +85,13 @@ function EditMode({
     setDrinkPrice: (value: number) => void;
 }) {
     return (
-        <div className="flex flex-col space-y-2">
-            <NumberField label="Couverts" value={covers} onChange={setCovers} min={0} max={9999} />
-            <NumberField label="Nourriture" value={lunchPrice} onChange={setLunchPrice} min={0} max={9999} />
-            <NumberField label="Boisson" value={drinkPrice} onChange={setDrinkPrice} min={0} max={9999} />
+        <div className="grid grid-cols-[auto,1fr] gap-x-2 gap-y-2 w-fit items-center">
+            <p className="text-sm text-textSecondary text-right">Couverts</p>
+            <NumberField label="" value={covers} onChange={setCovers} min={0} max={9999} />
+            <p className="text-sm text-textSecondary text-right">Nourriture</p>
+            <NumberField label="" value={lunchPrice} onChange={setLunchPrice} min={0} max={9999} />
+            <p className="text-sm text-textSecondary text-right">Boisson</p>
+            <NumberField label="" value={drinkPrice} onChange={setDrinkPrice} min={0} max={9999} />
         </div>
     );
 }

@@ -6,9 +6,13 @@ import DayStatistics from "./modules/DayStatistics";
 export default function Day({
     day,
     saveConfig,
+    activeEditDay,
+    setActiveEditDay,
 }: {
     day: DayProps;
     saveConfig: (day: DayProps) => void;
+    activeEditDay: string | null;
+    setActiveEditDay: (value: string | null) => void;
 }) {
     const [editMode, setEditMode] = useState(false);
     const [dynamicDay, setDynamicDay] = useState(day);
@@ -19,6 +23,14 @@ export default function Day({
         setMealsState(day.meals);
     }, [day]);
 
+    // Close edit mode if another day is selected
+    useEffect(() => {
+        if (activeEditDay && activeEditDay !== day.name && editMode) {
+            setEditMode(false);
+            setMealsState(day.meals);
+        }
+    }, [activeEditDay, day.name, editMode, day.meals]);
+
     return (
         <div className="h-full flex">
             {editMode ? (
@@ -26,16 +38,29 @@ export default function Day({
                     day={dynamicDay}
                     mealsState={mealsState}
                     setMealsState={setMealsState}
-                    setEditMode={setEditMode}
+                    setEditMode={(value) => {
+                        setEditMode(value);
+                        if (value) {
+                            setActiveEditDay(day.name);
+                        } else {
+                            setActiveEditDay(null);
+                        }
+                    }}
                     saveConfig={(updatedMeals: MealProps[]) => {
                         saveConfig({ name: day.name, meals: updatedMeals });
                         setMealsState(updatedMeals);
+                        setActiveEditDay(null);
                     }}
                 />
             ) : (
                 <DefaultMode
                     day={dynamicDay}
-                    setEditMode={setEditMode}
+                    setEditMode={(value) => {
+                        setEditMode(value);
+                        if (value) {
+                            setActiveEditDay(day.name);
+                        }
+                    }}
                 />
             )}
 
@@ -64,7 +89,7 @@ function DefaultMode({
             </h3>
             <div className="space-y-2">
                 <div className="my-2 rounded border-2 border-borderColor p-2">
-                    <h3 className="text-textSecondary text-left">Service du midi ☀️</h3>
+                    <h3 className="text-textSecondary text-left pb-3">Service du midi ☀️</h3>
                     <Meal
                         covers={day.meals[0].covers}
                         lunchPrice={day.meals[0].lunchPrice}
@@ -73,7 +98,7 @@ function DefaultMode({
                     />
                 </div>
                 <div className="my-2 rounded border-2 border-borderColor p-2">
-                    <h3 className="text-textSecondary text-left">Service du soir 🌙</h3>
+                    <h3 className="text-textSecondary text-left pb-3">Service du soir 🌙</h3>
                     <Meal
                         covers={day.meals[1].covers}
                         lunchPrice={day.meals[1].lunchPrice}
@@ -99,7 +124,7 @@ function EditMode({
     setEditMode: (value: boolean) => void;
     saveConfig: (meals: MealProps[]) => void;
 }) {
-    const [bgColor, setBgColor] = useState("bg-borderColor");
+    const [bgColor, setBgColor] = useState("bg-secondary");
 
     const handleMealChange = (index: number, updatedMeal: MealProps) => {
         const updatedMeals = [...mealsState];
@@ -107,62 +132,82 @@ function EditMode({
         setMealsState(updatedMeals);
     };
 
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            saveConfig(mealsState);
-            setEditMode(false);
-        }
-    });
+    useEffect(() => {
+        const handleKeydown = (e: KeyboardEvent) => {
+            if (e.key === "Enter") {
+                saveConfig(mealsState);
+                setEditMode(false);
+            } else if (e.key === "Escape") {
+                setMealsState(day.meals);
+                setEditMode(false);
+            }
+        };
 
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-            setMealsState(day.meals);
-            setEditMode(false);
-        }
-    });
+        window.addEventListener("keydown", handleKeydown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeydown);
+        };
+    }, [mealsState, setEditMode, saveConfig, day.meals, setMealsState]);
 
     return (
-        <div className={`${bgColor} border border-borderColor rounded-md p-3 transition duration-200 flex-1`}>
-            <h3 className="text-lg font-medium text-textSecondary mb-2">
+        <div
+            className={`${bgColor} border-4 border-borderColor rounded-lg p-5 shadow-md transition duration-300 flex-1`}
+        >
+            <h3 className="text-xl font-semibold text-textPrimary mb-4 text-center">
                 {day.name} (Modif)
             </h3>
-            <div className="space-y-2">
-                {mealsState.map((meal, index) => (
+
+            <div className="space-y-4">
+                <div className="bg-bgColor rounded-lg p-4 shadow hover:shadow-lg transition duration-200">
+                    <h3 className="text-textSecondary text-left pb-3">Service du midi ☀️</h3>
                     <Meal
-                        key={index}
-                        covers={meal.covers}
-                        lunchPrice={meal.lunchPrice}
-                        drinkPrice={meal.drinkPrice}
+                        covers={mealsState[0].covers}
+                        lunchPrice={mealsState[0].lunchPrice}
+                        drinkPrice={mealsState[0].drinkPrice}
                         editMode={true}
                         onChange={(updatedMeal: MealProps) =>
-                            handleMealChange(index, updatedMeal)
+                            handleMealChange(0, updatedMeal)
                         }
                     />
-                ))}
+                </div>
+                <div className="bg-bgColor rounded-lg p-4 shadow hover:shadow-lg transition duration-200">
+                    <h3 className="text-textSecondary text-left pb-3">Service du soir 🌙</h3>
+                    <Meal
+                        covers={mealsState[1].covers}
+                        lunchPrice={mealsState[1].lunchPrice}
+                        drinkPrice={mealsState[1].drinkPrice}
+                        editMode={true}
+                        onChange={(updatedMeal: MealProps) =>
+                            handleMealChange(1, updatedMeal)
+                        }
+                    />
+                </div>
             </div>
-            <div className="mt-4 flex space-x-4 my-auto">
+
+            <div className="mt-6 flex justify-center gap-6">
                 <button
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                    className="bg-confirmation1 text-white font-medium px-6 py-2 rounded-lg shadow-md hover:bg-indigo-600 hover:shadow-lg focus:ring focus:ring-indigo-300 transition duration-300"
                     onClick={() => {
                         saveConfig(mealsState);
                         setEditMode(false);
                     }}
-                    onMouseOver={() => setBgColor("bg-green-300")}
-                    onMouseLeave={() => setBgColor("bg-borderColor")}
+                    onMouseEnter={() => setBgColor("bg-confirmation2")}
+                    onMouseLeave={() => setBgColor("bg-secondary")}
                 >
-                    Confirm
+                    Sauvegarder
                 </button>
 
                 <button
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    className="bg-cancel1 text-white font-medium px-6 py-2 rounded-lg shadow-md hover:bg-red-600 hover:shadow-lg focus:ring focus:ring-gray-200 transition duration-300"
                     onClick={() => {
                         setMealsState(day.meals);
                         setEditMode(false);
                     }}
-                    onMouseOver={() => setBgColor("bg-red-300")}
-                    onMouseLeave={() => setBgColor("bg-borderColor")}
+                    onMouseEnter={() => setBgColor("bg-cancel2")}
+                    onMouseLeave={() => setBgColor("bg-secondary")}
                 >
-                    Cancel
+                    Annuler
                 </button>
             </div>
         </div>

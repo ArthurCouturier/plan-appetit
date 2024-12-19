@@ -35,9 +35,9 @@ export default function DayStatistics({
                     </SubPart>
                     <SubPart title="Paniers moyens sur la journée 🧺">
                         <div className="grid grid-cols-2 items-center text-right">
-                            <p>Nourriture moyenne journalière:</p> <p className="text-left ml-4"> {averageLunchBasketPerWeek}€ / pers.</p>
-                            <p>Boisson moyenne journalière:</p> <p className="text-left ml-4"> {averageDrinkBasketPerWeek}€ / pers.</p>
-                            <p>Total moyen journalier:</p> <p className="text-left ml-4"> {averageBasketPerWeek}€ / pers.</p>
+                            <p>Nourriture moyenne journalière:</p> <p className="text-left ml-4"> {averageLunchBasketPerWeek != "NaN" ? averageLunchBasketPerWeek : (0).toFixed(2)}€ / pers.</p>
+                            <p>Boisson moyenne journalière:</p> <p className="text-left ml-4"> {averageDrinkBasketPerWeek != "NaN" ? averageDrinkBasketPerWeek : (0).toFixed(2)}€ / pers.</p>
+                            <p>Total moyen journalier:</p> <p className="text-left ml-4"> {averageBasketPerWeek != "NaN" ? averageBasketPerWeek : (0).toFixed(2)}€ / pers.</p>
                         </div>
                     </SubPart>
                     {

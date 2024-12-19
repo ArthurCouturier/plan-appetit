@@ -16,6 +16,8 @@ export default function Week({
         setOpen(!open);
     }
 
+    const [activeEditDay, setActiveEditDay] = useState<string | null>(null);
+
     return (
         <div key={config.week.name} className="bg-primary shadow rounded-lg p-4 w-full">
             <h2
@@ -43,12 +45,16 @@ export default function Week({
                 <div className="flex flex-col gap-4">
                     {config.week.days.map((day: DayProps, index: number) => (
                         <div className="h-full">
-                            <Day key={index} day={day} saveConfig={
-                                (day: DayProps) => {
+                            <Day
+                                key={index}
+                                day={day}
+                                saveConfig={(day: DayProps) => {
                                     config.week.days[index] = day;
                                     saveConfig(config);
-                                }
-                            } />
+                                }}
+                                activeEditDay={activeEditDay}
+                                setActiveEditDay={setActiveEditDay}
+                            />
                         </div>
                     ))}
                 </div>

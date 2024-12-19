@@ -9,11 +9,22 @@ export default function Planning() {
 
     const [configs, setConfigs] = useState<ConfigurationInterface[]>(Configurator.fetchConfigurations());
 
-    const [actualConfig, setActualConfig] = useState<ConfigurationInterface>(configs[0]);
+    const [lastConfigViewedNumber, setLastConfigViewedNumber] = useState<number>(Configurator.getLastConfigViewedNumber());
+
+    const [actualConfig, setActualConfig] = useState<ConfigurationInterface>(configs[lastConfigViewedNumber]);
 
     const handleSaveConfig = (config: ConfigurationInterface) => {
         Configurator.updateConfiguration(configs, config);
         setConfigs(Configurator.fetchConfigurations());
+    }
+
+    const handleSetActualConfig = (config: ConfigurationInterface) => {
+        const index = configs.findIndex((conf) => conf.name === config.name);
+        if (index !== -1) {
+            setActualConfig(config);
+            setLastConfigViewedNumber(index);
+            Configurator.setLastConfigViewedNumber(index);
+        }
     }
 
     return (
@@ -22,7 +33,7 @@ export default function Planning() {
                 <div className="flex w-full items-center p-2">
                     <h1 className="flex-1 text-3xl font-bold text-textPrimary">Plan'Appétit</h1>
                     <div className="flex flex-1 justify-center">
-                        <ConfigurationSelector actualConfig={actualConfig} onSelect={setActualConfig} />
+                        <ConfigurationSelector actualConfig={actualConfig} onSelect={handleSetActualConfig} />
                     </div>
                 </div>
                 <div className="flex">

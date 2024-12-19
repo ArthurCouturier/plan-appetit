@@ -1,8 +1,10 @@
+import { v4 as uuidv4 } from "uuid";
 import ConfigurationInterface from "./ConfigurationInterface";
 
 export default class Configurator {
     static getEmptyConfiguration(): ConfigurationInterface {
         return {
+            uuid: uuidv4(),
             name: "configuration vide",
             week: {
                 name: "Semaine 1",
@@ -26,7 +28,15 @@ export default class Configurator {
         const storedConfigurations = localStorage.getItem("configurations");
         if (storedConfigurations) {
             try {
-                return JSON.parse(storedConfigurations) as ConfigurationInterface[];
+                let configurations = JSON.parse(storedConfigurations) as ConfigurationInterface[];
+                configurations = configurations.map((config) => {
+                    if (!config.uuid) {
+                        config.uuid = uuidv4();
+                    }
+                    return config;
+                });
+                localStorage.setItem("configurations", JSON.stringify(configurations));
+                return configurations;
             } catch {
                 console.error("Invalid configurations in localStorage. Resetting to default.");
             }
@@ -43,16 +53,12 @@ export default class Configurator {
         Configurator.saveConfigurations(configurations);
     }
 
-    static findConfiguration(configurations: ConfigurationInterface[], name: string): ConfigurationInterface | undefined {
-        return configurations.find((configuration) => configuration.name === name);
-    }
-
     static updateConfiguration(configurations: ConfigurationInterface[], configuration: ConfigurationInterface): ConfigurationInterface[] {
-        const index = configurations.findIndex((conf) => conf.name === configuration.name);
+        const index = configurations.findIndex((conf) => conf.uuid === configuration.uuid);
         if (index !== -1) {
-            configurations[index] = configuration; // Update existing configuration
+            configurations[index] = configuration;
         } else {
-            configurations.push(configuration); // Add new configuration
+            configurations.push(configuration);
         }
         Configurator.saveConfigurations(configurations);
         return configurations;
@@ -60,7 +66,7 @@ export default class Configurator {
 
     static deleteConfiguration(configuration: ConfigurationInterface): void {
         const configurations = Configurator.fetchConfigurations();
-        const newConfigurations = configurations.filter((config) => config.name !== configuration.name);
+        const newConfigurations = configurations.filter((config) => config.uuid !== configuration.uuid);
         Configurator.saveConfigurations(newConfigurations);
     }
 
@@ -76,5 +82,19 @@ export default class Configurator {
             }
         }
         return null;
+    }
+
+    static getLastConfigViewedNumber(): number {
+        const lastConfigViewed = localStorage.getItem("lastConfigViewed");
+        if (lastConfigViewed) {
+            return parseInt(lastConfigViewed);
+        } else {
+            localStorage.setItem("lastConfigViewed", "0");
+            return 0;
+        }
+    }
+
+    static setLastConfigViewedNumber(number: number): void {
+        localStorage.setItem("lastConfigViewed", number.toString());
     }
 }

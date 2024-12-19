@@ -1,4 +1,5 @@
 export default interface ConfigurationInterface {
+    uuid: string;
     name: string;
     week: WeekProps;
     stats: StatsProps;

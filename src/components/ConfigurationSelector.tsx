@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Configurator from "../api/Configurator";
 import ConfigurationInterface from "../api/ConfigurationInterface";
+import ConfirmationPopUp from "./ConfirmationPopUp";
 
 export default function ConfigurationSelector({
     actualConfig,
@@ -33,6 +34,26 @@ export default function ConfigurationSelector({
         setSelectedConfig(config);
         onSelect(config);
         setIsOpen(false);
+    };
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [configToDelete, setConfigToDelete] = useState<ConfigurationInterface | null>(null);
+
+    const handleDeleteClick = (config: ConfigurationInterface) => {
+        setConfigToDelete(config);
+        setIsModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (configToDelete) {
+            Configurator.deleteConfiguration(configToDelete);
+            if (actualConfig === configToDelete) {
+                setSelectedConfig(configurations[0]);
+            }
+            setConfigurations(Configurator.fetchConfigurations());
+        }
+        setIsModalOpen(false);
+        setConfigToDelete(null);
     };
 
     return (
@@ -72,12 +93,10 @@ export default function ConfigurationSelector({
                             </div>
                             <button
                                 className="bg-borderColor float-right ml-2"
-                                onClick={() => {
-                                    Configurator.deleteConfiguration(config);
-                                    if (actualConfig === config) {
-                                        setSelectedConfig(configurations[0]);
-                                    }
-                                    setConfigurations(Configurator.fetchConfigurations());
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(config);
+                                    e.preventDefault();
                                 }}
                             >
                                 ❌
@@ -102,6 +121,16 @@ export default function ConfigurationSelector({
                     </li>
                 </ul>
             )}
+            <ConfirmationPopUp
+                isOpen={isModalOpen}
+                title="Confirmer la suppression"
+                message={`Etes-vous sûrs de supprimer la configuration "${configToDelete?.name}"? Cette action est définitive.`}
+                onConfirm={handleConfirmDelete}
+                onCancel={() => {
+                    setIsModalOpen(false);
+                    setConfigToDelete(null);
+                }}
+            />
         </div>
     );
 }

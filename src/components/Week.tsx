@@ -22,7 +22,7 @@ export default function Week({
                 className="text-xl font-semibold text-textSecondary mb-3 flex items-center justify-center"
                 onClick={handleOpen}
             >
-                {config.week.name}
+                {config.name}
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"

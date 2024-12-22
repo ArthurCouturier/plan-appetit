@@ -84,17 +84,24 @@ export default class Configurator {
         return null;
     }
 
-    static getLastConfigViewedNumber(): number {
+    static getLastConfigViewedNumber(): string {
         const lastConfigViewed = localStorage.getItem("lastConfigViewed");
         if (lastConfigViewed) {
-            return parseInt(lastConfigViewed);
-        } else {
-            localStorage.setItem("lastConfigViewed", "0");
-            return 0;
+            return lastConfigViewed;
         }
+        return ""
     }
 
-    static setLastConfigViewedNumber(number: number): void {
-        localStorage.setItem("lastConfigViewed", number.toString());
+    static setLastConfigViewedNumber(uuid: string): void {
+        localStorage.setItem("lastConfigViewed", uuid);
+    }
+
+    static getConfigByUuid(uuid: string): ConfigurationInterface {
+        const configurations = Configurator.fetchConfigurations();
+        const config = configurations.find((config) => config.uuid === uuid);
+        if (config) {
+            return config;
+        }
+        return configurations[0];
     }
 }

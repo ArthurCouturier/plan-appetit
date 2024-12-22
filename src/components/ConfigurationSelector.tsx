@@ -4,14 +4,16 @@ import ConfigurationInterface from "../api/ConfigurationInterface";
 import ConfirmationPopUp from "./ConfirmationPopUp";
 
 export default function ConfigurationSelector({
+    configurations,
+    setConfigurations,
     actualConfig,
     onSelect
 }: {
+    configurations: ConfigurationInterface[];
+    setConfigurations: (configs: ConfigurationInterface[]) => void;
     actualConfig: ConfigurationInterface;
     onSelect: (selectedConfig: ConfigurationInterface) => void;
 }) {
-
-    const [configurations, setConfigurations] = useState(Configurator.fetchConfigurations());
     const [selectedConfig, setSelectedConfig] = useState<ConfigurationInterface>(actualConfig);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -47,8 +49,9 @@ export default function ConfigurationSelector({
     const handleConfirmDelete = () => {
         if (configToDelete) {
             Configurator.deleteConfiguration(configToDelete);
-            if (actualConfig === configToDelete) {
+            if (actualConfig.uuid === configToDelete.uuid) {
                 setSelectedConfig(configurations[0]);
+                onSelect(configurations[0]);
             }
             setConfigurations(Configurator.fetchConfigurations());
         }

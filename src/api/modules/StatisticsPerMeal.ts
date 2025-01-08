@@ -1,10 +1,10 @@
-import { MealInterface } from "../interfaces/ConfigurationInterface";
+import MealInterface from "../interfaces/MealInterface";
 
 
 export function getTotalOfTheMeal(meal: MealInterface): number {
-    return meal.covers * (meal.drinkPrice + meal.mainCoursePrice);
+    return meal.covers * (meal.drinkPrice + meal.starterPrice + meal.mainCoursePrice + meal.dessertPrice);
 }
 
-export function getAverageOfTheMeal(meal: MealInterface): number {
-    return meal.mainCoursePrice + meal.drinkPrice;
+export function getTotalAverage(meal: MealInterface): number {
+    return meal.starterPrice + meal.mainCoursePrice + meal.dessertPrice + meal.drinkPrice;
 }

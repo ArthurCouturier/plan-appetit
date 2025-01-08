@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import MealInterface from "../api/interfaces/MealInterface";
-import { getAverageOfTheMeal } from "../api/modules/StatisticsPerMeal";
+import { getTotalAverage } from "../api/modules/StatisticsPerMeal";
 import NumberField from "./NumberField";
 
 export default function Meal({
@@ -71,10 +71,10 @@ function DefaultMode({
     drinkPrice
 }: MealInterface
 ) {
-    const [average, setAverage] = useState<number>(getAverageOfTheMeal({ covers, mainCoursePrice: mainCoursePrice, drinkPrice }));
+    const [average, setAverage] = useState<number>(getTotalAverage({ covers, starterPrice, mainCoursePrice, dessertPrice, drinkPrice }));
 
     useEffect(() => {
-        setAverage(getAverageOfTheMeal({ covers, mainCoursePrice: mainCoursePrice, drinkPrice }))
+        setAverage(getTotalAverage({ covers, starterPrice, mainCoursePrice, dessertPrice, drinkPrice }))
     }, [covers, mainCoursePrice, drinkPrice]);
 
     return (
@@ -87,7 +87,7 @@ function DefaultMode({
                 <p>Boisson: {drinkPrice}</p>
             </div>
             <div className="">
-                <p className="mr-2 md:mr-5 lg:mr-10 xl:mr-16">moy.: {average}</p>
+                <p className="mr-2 md:mr-5 lg:mr-10 xl:mr-16">moy./pers.: {average}</p>
             </div>
         </div>
     );

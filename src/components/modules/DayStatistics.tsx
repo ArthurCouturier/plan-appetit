@@ -1,8 +1,8 @@
-import { DayInterface } from "../../api/interfaces/ConfigurationInterface"
 import SubPart from "./SubPart";
 import ModuleCard from "../ModuleCard";
 import { getAverageBasketPerDay, getAverageDrinkBasketPerDay, getAverageLunchBasketPerDay, getTotalDrinkOfTheDay, getTotalLunchOfTheDay, getTotalOfTheDay } from "../../api/modules/StatisticsPerDay";
-import { getAverageOfTheMeal, getTotalOfTheMeal } from "../../api/modules/StatisticsPerMeal";
+import { getTotalAverage, getTotalOfTheMeal } from "../../api/modules/StatisticsPerMeal";
+import DayInterface from "../../api/interfaces/DayInterface";
 
 export default function DayStatistics({
     day
@@ -18,9 +18,9 @@ export default function DayStatistics({
     const averageBasketPerWeek = getAverageBasketPerDay(day);
 
     const totalOfMidday = getTotalOfTheMeal(day.meals[0]);
-    const averageOfMidday = getAverageOfTheMeal(day.meals[0]);
+    const averageOfMidday = getTotalAverage(day.meals[0]);
     const totalOfEvening = getTotalOfTheMeal(day.meals[1]);
-    const averageOfEvening = getAverageOfTheMeal(day.meals[1]);
+    const averageOfEvening = getTotalAverage(day.meals[1]);
 
     return (
         <ModuleCard moduleName="">

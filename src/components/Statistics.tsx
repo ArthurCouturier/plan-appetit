@@ -1,4 +1,3 @@
-// import { useState } from "react"
 import ConfigurationInterface from "../api/interfaces/ConfigurationInterface"
 import AnnualStatistics from "./modules/AnnualStatistics"
 import SuperNovaModule from "./modules/SuperNovaModule"

@@ -1,4 +1,4 @@
-import { WeekInterface } from "../interfaces/ConfigurationInterface";
+import WeekInterface from "../interfaces/WeekInterface";
 
 export function getAverageBasketPerWeek(week: WeekInterface): string {
     let average = 0;
@@ -6,7 +6,7 @@ export function getAverageBasketPerWeek(week: WeekInterface): string {
     week.days.forEach(day => {
         let dayTotal = 0;
         day.meals.forEach(meal => {
-            dayTotal += meal.covers * (meal.mainCoursePrice + meal.drinkPrice);
+            dayTotal += meal.covers * (meal.starterPrice + meal.mainCoursePrice + meal.dessertPrice + meal.drinkPrice);
         });
         total += dayTotal;
     });
@@ -34,7 +34,7 @@ export function getAverageLunchBasketPerWeek(week: WeekInterface): string {
     week.days.forEach(day => {
         let dayTotal = 0;
         day.meals.forEach(meal => {
-            dayTotal += meal.covers * meal.mainCoursePrice;
+            dayTotal += meal.covers * (meal.starterPrice + meal.mainCoursePrice + meal.dessertPrice);
         });
         total += dayTotal;
     });
@@ -88,7 +88,7 @@ export function totalWeeklySales(week: WeekInterface): number {
     let total = 0;
     week.days.forEach(day => {
         day.meals.forEach(meal => {
-            total += meal.covers * (meal.mainCoursePrice + meal.drinkPrice);
+            total += meal.covers * (meal.starterPrice + meal.mainCoursePrice + meal.dessertPrice + meal.drinkPrice);
         });
     });
     return total;

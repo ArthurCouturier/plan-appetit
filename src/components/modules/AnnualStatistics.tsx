@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import ModuleCard from "../ModuleCard";
 import NumberField from "../NumberField";
 import SubPart from "./SubPart";
-import ConfigurationInterface from "../../api/interfaces/ConfigurationInterface";
+import ConfigurationInterface from "../../api/interfaces/configurations/ConfigurationInterface";
 import { mealsCookedPerWeek, workedDaysPerWeek, workedMealsPerWeek } from "../../api/modules/StatisticsPerWeek";
 
 export default function AnnualStatistics({

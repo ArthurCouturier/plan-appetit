@@ -1,8 +1,8 @@
 import Meal from "./Meal";
 import { useEffect, useState } from "react";
 import DayStatistics from "./modules/DayStatistics";
-import DayInterface from "../api/interfaces/DayInterface";
-import MealInterface from "../api/interfaces/MealInterface";
+import DayInterface from "../api/interfaces/configurations/DayInterface";
+import MealInterface from "../api/interfaces/configurations/MealInterface";
 
 export default function Day({
     day,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import MealInterface from "../api/interfaces/MealInterface";
+import MealInterface from "../api/interfaces/configurations/MealInterface";
 import { getTotalAverage } from "../api/modules/StatisticsPerMeal";
 import NumberField from "./NumberField";
 

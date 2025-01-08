@@ -1,4 +1,4 @@
-import ConfigurationInterface from "../api/interfaces/ConfigurationInterface"
+import ConfigurationInterface from "../api/interfaces/configurations/ConfigurationInterface"
 import AnnualStatistics from "./modules/AnnualStatistics"
 import SuperNovaModule from "./modules/SuperNovaModule"
 import WeekStatistics from "./modules/WeekStatistics"

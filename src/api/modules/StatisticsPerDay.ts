@@ -1,4 +1,4 @@
-import DayInterface from "../interfaces/DayInterface";
+import DayInterface from "../interfaces/configurations/DayInterface";
 
 function getTotalNbOfCoversOfTheDay(day: DayInterface): number {
     let total = 0;

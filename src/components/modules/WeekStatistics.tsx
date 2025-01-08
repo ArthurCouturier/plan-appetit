@@ -1,4 +1,4 @@
-import ModuleCard from "../ModuleCard";
+import ModuleCard from "../cards/ModuleCard";
 import ConfigurationInterface from "../../api/interfaces/configurations/ConfigurationInterface";
 import { getAverageBasketPerWeek, getAverageDrinkBasketPerWeek, getAverageLunchBasketPerWeek, getCoversPerWeek } from "../../api/modules/StatisticsPerWeek";
 import SubPart from "./SubPart";

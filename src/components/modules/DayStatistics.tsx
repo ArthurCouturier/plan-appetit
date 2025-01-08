@@ -1,5 +1,5 @@
 import SubPart from "./SubPart";
-import ModuleCard from "../ModuleCard";
+import ModuleCard from "../cards/ModuleCard";
 import { getAverageBasketPerDay, getAverageDrinkBasketPerDay, getAverageLunchBasketPerDay, getTotalDrinkOfTheDay, getTotalLunchOfTheDay, getTotalOfTheDay } from "../../api/modules/StatisticsPerDay";
 import { getTotalAverage, getTotalOfTheMeal } from "../../api/modules/StatisticsPerMeal";
 import DayInterface from "../../api/interfaces/configurations/DayInterface";

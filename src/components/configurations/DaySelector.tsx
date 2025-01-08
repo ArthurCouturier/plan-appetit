@@ -1,4 +1,4 @@
-import DayInterface from "../api/interfaces/configurations/DayInterface";
+import DayInterface from "../../api/interfaces/configurations/DayInterface";
 
 export default function DaySelector({
     days,

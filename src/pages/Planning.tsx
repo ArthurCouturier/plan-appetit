@@ -1,10 +1,12 @@
 import { useState } from "react";
 import ConfigurationInterface from "../api/interfaces/configurations/ConfigurationInterface";
 import Configurator from "../api/Configurator";
-import Week from "../components/Week";
-import Statistics from "../components/Statistics";
-import ConfigurationSelector from "../components/ConfigurationSelector";
-import { ExportButton, ImportButton } from "../components/DataImport";
+import Week from "../components/configurations/Week";
+import Statistics from "../components/statistics/Statistics";
+import ConfigurationSelector from "../components/configurations/ConfigurationSelector";
+import { ExportButton, ImportButton } from "../components/buttons/DataImportButtons";
+import { HomeButton } from "../components/buttons/MenuButton";
+import { Link } from "react-router-dom";
 
 export default function Planning() {
 
@@ -39,7 +41,10 @@ export default function Planning() {
         <div className="w-full">
             <div className="p-6 bg-bgColor">
                 <div className="flex w-full items-center p-2">
-                    <h1 className="flex-1 text-3xl font-bold text-textPrimary">Plan'Appétit</h1>
+                    <div className="flex flex-1 items-center">
+                        <HomeButton />
+                        <h1 className="flex-1 text-3xl font-bold text-textPrimary"><Link to="/">Plan'Appétit</Link></h1>
+                    </div>
                     <div className="flex flex-1 justify-center">
                         <ConfigurationSelector configurations={configs} setConfigurations={setConfigs} actualConfig={actualConfig} onSelect={handleSetActualConfig} />
                     </div>

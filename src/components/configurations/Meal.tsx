@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import MealInterface from "../api/interfaces/configurations/MealInterface";
-import { getTotalAverage } from "../api/modules/StatisticsPerMeal";
-import NumberField from "./NumberField";
+import MealInterface from "../../api/interfaces/configurations/MealInterface";
+import { getTotalAverage } from "../../api/modules/StatisticsPerMeal";
+import NumberField from "../fields/NumberField";
 
 export default function Meal({
     covers,

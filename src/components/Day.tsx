@@ -1,7 +1,8 @@
 import Meal from "./Meal";
-import { DayProps, MealProps } from "../api/ConfigurationInterface";
 import { useEffect, useState } from "react";
 import DayStatistics from "./modules/DayStatistics";
+import DayInterface from "../api/interfaces/DayInterface";
+import MealInterface from "../api/interfaces/MealInterface";
 
 export default function Day({
     day,
@@ -9,8 +10,8 @@ export default function Day({
     activeEditDay,
     setActiveEditDay,
 }: {
-    day: DayProps;
-    saveConfig: (day: DayProps) => void;
+    day: DayInterface;
+    saveConfig: (day: DayInterface) => void;
     activeEditDay: string | null;
     setActiveEditDay: (value: string | null) => void;
 }) {
@@ -46,7 +47,7 @@ export default function Day({
                             setActiveEditDay(null);
                         }
                     }}
-                    saveConfig={(updatedMeals: MealProps[]) => {
+                    saveConfig={(updatedMeals: MealInterface[]) => {
                         saveConfig({ name: day.name, meals: updatedMeals });
                         setMealsState(updatedMeals);
                         setActiveEditDay(null);
@@ -73,7 +74,7 @@ function DefaultMode({
     day,
     setEditMode
 }: {
-    day: DayProps;
+    day: DayInterface;
     setEditMode: (value: boolean) => void;
 }) {
 
@@ -92,19 +93,21 @@ function DefaultMode({
                     <h3 className="text-textSecondary text-left pb-3">Service du midi ☀️</h3>
                     <Meal
                         covers={day.meals[0].covers}
-                        lunchPrice={day.meals[0].lunchPrice}
+                        starterPrice={day.meals[0].starterPrice}
+                        mainCoursePrice={day.meals[0].mainCoursePrice}
+                        dessertPrice={day.meals[0].dessertPrice}
                         drinkPrice={day.meals[0].drinkPrice}
-                        editMode={false}
-                    />
+                        editMode={false} />
                 </div>
                 <div className="my-2 rounded border-2 border-borderColor p-2">
                     <h3 className="text-textSecondary text-left pb-3">Service du soir 🌙</h3>
                     <Meal
                         covers={day.meals[1].covers}
-                        lunchPrice={day.meals[1].lunchPrice}
+                        starterPrice={day.meals[1].starterPrice}
+                        mainCoursePrice={day.meals[1].mainCoursePrice}
+                        dessertPrice={day.meals[1].dessertPrice}
                         drinkPrice={day.meals[1].drinkPrice}
-                        editMode={false}
-                    />
+                        editMode={false} />
                 </div>
             </div>
         </button>
@@ -118,15 +121,15 @@ function EditMode({
     setEditMode,
     saveConfig,
 }: {
-    day: DayProps;
-    mealsState: MealProps[];
-    setMealsState: (value: MealProps[]) => void;
+    day: DayInterface;
+    mealsState: MealInterface[];
+    setMealsState: (value: MealInterface[]) => void;
     setEditMode: (value: boolean) => void;
-    saveConfig: (meals: MealProps[]) => void;
+    saveConfig: (meals: MealInterface[]) => void;
 }) {
     const [bgColor, setBgColor] = useState("bg-secondary");
 
-    const handleMealChange = (index: number, updatedMeal: MealProps) => {
+    const handleMealChange = (index: number, updatedMeal: MealInterface) => {
         const updatedMeals = [...mealsState];
         updatedMeals[index] = updatedMeal;
         setMealsState(updatedMeals);
@@ -163,25 +166,23 @@ function EditMode({
                     <h3 className="text-textSecondary text-left pb-3">Service du midi ☀️</h3>
                     <Meal
                         covers={mealsState[0].covers}
-                        lunchPrice={mealsState[0].lunchPrice}
+                        starterPrice={mealsState[0].starterPrice}
+                        mainCoursePrice={mealsState[0].mainCoursePrice}
+                        dessertPrice={mealsState[0].dessertPrice}
                         drinkPrice={mealsState[0].drinkPrice}
                         editMode={true}
-                        onChange={(updatedMeal: MealProps) =>
-                            handleMealChange(0, updatedMeal)
-                        }
-                    />
+                        onChange={(updatedMeal: MealInterface) => handleMealChange(0, updatedMeal)} />
                 </div>
                 <div className="bg-bgColor rounded-lg p-4 shadow hover:shadow-lg transition duration-200">
                     <h3 className="text-textSecondary text-left pb-3">Service du soir 🌙</h3>
                     <Meal
                         covers={mealsState[1].covers}
-                        lunchPrice={mealsState[1].lunchPrice}
+                        starterPrice={mealsState[1].starterPrice}
+                        mainCoursePrice={mealsState[1].mainCoursePrice}
+                        dessertPrice={mealsState[1].dessertPrice}
                         drinkPrice={mealsState[1].drinkPrice}
                         editMode={true}
-                        onChange={(updatedMeal: MealProps) =>
-                            handleMealChange(1, updatedMeal)
-                        }
-                    />
+                        onChange={(updatedMeal: MealInterface) => handleMealChange(1, updatedMeal)} />
                 </div>
             </div>
 

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import ConfigurationInterface from "./ConfigurationInterface";
+import ConfigurationInterface from "./interfaces/ConfigurationInterface";
 
 export default class Configurator {
     static getEmptyConfiguration(): ConfigurationInterface {
@@ -9,13 +9,13 @@ export default class Configurator {
             week: {
                 name: "Semaine 1",
                 days: [
-                    { name: "Lundi", meals: [{ covers: 0, lunchPrice: 0, drinkPrice: 0 }, { covers: 0, lunchPrice: 0, drinkPrice: 0 }] },
-                    { name: "Mardi", meals: [{ covers: 0, lunchPrice: 0, drinkPrice: 0 }, { covers: 0, lunchPrice: 0, drinkPrice: 0 }] },
-                    { name: "Mercredi", meals: [{ covers: 0, lunchPrice: 0, drinkPrice: 0 }, { covers: 0, lunchPrice: 0, drinkPrice: 0 }] },
-                    { name: "Jeudi", meals: [{ covers: 0, lunchPrice: 0, drinkPrice: 0 }, { covers: 0, lunchPrice: 0, drinkPrice: 0 }] },
-                    { name: "Vendredi", meals: [{ covers: 0, lunchPrice: 0, drinkPrice: 0 }, { covers: 0, lunchPrice: 0, drinkPrice: 0 }] },
-                    { name: "Samedi", meals: [{ covers: 0, lunchPrice: 0, drinkPrice: 0 }, { covers: 0, lunchPrice: 0, drinkPrice: 0 }] },
-                    { name: "Dimanche", meals: [{ covers: 0, lunchPrice: 0, drinkPrice: 0 }, { covers: 0, lunchPrice: 0, drinkPrice: 0 }] },
+                    { name: "Lundi", meals: [{ covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }, { covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }] },
+                    { name: "Mardi", meals: [{ covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }, { covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }] },
+                    { name: "Mercredi", meals: [{ covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }, { covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }] },
+                    { name: "Jeudi", meals: [{ covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }, { covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }] },
+                    { name: "Vendredi", meals: [{ covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }, { covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }] },
+                    { name: "Samedi", meals: [{ covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }, { covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }] },
+                    { name: "Dimanche", meals: [{ covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }, { covers: 0, starterPrice: 0, mainCoursePrice: 0, dessertPrice: 0, drinkPrice: 0 }] },
                 ]
             },
             stats: {

@@ -1,13 +1,13 @@
-import { DayProps } from "../api/ConfigurationInterface";
+import { DayInterface } from "../api/interfaces/ConfigurationInterface";
 
 export default function DaySelector({
     days,
     selectedDay,
     setSelectedDay
 }: {
-    days: DayProps[],
-    selectedDay: DayProps,
-    setSelectedDay: (day: DayProps) => void
+    days: DayInterface[],
+    selectedDay: DayInterface,
+    setSelectedDay: (day: DayInterface) => void
 }) {
     return (
         <div className="flex justify-center items-center">

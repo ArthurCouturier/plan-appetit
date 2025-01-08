@@ -1,4 +1,4 @@
-import { DayProps } from "../../api/ConfigurationInterface"
+import { DayInterface } from "../../api/interfaces/ConfigurationInterface"
 import SubPart from "./SubPart";
 import ModuleCard from "../ModuleCard";
 import { getAverageBasketPerDay, getAverageDrinkBasketPerDay, getAverageLunchBasketPerDay, getTotalDrinkOfTheDay, getTotalLunchOfTheDay, getTotalOfTheDay } from "../../api/modules/StatisticsPerDay";
@@ -7,7 +7,7 @@ import { getAverageOfTheMeal, getTotalOfTheMeal } from "../../api/modules/Statis
 export default function DayStatistics({
     day
 }: {
-    day: DayProps
+    day: DayInterface
 }) {
     const totalLunchOfTheDay = getTotalLunchOfTheDay(day);
     const totalDrinkOfTheDay = getTotalDrinkOfTheDay(day);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ConfigurationInterface from "../api/ConfigurationInterface";
+import ConfigurationInterface from "../api/interfaces/ConfigurationInterface";
 import Configurator from "../api/Configurator";
 import Week from "../components/Week";
 import Statistics from "../components/Statistics";

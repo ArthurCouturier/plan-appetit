@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Configurator from "../api/Configurator";
-import ConfigurationInterface from "../api/ConfigurationInterface";
+import ConfigurationInterface from "../api/interfaces/ConfigurationInterface";
 import ConfirmationPopUp from "./ConfirmationPopUp";
 
 export default function ConfigurationSelector({

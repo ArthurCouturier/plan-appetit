@@ -1,6 +1,6 @@
-import { DayProps } from "../ConfigurationInterface";
+import { DayInterface } from "../interfaces/ConfigurationInterface";
 
-function getTotalNbOfCoversOfTheDay(day: DayProps): number {
+function getTotalNbOfCoversOfTheDay(day: DayInterface): number {
     let total = 0;
     day.meals.forEach(meal => {
         total += meal.covers;
@@ -8,15 +8,15 @@ function getTotalNbOfCoversOfTheDay(day: DayProps): number {
     return total;
 }
 
-export function getTotalOfTheDay(day: DayProps): number {
+export function getTotalOfTheDay(day: DayInterface): number {
     let total = 0;
     day.meals.forEach(meal => {
-        total += meal.covers * (meal.lunchPrice + meal.drinkPrice);
+        total += meal.covers * (meal.mainCoursePrice + meal.drinkPrice);
     });
     return total;
 }
 
-export function getTotalDrinkOfTheDay(day: DayProps): number {
+export function getTotalDrinkOfTheDay(day: DayInterface): number {
     let total = 0;
     day.meals.forEach(meal => {
         total += meal.covers * meal.drinkPrice;
@@ -24,23 +24,23 @@ export function getTotalDrinkOfTheDay(day: DayProps): number {
     return total;
 }
 
-export function getTotalLunchOfTheDay(day: DayProps): number {
+export function getTotalLunchOfTheDay(day: DayInterface): number {
     let total = 0;
     day.meals.forEach(meal => {
-        total += meal.covers * meal.lunchPrice;
+        total += meal.covers * meal.mainCoursePrice;
     });
     return total;
 }
 
-export function getAverageBasketPerDay(day: DayProps): string {
+export function getAverageBasketPerDay(day: DayInterface): string {
     let total = 0;
     day.meals.forEach(meal => {
-        total += meal.covers * (meal.lunchPrice + meal.drinkPrice);
+        total += meal.covers * (meal.mainCoursePrice + meal.drinkPrice);
     });
     return (total / getTotalNbOfCoversOfTheDay(day)).toFixed(2);
 }
 
-export function getAverageDrinkBasketPerDay(day: DayProps): string {
+export function getAverageDrinkBasketPerDay(day: DayInterface): string {
     let total = 0;
     day.meals.forEach(meal => {
         total += meal.covers * meal.drinkPrice;
@@ -48,10 +48,10 @@ export function getAverageDrinkBasketPerDay(day: DayProps): string {
     return (total / getTotalNbOfCoversOfTheDay(day)).toFixed(2);
 }
 
-export function getAverageLunchBasketPerDay(day: DayProps): string {
+export function getAverageLunchBasketPerDay(day: DayInterface): string {
     let total = 0;
     day.meals.forEach(meal => {
-        total += meal.covers * meal.lunchPrice;
+        total += meal.covers * meal.mainCoursePrice;
     });
     return (total / getTotalNbOfCoversOfTheDay(day)).toFixed(2);
 }

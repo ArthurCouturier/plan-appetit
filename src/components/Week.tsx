@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ConfigurationInterface, { DayProps } from "../api/ConfigurationInterface";
+import ConfigurationInterface, { DayInterface } from "../api/interfaces/ConfigurationInterface";
 import Day from "./Day";
 
 export default function Week({
@@ -43,12 +43,12 @@ export default function Week({
             </h2>
             {open && (
                 <div className="flex flex-col gap-4">
-                    {config.week.days.map((day: DayProps, index: number) => (
+                    {config.week.days.map((day: DayInterface, index: number) => (
                         <div className="h-full">
                             <Day
                                 key={index}
                                 day={day}
-                                saveConfig={(day: DayProps) => {
+                                saveConfig={(day: DayInterface) => {
                                     config.week.days[index] = day;
                                     saveConfig(config);
                                 }}

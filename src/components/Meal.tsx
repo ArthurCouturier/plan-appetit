@@ -1,29 +1,38 @@
 import { useEffect, useState } from "react";
-import { MealProps } from "../api/ConfigurationInterface";
+import MealInterface from "../api/interfaces/MealInterface";
 import { getAverageOfTheMeal } from "../api/modules/StatisticsPerMeal";
 import NumberField from "./NumberField";
 
 export default function Meal({
     covers,
-    lunchPrice,
+    starterPrice,
+    mainCoursePrice,
+    dessertPrice,
     drinkPrice,
     editMode,
     onChange
-}: MealProps & {
+}: MealInterface & {
     editMode: boolean;
-    onChange?: (updatedMeal: MealProps) => void;
+    onChange?: (updatedMeal: MealInterface) => void;
 }) {
-    // Gestion des changements locaux si `onChange` est fourni
     const handleCoversChange = (value: number) => {
-        onChange?.({ covers: value, lunchPrice, drinkPrice });
+        onChange?.({ covers: value, starterPrice: starterPrice, mainCoursePrice: mainCoursePrice, dessertPrice: dessertPrice, drinkPrice });
     };
 
-    const handleLunchPriceChange = (value: number) => {
-        onChange?.({ covers, lunchPrice: value, drinkPrice });
+    const handleStarterPriceChange = (value: number) => {
+        onChange?.({ covers: covers, starterPrice: value, mainCoursePrice: mainCoursePrice, dessertPrice: dessertPrice, drinkPrice });
+    };
+
+    const handleMainCoursePriceChange = (value: number) => {
+        onChange?.({ covers: covers, starterPrice: starterPrice, mainCoursePrice: value, dessertPrice: dessertPrice, drinkPrice });
+    };
+
+    const handleDessertPriceChange = (value: number) => {
+        onChange?.({ covers: covers, starterPrice: starterPrice, mainCoursePrice: mainCoursePrice, dessertPrice: value, drinkPrice });
     };
 
     const handleDrinkPriceChange = (value: number) => {
-        onChange?.({ covers, lunchPrice, drinkPrice: value });
+        onChange?.({ covers: covers, starterPrice: starterPrice, mainCoursePrice: mainCoursePrice, dessertPrice: dessertPrice, drinkPrice: value });
     };
 
     return (
@@ -31,16 +40,22 @@ export default function Meal({
             {editMode ? (
                 <EditMode
                     covers={covers}
-                    lunchPrice={lunchPrice}
+                    starterPrice={starterPrice}
+                    mainCoursePrice={mainCoursePrice}
+                    dessertPrice={dessertPrice}
                     drinkPrice={drinkPrice}
                     setCovers={handleCoversChange}
-                    setLunchPrice={handleLunchPriceChange}
+                    setStarterPrice={handleStarterPriceChange}
+                    setMainCoursePrice={handleMainCoursePriceChange}
+                    setDessertPrice={handleDessertPriceChange}
                     setDrinkPrice={handleDrinkPriceChange}
                 />
             ) : (
                 <DefaultMode
                     covers={covers}
-                    lunchPrice={lunchPrice}
+                    starterPrice={starterPrice}
+                    mainCoursePrice={mainCoursePrice}
+                    dessertPrice={dessertPrice}
                     drinkPrice={drinkPrice}
                 />
             )}
@@ -48,18 +63,27 @@ export default function Meal({
     );
 }
 
-function DefaultMode({ covers, lunchPrice, drinkPrice }: MealProps) {
-    const [average, setAverage] = useState<number>(getAverageOfTheMeal({ covers, lunchPrice, drinkPrice }));
+function DefaultMode({
+    covers,
+    starterPrice,
+    mainCoursePrice,
+    dessertPrice,
+    drinkPrice
+}: MealInterface
+) {
+    const [average, setAverage] = useState<number>(getAverageOfTheMeal({ covers, mainCoursePrice: mainCoursePrice, drinkPrice }));
 
     useEffect(() => {
-        setAverage(getAverageOfTheMeal({ covers, lunchPrice, drinkPrice }))
-    }, [covers, lunchPrice, drinkPrice]);
+        setAverage(getAverageOfTheMeal({ covers, mainCoursePrice: mainCoursePrice, drinkPrice }))
+    }, [covers, mainCoursePrice, drinkPrice]);
 
     return (
         <div className="flex justify-between items-center text-sm text-textSecondary">
             <div className="flex">
                 <p className="mr-4">Couverts: {covers}</p>
-                <p className="mr-4">Nourriture: {lunchPrice}</p>
+                <p className="mr-4">Entrée: {starterPrice}</p>
+                <p className="mr-4">Plat: {mainCoursePrice}</p>
+                <p className="mr-4">Dessert: {dessertPrice}</p>
                 <p>Boisson: {drinkPrice}</p>
             </div>
             <div className="">
@@ -71,25 +95,37 @@ function DefaultMode({ covers, lunchPrice, drinkPrice }: MealProps) {
 
 function EditMode({
     covers,
-    lunchPrice,
+    starterPrice,
+    mainCoursePrice,
+    dessertPrice,
     drinkPrice,
     setCovers,
-    setLunchPrice,
+    setStarterPrice,
+    setMainCoursePrice,
+    setDessertPrice,
     setDrinkPrice
 }: {
     covers: number;
-    lunchPrice: number;
+    starterPrice: number;
+    mainCoursePrice: number;
+    dessertPrice: number;
     drinkPrice: number;
     setCovers: (value: number) => void;
-    setLunchPrice: (value: number) => void;
+    setStarterPrice: (value: number) => void;
+    setMainCoursePrice: (value: number) => void;
+    setDessertPrice: (value: number) => void;
     setDrinkPrice: (value: number) => void;
 }) {
     return (
         <div className="grid grid-cols-[auto,1fr] gap-x-2 gap-y-2 w-fit items-center">
             <p className="text-sm text-textSecondary text-right">Couverts</p>
             <NumberField label="" value={covers} onChange={setCovers} min={0} max={9999} />
-            <p className="text-sm text-textSecondary text-right">Nourriture</p>
-            <NumberField label="" value={lunchPrice} onChange={setLunchPrice} min={0} max={9999} />
+            <p className="text-sm text-textSecondary text-right">Entrée</p>
+            <NumberField label="" value={starterPrice} onChange={setStarterPrice} min={0} max={9999} />
+            <p className="text-sm text-textSecondary text-right">Plat</p>
+            <NumberField label="" value={mainCoursePrice} onChange={setMainCoursePrice} min={0} max={9999} />
+            <p className="text-sm text-textSecondary text-right">Dessert</p>
+            <NumberField label="" value={dessertPrice} onChange={setDessertPrice} min={0} max={9999} />
             <p className="text-sm text-textSecondary text-right">Boisson</p>
             <NumberField label="" value={drinkPrice} onChange={setDrinkPrice} min={0} max={9999} />
         </div>

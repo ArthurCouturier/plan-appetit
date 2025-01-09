@@ -5,6 +5,8 @@ import RecipeManager from "../api/recipes/RecipeManager";
 import { useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import { Link } from "react-router-dom";
+import IngredientsList from "../components/lists/IngredientsList";
+import IngredientInterface from "../api/interfaces/recipes/IngredientInterface";
 
 export default function RecipeDetail() {
 
@@ -12,6 +14,11 @@ export default function RecipeDetail() {
 
     const [recipe, setRecipe] = useState<RecipeInterface | undefined>(RecipeManager.getRecipe(uuid as UUIDTypes));
     const [editMode, setEditMode] = useState<boolean>(false);
+
+    const handleSetRepice = (recipe: RecipeInterface) => {
+        setRecipe(recipe);
+        RecipeManager.updateRecipe(recipe);
+    }
 
     return recipe ? (
         <div className="w-full bg-bgColor p-6">
@@ -25,7 +32,7 @@ export default function RecipeDetail() {
                 </div>
             </div>
             <div className="bg-primary shadow rounded-lg p-4 w-full">
-                <p className="p-4 mb-2 text-textPrimary text-lg font-bold">
+                <div className="p-4 mb-2 text-textPrimary text-lg font-bold flex justify-center">
                     {editMode && (
                         <Link to={"/recettes"}>
                             <button
@@ -36,10 +43,10 @@ export default function RecipeDetail() {
                             </button>
                         </Link>
                     )}
-                    {recipe.name}
+                    <div className="overflow-hidden max-w-[70vw]">{recipe.name}</div>
                     {editMode && (
                         <button
-                            className="relative rotate-90 rounded-full bg-secondary p-1 mx-2"
+                            className="relative rotate-90 rounded-full bg-secondary p-1 mx-2 -translate-y-1"
                             onClick={() => {
                                 const newRecipe = RecipeManager.changeRecipeName(recipe.uuid);
                                 if (newRecipe) {
@@ -56,11 +63,11 @@ export default function RecipeDetail() {
                     >
                         {editMode ? "Annuler" : "Modifier"}
                     </button>
-                </p>
+                </div>
                 {!editMode ? (
                     <DefaultMode recipe={recipe} />
                 ) : (
-                    <EditMode recipe={recipe} setRecipe={setRecipe} />
+                    <EditMode recipe={recipe} setRecipe={handleSetRepice} />
                 )}
             </div>
         </div>
@@ -88,7 +95,7 @@ function DefaultMode({ recipe }: { recipe: RecipeInterface }) {
     return (
         <div className="">
             <div className="w-full bg-secondary text-textSecondary p-6 rounded-md">
-                Default Mode
+                <IngredientsList ingredients={recipe.ingredients} />
             </div>
         </div>
     )
@@ -101,9 +108,22 @@ function EditMode({
     recipe: RecipeInterface;
     setRecipe: (recipe: RecipeInterface) => void;
 }) {
+
+    const [editIngredients, setEditIngredients] = useState<boolean>(false);
+
+    const handleAddIngredient = (updatedIngredients: IngredientInterface[]) => {
+        setRecipe({ ...recipe, ingredients: updatedIngredients });
+    }
+
     return (
         <div className="w-full bg-secondary text-textSecondary p-6 rounded-md">
-            Edit Mode
+
+            <IngredientsList
+                ingredients={recipe.ingredients}
+                recipeEditMode={editIngredients}
+                setRecipeEditMode={setEditIngredients}
+                onChange={handleAddIngredient}
+            />
         </div>
     )
 }

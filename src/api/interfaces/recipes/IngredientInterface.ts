@@ -5,8 +5,8 @@ import QuantityInterface from "./QuantityInterface";
 
 export default interface IngredientInterface {
     uuid: UUIDTypes;
-    category: IngredientCategoryEnum;
     name: string;
+    category: IngredientCategoryEnum;
     season: SeasonEnum;
     quantity: QuantityInterface;
 }

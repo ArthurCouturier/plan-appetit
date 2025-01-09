@@ -29,3 +29,14 @@ export function HomeButton() {
         </Link>
     );
 }
+
+export function BackButton() {
+    return (
+        <button
+            className="bg-primary hover:opacity-80 hover:scale-105 shadow border-borderColor rounded-lg border-4 text-textSecondary font-bold p-4 m-4 transition duration-200"
+            onClick={() => window.history.back()}
+        >
+            Retour
+        </button>
+    );
+}

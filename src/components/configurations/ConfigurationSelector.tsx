@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import Configurator from "../../api/Configurator";
+import Configurator from "../../api/configurations/Configurator";
 import ConfigurationInterface from "../../api/interfaces/configurations/ConfigurationInterface";
 import ConfirmationPopUp from "../popups/ConfirmationPopUp";
 

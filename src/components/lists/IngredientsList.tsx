@@ -4,6 +4,7 @@ import { SeasonEnum } from "../../api/enums/SeasonEnum";
 import { UnitEnum } from "../../api/enums/UnitEnum";
 import { IngredientCategoryEnum } from "../../api/enums/IngredientCategoryEnum";
 import { v4 as uuidv4 } from "uuid";
+import NumberField from "../fields/NumberField";
 
 export default function IngredientsList({
     ingredients,
@@ -42,21 +43,18 @@ export default function IngredientsList({
     };
 
     return (
-        <div className="">
+        <div className="border-2 border-textPrimary p-2 rounded-md">
             <div className="flex justify-center items-center">
-                <h2>Ingredients</h2>
+                <h2 className="font-bold text-lg underline text-textPrimary">Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
                         className="bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-md m-2 transition duration-200"
                         onClick={() => setRecipeEditMode?.(!recipeEditMode)}
                     >
-                        {recipeEditMode ? "Annuler" : "Modifier"}
+                        {recipeEditMode ? "Sauvegarder" : "Modifier"}
                     </button>
                 }
             </div>
-            {recipeEditMode &&
-                <button onClick={handleAddIngredient}>Add ingredient</button>
-            }
             {ingredients.map((ingredient, index) => (
                 <Ingredient
                     key={index}
@@ -66,6 +64,14 @@ export default function IngredientsList({
                     onRemove={() => handleRemoveIngredient(index)}
                 />
             ))}
+            {recipeEditMode &&
+                <button
+                    className="bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-md m-2 transition duration-200"
+                    onClick={handleAddIngredient}
+                >
+                    Add ingredient
+                </button>
+            }
         </div>
     );
 }
@@ -89,8 +95,8 @@ export function Ingredient({
         onChange?.({ ...ingredient, season: SeasonEnum.FALL });
     };
 
-    const handleQuantityValueChange = (e: ChangeEvent<HTMLInputElement>) => {
-        onChange?.({ ...ingredient, quantity: { value: parseFloat(e.target.value), unit: ingredient.quantity.unit } });
+    const handleQuantityValueChange = (number: number) => {
+        onChange?.({ ...ingredient, quantity: { value: number, unit: ingredient.quantity.unit } });
     };
 
     const handleQuantityUnitChange = () => {
@@ -135,17 +141,17 @@ function EditMode({
     setName: (e: ChangeEvent<HTMLInputElement>) => void;
     setCategory: (e: ChangeEvent<HTMLInputElement>) => void;
     setSeason: (e: ChangeEvent<HTMLInputElement>) => void;
-    setQuantityValue: (e: ChangeEvent<HTMLInputElement>) => void;
+    setQuantityValue: (n: number) => void;
     setQuantityUnit: (e: ChangeEvent<HTMLInputElement>) => void;
     onRemove?: () => void;
 }) {
     return (
-        <div className="">
-            <input type="text" value={ingredient.name} onChange={setName} />
-            <input type="number" value={ingredient.category} onChange={setCategory} />
-            <input type="number" value={ingredient.season} onChange={setSeason} />
-            <input type="number" value={ingredient.quantity.value} onChange={setQuantityValue} />
-            <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} />
+        <div className="flex my-1">
+            <input className="mx-2 rounded-md bg-secondary border-2 border-borderColor opacity-80 text-opacity-100 text-textPrimary px-1" type="text" value={ingredient.name} onChange={setName} />
+            {/* <input type="number" value={ingredient.category} onChange={setCategory} />
+            <input type="number" value={ingredient.season} onChange={setSeason} /> */}
+            <NumberField label="Quantity" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={30} />
+            {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
             <button onClick={onRemove}>Remove</button>
         </div>
     );
@@ -157,12 +163,12 @@ function DefaultMode({
     ingredient: IngredientInterface;
 }) {
     return (
-        <div className="">
-            <p>{ingredient.name}</p>
-            <p>{ingredient.category}</p>
-            <p>{ingredient.season}</p>
-            <p>{ingredient.quantity.value}</p>
-            <p>{ingredient.quantity.unit}</p>
+        <div className="flex">
+            <p className="p-1">{ingredient.quantity.value}</p>
+            {/* <p className="p-1">{ingredient.quantity.unit}</p> */}
+            <p className="p-1">{ingredient.name}</p>
+            {/* <p className="p-1">{ingredient.category}</p>
+            <p className="p-1">{ingredient.season}</p> */}
         </div>
     );
 }

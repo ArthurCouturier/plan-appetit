@@ -58,10 +58,10 @@ export default function RecipeDetail() {
                         </button>
                     )}
                     <button
-                        className="absolute right-20 -translate-y-3 bg-bgColor border-2 border-borderColor text-textPrimary p-2 rounded-lg"
+                        className="absolute right-20 -translate-y-3 bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-lg transition duration-200"
                         onClick={() => setEditMode(!editMode)}
                     >
-                        {editMode ? "Annuler" : "Modifier"}
+                        {editMode ? "Sauvegarder" : "Modifier"}
                     </button>
                 </div>
                 {!editMode ? (

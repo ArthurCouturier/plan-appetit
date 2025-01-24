@@ -48,28 +48,30 @@ export default function IngredientsList({
                 <h2 className="font-bold text-lg underline text-textPrimary">Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
-                        className="bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-md m-2 transition duration-200"
+                        className={`bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-md m-2 transition duration-200`}
                         onClick={() => setRecipeEditMode?.(!recipeEditMode)}
                     >
                         {recipeEditMode ? "Sauvegarder" : "Modifier"}
                     </button>
                 }
             </div>
-            {ingredients.map((ingredient, index) => (
-                <Ingredient
-                    key={index}
-                    ingredient={ingredient}
-                    editMode={recipeEditMode}
-                    onChange={(updatedIngredient) => handleIngredientChange(updatedIngredient, index)}
-                    onRemove={() => handleRemoveIngredient(index)}
-                />
-            ))}
+            <div className="w-min mx-auto">
+                {ingredients.map((ingredient, index) => (
+                    <Ingredient
+                        key={index}
+                        ingredient={ingredient}
+                        editMode={recipeEditMode}
+                        onChange={(updatedIngredient) => handleIngredientChange(updatedIngredient, index)}
+                        onRemove={() => handleRemoveIngredient(index)}
+                    />
+                ))}
+            </div>
             {recipeEditMode &&
                 <button
                     className="bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-md m-2 transition duration-200"
                     onClick={handleAddIngredient}
                 >
-                    Add ingredient
+                    Ajouter ingrédient
                 </button>
             }
         </div>
@@ -131,10 +133,10 @@ export function Ingredient({
 function EditMode({
     ingredient,
     setName,
-    setCategory,
-    setSeason,
+    // setCategory,
+    // setSeason,
     setQuantityValue,
-    setQuantityUnit,
+    // setQuantityUnit,
     onRemove,
 }: {
     ingredient: IngredientInterface;
@@ -146,13 +148,18 @@ function EditMode({
     onRemove?: () => void;
 }) {
     return (
-        <div className="flex my-1">
+        <div className="flex my-1 text-gray-800">
             <input className="mx-2 rounded-md bg-secondary border-2 border-borderColor opacity-80 text-opacity-100 text-textPrimary px-1" type="text" value={ingredient.name} onChange={setName} />
             {/* <input type="number" value={ingredient.category} onChange={setCategory} />
             <input type="number" value={ingredient.season} onChange={setSeason} /> */}
-            <NumberField label="Quantity" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={30} />
+            <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={30} />
             {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
-            <button onClick={onRemove}>Remove</button>
+            <button
+                className="bg-cancel1 hover:bg-cancel2 text-textPrimary p-1 rounded-md m-2 transition duration-200"
+                onClick={onRemove}
+            >
+                Remove
+            </button>
         </div>
     );
 }

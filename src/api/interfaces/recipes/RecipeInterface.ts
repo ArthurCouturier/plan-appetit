@@ -2,6 +2,7 @@ import { UUIDTypes } from "uuid";
 import IngredientInterface from "./IngredientInterface";
 import { CourseEnum } from "../../enums/CourseEnum";
 import { SeasonEnum } from "../../enums/SeasonEnum";
+import StepInterface from "./StepInterface";
 
 export default interface RecipeInterface {
     uuid: UUIDTypes;
@@ -12,6 +13,6 @@ export default interface RecipeInterface {
     sellPrice: number;
     promotion: number;
     course: CourseEnum;
-    steps: Map<number, string>;
+    steps: StepInterface[];
     season: SeasonEnum;
 }

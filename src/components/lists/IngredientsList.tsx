@@ -43,7 +43,7 @@ export default function IngredientsList({
     };
 
     return (
-        <div className="border-2 border-textPrimary p-2 rounded-md">
+        <div className="border-2 border-textPrimary p-2 rounded-md mb-4">
             <div className="flex justify-center items-center">
                 <h2 className="font-bold text-lg underline text-textPrimary">Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
@@ -152,7 +152,7 @@ function EditMode({
             <input className="mx-2 rounded-md bg-secondary border-2 border-borderColor opacity-80 text-opacity-100 text-textPrimary px-1" type="text" value={ingredient.name} onChange={setName} />
             {/* <input type="number" value={ingredient.category} onChange={setCategory} />
             <input type="number" value={ingredient.season} onChange={setSeason} /> */}
-            <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={30} />
+            <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} />
             {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
             <button
                 className="bg-cancel1 hover:bg-cancel2 text-textPrimary p-1 rounded-md m-2 transition duration-200"

@@ -2,6 +2,8 @@ import { UUIDTypes, v4 as uuidv4 } from "uuid";
 import { CourseEnum } from "../enums/CourseEnum";
 import { SeasonEnum } from "../enums/SeasonEnum";
 import RecipeInterface from "../interfaces/recipes/RecipeInterface";
+import { IngredientCategoryEnum } from "../enums/IngredientCategoryEnum";
+import { UnitEnum } from "../enums/UnitEnum";
 
 export default class RecipeManager {
 
@@ -9,13 +11,13 @@ export default class RecipeManager {
         return {
             uuid: uuidv4(),
             name: "Nouvelle recette",
-            ingredients: [],
+            ingredients: [{ uuid: uuidv4(), name: "Ingrédient", category: IngredientCategoryEnum.CEREAL, season: SeasonEnum.FALL, quantity: { value: 0, unit: UnitEnum.CENTILITER } }],
             covers: 0,
             buyPrice: 0,
             sellPrice: 0,
             promotion: 0,
             course: CourseEnum.MAIN,
-            steps: new Map<number, string>,
+            steps: [{ key: 1, value: "Nouvelle étape" }],
             season: SeasonEnum.WINTER
         };
     }

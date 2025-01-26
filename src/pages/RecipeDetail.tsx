@@ -7,6 +7,8 @@ import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import { Link } from "react-router-dom";
 import IngredientsList from "../components/lists/IngredientsList";
 import IngredientInterface from "../api/interfaces/recipes/IngredientInterface";
+import RecipeStepsList from "../components/lists/RecipeStepsList";
+import StepInterface from "../api/interfaces/recipes/StepInterface";
 
 export default function RecipeDetail() {
 
@@ -93,10 +95,9 @@ export default function RecipeDetail() {
 
 function DefaultMode({ recipe }: { recipe: RecipeInterface }) {
     return (
-        <div className="">
-            <div className="w-full bg-secondary text-textSecondary p-6 rounded-md">
-                <IngredientsList ingredients={recipe.ingredients} />
-            </div>
+        <div className="w-full bg-secondary text-textSecondary p-6 rounded-md">
+            <IngredientsList ingredients={recipe.ingredients} />
+            <RecipeStepsList steps={recipe.steps} />
         </div>
     )
 }
@@ -110,19 +111,30 @@ function EditMode({
 }) {
 
     const [editIngredients, setEditIngredients] = useState<boolean>(false);
+    const [editSteps, setEditSteps] = useState<boolean>(false);
 
     const handleAddIngredient = (updatedIngredients: IngredientInterface[]) => {
         setRecipe({ ...recipe, ingredients: updatedIngredients });
     }
 
+    const handleAddStep = (updatedSteps: StepInterface[]) => {
+        setRecipe({ ...recipe, steps: updatedSteps });
+        console.log("coucou", recipe)
+    }
+
     return (
         <div className="w-full bg-secondary text-textSecondary p-6 rounded-md">
-
             <IngredientsList
                 ingredients={recipe.ingredients}
                 recipeEditMode={editIngredients}
                 setRecipeEditMode={setEditIngredients}
                 onChange={handleAddIngredient}
+            />
+            <RecipeStepsList
+                steps={recipe.steps}
+                recipeEditMode={editSteps}
+                setRecipeEditMode={setEditSteps}
+                onChange={handleAddStep}
             />
         </div>
     )

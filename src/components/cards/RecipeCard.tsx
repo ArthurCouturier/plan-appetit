@@ -14,7 +14,7 @@ export default function RecipeCard({
                 <p>pour {recipe.covers} pers.</p>
                 <p>achat {recipe.buyPrice}€</p>
                 <p>vente {recipe.sellPrice}€</p>
-                <p>{recipe.steps.size ? recipe.steps.size : 0} étape{recipe.steps.size > 1 ? "s" : ""}</p>
+                <p>{recipe.steps.length ? recipe.steps.length : 0} étape{recipe.steps.length > 1 ? "s" : ""}</p>
             </div>
         </Link>
     );

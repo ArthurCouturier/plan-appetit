@@ -1,4 +1,4 @@
-import MealInterface from "../interfaces/MealInterface";
+import MealInterface from "../interfaces/configurations/MealInterface";
 
 
 export function getTotalOfTheMeal(meal: MealInterface): number {

@@ -1,16 +1,26 @@
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, useGLTF } from '@react-three/drei';
-import { Suspense } from 'react';
+import { Suspense, useRef } from 'react';
+import * as THREE from 'three';
 
 function MonitorModel() {
     // Charger le modèle GLTF
     const { scene } = useGLTF('/models/Monitor.glb');
+    const modelRef = useRef<THREE.Object3D>();
 
     // Optionnel : Ajouter des logs pour déboguer le modèle
     console.log(scene);
 
+    useFrame((state) => {
+        const elapsedTime = state.clock.getElapsedTime(); // Temps écoulé en secondes
+        if (modelRef.current) {
+            modelRef.current.rotation.y = (elapsedTime * Math.PI * 2) / 7; // Un tour en 7 secondes
+        }
+    });
+
+
     return scene ?
-        <primitive object={scene} />
+        <primitive object={scene} ref={modelRef} />
         :
         <div>
             Chargement...

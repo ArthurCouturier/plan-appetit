@@ -3,11 +3,25 @@ import './App.css';
 import router from './routes';
 import { useState, useEffect } from 'react';
 import DarkModeButton from './components/buttons/DarkModeButton';
+import Monitor from './components/three/Monitor';
 
 function App() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'theme1';
   });
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.remove('theme1', 'theme2');
@@ -21,8 +35,8 @@ function App() {
 
   return (
     <div className={`${theme}`}>
-      <DarkModeButton mode={theme} changeMode={changeTheme} />
-      <RouterProvider router={router} />
+      {!isMobile && <DarkModeButton mode={theme} changeMode={changeTheme} />}
+      {isMobile ? <Monitor /> : <RouterProvider router={router} />}
     </div>
   );
 }

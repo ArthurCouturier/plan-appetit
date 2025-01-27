@@ -1,7 +1,7 @@
 import { useState } from "react";
-import ConfigurationInterface from "../api/interfaces/ConfigurationInterface";
+import ConfigurationInterface from "../../api/interfaces/configurations/ConfigurationInterface";
 import Day from "./Day";
-import DayInterface from "../api/interfaces/DayInterface";
+import DayInterface from "../../api/interfaces/configurations/DayInterface";
 
 export default function Week({
     config,

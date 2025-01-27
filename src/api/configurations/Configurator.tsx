@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import ConfigurationInterface from "./interfaces/ConfigurationInterface";
+import ConfigurationInterface from "../interfaces/configurations/ConfigurationInterface";
 
 export default class Configurator {
     static getEmptyConfiguration(): ConfigurationInterface {

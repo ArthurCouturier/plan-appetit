@@ -2,7 +2,7 @@ import { RouterProvider } from 'react-router-dom';
 import './App.css';
 import router from './routes';
 import { useState, useEffect } from 'react';
-import DarkModeButton from './components/DarkModeButton';
+import DarkModeButton from './components/buttons/DarkModeButton';
 
 function App() {
   const [theme, setTheme] = useState(() => {

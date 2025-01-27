@@ -1,4 +1,4 @@
-import WeekInterface from "../interfaces/WeekInterface";
+import WeekInterface from "../interfaces/configurations/WeekInterface";
 
 export function getAverageBasketPerWeek(week: WeekInterface): string {
     let average = 0;

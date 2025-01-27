@@ -1,4 +1,4 @@
-import StatsInterface from "./StatsInterface";
+import StatsInterface from "../statistics/StatsInterface";
 import WeekInterface from "./WeekInterface";
 
 export default interface ConfigurationInterface {

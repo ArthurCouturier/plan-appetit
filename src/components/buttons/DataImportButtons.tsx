@@ -1,18 +1,37 @@
 import { ChangeEvent, useRef } from "react";
+import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 
-function exportData(datakey: string) {
+function exportData(datakey: string, uuid?: string, name?: string) {
     const storedData = localStorage.getItem(datakey);
     if (!storedData) {
         alert(`Aucune donnée trouvée dans le localStorage (clé ${datakey}).`);
         return;
     }
 
-    const blob = new Blob([storedData], { type: 'application/json' });
+    let data: string = "";
+
+    if (uuid) {
+        const jsonData = JSON.parse(storedData);
+        data = JSON.stringify(jsonData.find((item: { uuid: string }) => item.uuid == uuid));
+        if (!data) {
+            alert(`Aucune donnée trouvée avec l'uuid ${uuid}.`);
+            return;
+        }
+        console.log("data", data)
+    } else {
+        data = storedData;
+    }
+
+    const blob = new Blob([data], { type: 'application/json' });
 
     const url = URL.createObjectURL(blob);
 
     const link = document.createElement('a');
-    link.download = `plan-appetit_configuration_${Date.now()}.json`;
+    if (name) {
+        link.download = `plan-appetit_${name}.json`;
+    } else {
+        link.download = `plan-appetit_configuration_${Date.now()}.json`;
+    }
     link.href = url;
     link.click();
 
@@ -40,7 +59,7 @@ function importData(datakey: string, file: File, callback: () => void) {
     reader.readAsText(file);
 }
 
-export function ExportButton() {
+export function ExportConfigurationButton() {
     const handleExport = () => {
         exportData('configurations');
     };
@@ -55,7 +74,7 @@ export function ExportButton() {
     );
 };
 
-export function ImportButton({
+export function ImportConfigurationButton({
     fetchConfigs
 }: {
     fetchConfigs: () => void;
@@ -89,5 +108,21 @@ export function ImportButton({
                 className="hidden"
             />
         </>
+    );
+};
+
+export function ExportRecipeButton({ recipe }: { recipe: RecipeInterface }) {
+
+    const handleExport = () => {
+        exportData('recipes', recipe.uuid.toString(), "recette_" + recipe.name);
+    };
+
+    return (
+        <button
+            onClick={handleExport}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+        >
+            Exporter la recette
+        </button>
     );
 };

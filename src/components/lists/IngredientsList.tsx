@@ -5,6 +5,7 @@ import { UnitEnum } from "../../api/enums/UnitEnum";
 import { IngredientCategoryEnum } from "../../api/enums/IngredientCategoryEnum";
 import { v4 as uuidv4 } from "uuid";
 import NumberField from "../fields/NumberField";
+import UnitSelector from "../selectors/UnitSelector";
 
 export default function IngredientsList({
     ingredients,
@@ -101,8 +102,8 @@ export function Ingredient({
         onChange?.({ ...ingredient, quantity: { value: number, unit: ingredient.quantity.unit } });
     };
 
-    const handleQuantityUnitChange = () => {
-        onChange?.({ ...ingredient, quantity: { value: ingredient.quantity.value, unit: UnitEnum.CENTILITER } });
+    const handleQuantityUnitChange = (newUnit: UnitEnum) => {
+        onChange?.({ ...ingredient, quantity: { value: ingredient.quantity.value, unit: newUnit } });
     };
 
     const handleCategoryChange = () => {
@@ -136,7 +137,7 @@ function EditMode({
     // setCategory,
     // setSeason,
     setQuantityValue,
-    // setQuantityUnit,
+    setQuantityUnit,
     onRemove,
 }: {
     ingredient: IngredientInterface;
@@ -144,7 +145,7 @@ function EditMode({
     setCategory: (e: ChangeEvent<HTMLInputElement>) => void;
     setSeason: (e: ChangeEvent<HTMLInputElement>) => void;
     setQuantityValue: (n: number) => void;
-    setQuantityUnit: (e: ChangeEvent<HTMLInputElement>) => void;
+    setQuantityUnit: (newUnit: UnitEnum) => void;
     onRemove?: () => void;
 }) {
     return (
@@ -154,6 +155,7 @@ function EditMode({
             <input type="number" value={ingredient.season} onChange={setSeason} /> */}
             <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} />
             {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
+            <UnitSelector actualUnit={ingredient.quantity.unit} onChange={setQuantityUnit} />
             <button
                 className="bg-cancel1 hover:bg-cancel2 text-textPrimary p-1 rounded-md m-2 transition duration-200"
                 onClick={onRemove}
@@ -170,12 +172,12 @@ function DefaultMode({
     ingredient: IngredientInterface;
 }) {
     return (
-        <div className="flex">
-            <p className="p-1">{ingredient.quantity.value}</p>
-            {/* <p className="p-1">{ingredient.quantity.unit}</p> */}
-            <p className="p-1">{ingredient.name}</p>
+        <li className="flex">
+            <ul className="p-1">{ingredient.name}:</ul>
+            <ul className="p-1">{ingredient.quantity.value}</ul>
+            <ul className="p-1">{!(ingredient.quantity.unit == UnitEnum.NONE) ? ingredient.quantity.unit : ""}</ul>
             {/* <p className="p-1">{ingredient.category}</p>
             <p className="p-1">{ingredient.season}</p> */}
-        </div>
+        </li>
     );
 }

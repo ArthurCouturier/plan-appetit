@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import StepInterface from "../../api/interfaces/recipes/StepInterface";
 
 export default function RecipeStepsList({
@@ -101,6 +102,19 @@ export function Step({
     );
 }
 
+function DefaultMode({
+    step
+}: {
+    step: StepInterface;
+}) {
+    return (
+        <div className="flex flex-col">
+            <h3 className="font-extrabold mb-1">Etape {step.key}:</h3>
+            <pre className="">{step.value}</pre>
+        </div>
+    )
+}
+
 function EditMode({
     step,
     onChange,
@@ -110,36 +124,52 @@ function EditMode({
     onChange: (value: string) => void;
     onRemove: () => void;
 }) {
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [rows, setRows] = useState(textareaRef.current?.textContent ? (textareaRef.current?.textContent.split("\n").length) : 1);
+
+    // Initial rows calculation
+    useEffect(() => {
+        if (textareaRef.current?.textContent) {
+            const maxRows = 5;
+            const newRows = Math.min(
+                textareaRef.current.textContent.split("\n").length,
+                maxRows
+            );
+            setRows(newRows);
+        }
+    }, [textareaRef.current?.textContent]);
+
+    const handleChange = (value: string) => {
+        if (textareaRef.current) {
+            const maxRows = 5;
+            const newRows = Math.min(
+                value.split("\n").length,
+                maxRows
+            );
+            setRows(newRows);
+        }
+        onChange(value);
+    };
+
     return (
-        <div>
-            <h3>Etape {step.key}</h3>
+        <div className="w-full">
+            <h3>Étape {step.key}</h3>
             <div className="flex">
-                <input
-                    type="text"
+                <textarea
+                    ref={textareaRef}
                     value={step.value}
-                    className="w-full bg-bgColor text-textPrimary p-2 rounded-md"
-                    onChange={(e) => onChange(e.target.value)}
+                    className="w-full bg-bgColor text-textPrimary p-2 rounded-md resize-none overflow-y-hidden"
+                    rows={rows}
+                    style={{ lineHeight: "24px" }}
+                    onChange={(e) => handleChange(e.target.value)}
                 />
                 <button
-                    className="bg-cancel1 hover:bg-cancel2 text-textPrimary p-2 rounded-md transition duration-200 mx-2"
+                    className="bg-cancel1 hover:bg-cancel2 text-textPrimary p-2 rounded-md transition duration-200 mx-2 my-auto h-min"
                     onClick={onRemove}
                 >
                     🗑
                 </button>
             </div>
         </div>
-    )
-}
-
-function DefaultMode({
-    step
-}: {
-    step: StepInterface;
-}) {
-    return (
-        <div className="flex flex-col">
-            <h3 className="font-extrabold">Etape {step.key}:</h3>
-            <p>{step.value}</p>
-        </div>
-    )
+    );
 }

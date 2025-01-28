@@ -4,7 +4,7 @@ import Configurator from "../api/configurations/Configurator";
 import Week from "../components/configurations/Week";
 import Statistics from "../components/statistics/Statistics";
 import ConfigurationSelector from "../components/configurations/ConfigurationSelector";
-import { ExportButton, ImportButton } from "../components/buttons/DataImportButtons";
+import { ExportConfigurationButton, ImportConfigurationButton } from "../components/buttons/DataImportButtons";
 import { HomeButton } from "../components/buttons/BackAndHomeButton";
 
 export default function Planning() {
@@ -47,8 +47,8 @@ export default function Planning() {
                     <div className="flex flex-1 justify-center">
                         <ConfigurationSelector configurations={configs} setConfigurations={setConfigs} actualConfig={actualConfig} onSelect={handleSetActualConfig} />
                     </div>
-                    <ImportButton fetchConfigs={handleFetchConfigurations} />
-                    <ExportButton />
+                    <ImportConfigurationButton fetchConfigs={handleFetchConfigurations} />
+                    <ExportConfigurationButton />
                 </div>
                 <div className="flex">
                     <Week config={actualConfig} saveConfig={handleSaveConfig} />

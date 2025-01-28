@@ -110,7 +110,7 @@ function DefaultMode({
     return (
         <div className="flex flex-col">
             <h3 className="font-extrabold mb-1">Etape {step.key}:</h3>
-            <pre className="">{step.value}</pre>
+            <pre className="w-[50vw] break-word whitespace-normal">{step.value}</pre>
         </div>
     )
 }

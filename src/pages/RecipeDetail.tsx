@@ -24,15 +24,7 @@ export default function RecipeDetail() {
 
     return recipe ? (
         <div className="w-full bg-bgColor p-6">
-            <div className="relative flex items-center w-full p-2">
-                <div className="flex items-center">
-                    <BackButton />
-                    <HomeButton />
-                    <h1 className="text-3xl font-bold text-textPrimary ml-2">
-                        Plan'Appétit
-                    </h1>
-                </div>
-            </div>
+            <RecipeHeader />
             <div className="bg-primary shadow rounded-lg p-4 w-full">
                 <div className="p-4 mb-2 text-textPrimary text-lg font-bold flex justify-center">
                     {editMode && (
@@ -67,7 +59,10 @@ export default function RecipeDetail() {
                     </button>
                 </div>
                 {!editMode ? (
-                    <DefaultMode recipe={recipe} />
+                    <>
+                        <DefaultMode recipe={recipe} />
+                        <RecipeFooter recipe={recipe} />
+                    </>
                 ) : (
                     <EditMode recipe={recipe} setRecipe={handleSetRepice} />
                 )}
@@ -75,19 +70,21 @@ export default function RecipeDetail() {
         </div>
     ) : (
         <div className="w-full bg-bgColor p-6">
-            <div className="relative flex items-center w-full p-2">
-                <div className="flex items-center">
-                    <BackButton />
-                    <HomeButton />
-                    <h1 className="text-3xl font-bold text-textPrimary ml-2">
-                        Plan'Appétit
-                    </h1>
-                </div>
-            </div>
-            <div className="flex bg-primary p-4 rounded-lg">
-                <h2 className="text-textPrimary text-3xl font-bold text-center w-full">
-                    Recette introuvable
-                </h2>
+            <RecipeHeader />
+            <RecipeError />
+        </div>
+    )
+}
+
+function RecipeHeader() {
+    return (
+        <div className="relative flex items-center w-full p-2">
+            <div className="flex items-center">
+                <BackButton />
+                <HomeButton />
+                <h1 className="text-3xl font-bold text-textPrimary ml-2">
+                    Plan'Appétit
+                </h1>
             </div>
         </div>
     )
@@ -119,7 +116,6 @@ function EditMode({
 
     const handleAddStep = (updatedSteps: StepInterface[]) => {
         setRecipe({ ...recipe, steps: updatedSteps });
-        console.log("coucou", recipe)
     }
 
     return (
@@ -136,6 +132,24 @@ function EditMode({
                 setRecipeEditMode={setEditSteps}
                 onChange={handleAddStep}
             />
+        </div>
+    )
+}
+
+function RecipeFooter({ recipe }: { recipe: RecipeInterface }) {
+    return (
+        <div>
+            Footer {recipe.name}
+        </div>
+    )
+}
+
+function RecipeError() {
+    return (
+        <div className="flex bg-primary p-4 rounded-lg">
+            <h2 className="text-textPrimary text-3xl font-bold text-center w-full">
+                Recette introuvable
+            </h2>
         </div>
     )
 }

@@ -46,7 +46,7 @@ export default function Monitor() {
                 <OrbitControls />
 
                 {/* Chargement avec un fallback */}
-                <Suspense fallback={null}>
+                <Suspense fallback={<Loader />}>
                     <MonitorModel />
                 </Suspense>
 
@@ -60,6 +60,14 @@ export default function Monitor() {
                     Revenez sur un PC/tablette
                 </Text>
             </Canvas>
+        </div>
+    );
+}
+
+function Loader() {
+    return (
+        <div>
+            Revenez sur un PC/tablette
         </div>
     );
 }

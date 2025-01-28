@@ -4,17 +4,13 @@ import { Suspense, useRef } from 'react';
 import * as THREE from 'three';
 
 function MonitorModel() {
-    // Charger le modèle GLTF
     const { scene } = useGLTF('/models/Monitor.glb');
     const modelRef = useRef<THREE.Object3D>();
 
-    // Optionnel : Ajouter des logs pour déboguer le modèle
-    console.log(scene);
-
     useFrame((state) => {
-        const elapsedTime = state.clock.getElapsedTime(); // Temps écoulé en secondes
+        const elapsedTime = state.clock.getElapsedTime();
         if (modelRef.current) {
-            modelRef.current.rotation.y = (elapsedTime * Math.PI * 2) / 7; // Un tour en 7 secondes
+            modelRef.current.rotation.y = (elapsedTime * Math.PI * 2) / 7;
         }
     });
 
@@ -36,26 +32,23 @@ export default function Monitor() {
                 shadows
                 camera={{ position: [0, 0, 8], fov: 75 }}
             >
-                {/* Lumières */}
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[5, 10, 7]} intensity={3} castShadow />
                 <pointLight position={[10, 10, 10]} intensity={1} />
                 <hemisphereLight intensity={0.3} />
 
-                {/* Contrôles de caméra */}
                 <OrbitControls />
 
-                {/* Chargement avec un fallback */}
                 <Suspense fallback={null}>
                     <MonitorModel />
                 </Suspense>
 
                 <Text
-                    position={[0, -2, 0]} // Position sous le modèle
-                    fontSize={0.5} // Taille du texte
-                    color="black" // Couleur du texte
-                    anchorX="center" // Centre horizontalement
-                    anchorY="middle" // Centre verticalement
+                    position={[0, -2, 0]}
+                    fontSize={0.5}
+                    color="black"
+                    anchorX="center"
+                    anchorY="middle"
                 >
                     Revenez sur un PC/tablette
                 </Text>

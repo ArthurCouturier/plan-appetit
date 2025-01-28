@@ -38,7 +38,9 @@ export default function RecipeDetail() {
                             </button>
                         </Link>
                     )}
-                    <div className="overflow-hidden max-w-[70vw]">{recipe.name}</div>
+                    <div className="flex">
+                        <div className="overflow-hidden max-w-[70vw]">{recipe.name}</div>
+                    </div>
                     {editMode && (
                         <button
                             className="relative rotate-90 rounded-full bg-secondary p-1 mx-2 -translate-y-1"
@@ -51,6 +53,25 @@ export default function RecipeDetail() {
                         >
                             ✏️
                         </button>
+                    )}
+                    {editMode ? (
+                        <div className="ml-1">
+                            pour
+                            <input
+                                type="number"
+                                value={recipe.covers}
+                                min={0}
+                                max={99}
+                                onChange={(e) => {
+                                    const covers = parseInt(e.target.value);
+                                    handleSetRepice({ ...recipe, covers: !covers ? 0 : covers < 0 ? 0 : (covers > 99) ? 99 : covers });
+                                }}
+                                className="w-10 mx-1 text-center text-secondary"
+                            />
+                            pers.
+                        </div>
+                    ) : (
+                        <div className="ml-1">({recipe.covers} personne{recipe.covers > 1 && "s"})</div>
                     )}
                     <button
                         className="absolute right-20 -translate-y-3 bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-lg transition duration-200"
@@ -68,7 +89,7 @@ export default function RecipeDetail() {
                     <EditMode recipe={recipe} setRecipe={handleSetRepice} />
                 )}
             </div>
-        </div>
+        </div >
     ) : (
         <div className="w-full bg-bgColor p-6">
             <RecipeHeader />

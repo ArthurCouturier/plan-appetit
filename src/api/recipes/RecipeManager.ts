@@ -6,7 +6,6 @@ import { IngredientCategoryEnum } from "../enums/IngredientCategoryEnum";
 import { UnitEnum } from "../enums/UnitEnum";
 
 export default class RecipeManager {
-
     static getEmptyRecipe() {
         return {
             uuid: uuidv4(),

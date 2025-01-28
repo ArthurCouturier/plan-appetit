@@ -102,6 +102,19 @@ export function Step({
     );
 }
 
+function DefaultMode({
+    step
+}: {
+    step: StepInterface;
+}) {
+    return (
+        <div className="flex flex-col">
+            <h3 className="font-extrabold mb-1">Etape {step.key}:</h3>
+            <pre className="">{step.value}</pre>
+        </div>
+    )
+}
+
 function EditMode({
     step,
     onChange,
@@ -159,17 +172,4 @@ function EditMode({
             </div>
         </div>
     );
-}
-
-function DefaultMode({
-    step
-}: {
-    step: StepInterface;
-}) {
-    return (
-        <div className="flex flex-col">
-            <h3 className="font-extrabold mb-1">Etape {step.key}:</h3>
-            <pre className="text-white">{step.value}</pre>
-        </div>
-    )
 }

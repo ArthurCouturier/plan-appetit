@@ -9,6 +9,7 @@ import IngredientsList from "../components/lists/IngredientsList";
 import IngredientInterface from "../api/interfaces/recipes/IngredientInterface";
 import RecipeStepsList from "../components/lists/RecipeStepsList";
 import StepInterface from "../api/interfaces/recipes/StepInterface";
+import { ExportRecipeButton } from "../components/buttons/DataImportButtons";
 
 export default function RecipeDetail() {
 
@@ -138,8 +139,8 @@ function EditMode({
 
 function RecipeFooter({ recipe }: { recipe: RecipeInterface }) {
     return (
-        <div>
-            Footer {recipe.name}
+        <div className="mt-4">
+            <ExportRecipeButton recipe={recipe} />
         </div>
     )
 }

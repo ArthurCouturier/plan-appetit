@@ -37,12 +37,12 @@ export default function RecipeStepsList({
     };
 
     return (
-        <div className="border-2 border-textPrimary p-2 rounded-md mt-4">
+        <div className="border-2 border-text-primary p-2 rounded-md mt-4">
             <div className="flex justify-center items-center">
-                <h2 className="font-bold text-lg underline text-textPrimary">Préparation</h2>
+                <h2 className="font-bold text-lg underline text-text-primary">Préparation</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
-                        className={`bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-md m-2 transition duration-200`}
+                        className={`bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200`}
                         onClick={() => {
                             setRecipeEditMode?.(!recipeEditMode)
                             onChange?.(steps)
@@ -65,7 +65,7 @@ export default function RecipeStepsList({
             </div>
             {recipeEditMode &&
                 <button
-                    className="bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-md m-2 transition duration-200"
+                    className="bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"
                     onClick={handleAddStep}
                 >
                     Ajouter étape
@@ -158,13 +158,13 @@ function EditMode({
                 <textarea
                     ref={textareaRef}
                     value={step.value}
-                    className="w-full bg-bgColor text-textPrimary p-2 rounded-md resize-none overflow-y-hidden"
+                    className="w-full bg-bg-color text-text-primary p-2 rounded-md resize-none overflow-y-hidden"
                     rows={rows}
                     style={{ lineHeight: "24px" }}
                     onChange={(e) => handleChange(e.target.value)}
                 />
                 <button
-                    className="bg-cancel1 hover:bg-cancel2 text-textPrimary p-2 rounded-md transition duration-200 mx-2 my-auto h-min"
+                    className="bg-cancel-1 hover:bg-cancel-2 text-text-primary p-2 rounded-md transition duration-200 mx-2 my-auto h-min"
                     onClick={onRemove}
                 >
                     🗑

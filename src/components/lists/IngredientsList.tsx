@@ -44,12 +44,12 @@ export default function IngredientsList({
     };
 
     return (
-        <div className="border-2 border-textPrimary p-2 rounded-md mb-4">
+        <div className="border-2 border-text-primary p-2 rounded-md mb-4">
             <div className="flex justify-center items-center">
-                <h2 className="font-bold text-lg underline text-textPrimary">Ingredients</h2>
+                <h2 className="font-bold text-lg underline text-text-primary">Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
-                        className={`bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-md m-2 transition duration-200`}
+                        className={`bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200`}
                         onClick={() => setRecipeEditMode?.(!recipeEditMode)}
                     >
                         {recipeEditMode ? "Sauvegarder" : "Modifier"}
@@ -69,7 +69,7 @@ export default function IngredientsList({
             </div>
             {recipeEditMode &&
                 <button
-                    className="bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-md m-2 transition duration-200"
+                    className="bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"
                     onClick={handleAddIngredient}
                 >
                     Ajouter ingrédient
@@ -150,14 +150,14 @@ function EditMode({
 }) {
     return (
         <div className="flex my-1 text-gray-800">
-            <input className="mx-2 rounded-md bg-secondary border-2 border-borderColor opacity-80 text-opacity-100 text-textPrimary px-1" type="text" value={ingredient.name} onChange={setName} />
+            <input className="mx-2 rounded-md bg-secondary border-2 border-border-color opacity-80 text-opacity-100 text-text-primary px-1" type="text" value={ingredient.name} onChange={setName} />
             {/* <input type="number" value={ingredient.category} onChange={setCategory} />
             <input type="number" value={ingredient.season} onChange={setSeason} /> */}
             <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} />
             {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
             <UnitSelector actualUnit={ingredient.quantity.unit} onChange={setQuantityUnit} />
             <button
-                className="bg-cancel1 hover:bg-cancel2 text-textPrimary p-1 rounded-md m-2 transition duration-200"
+                className="bg-cancel-1 hover:bg-cancel-2 text-text-primary p-1 rounded-md m-2 transition duration-200"
                 onClick={onRemove}
             >
                 Remove

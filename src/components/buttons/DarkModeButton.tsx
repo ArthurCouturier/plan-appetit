@@ -8,7 +8,7 @@ export default function DarkModeButton({
     return (
         <button
             onClick={changeMode}
-            className="fixed top-4 right-4 w-12 h-12 flex items-center justify-center rounded-full border border-gray-300 bg-bgColor shadow-lg"
+            className="fixed top-4 right-4 w-12 h-12 flex items-center justify-center rounded-full border border-gray-300 bg-bg-color shadow-lg"
         >
             {/* Sun */}
             {mode === "theme1" ? (
@@ -34,7 +34,7 @@ export default function DarkModeButton({
                 /* Moon */
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="w-6 h-6 text-textSecondary translate-x-[-2px] translate-y-[2px]"
+                    className="w-6 h-6 text-text-secondary translate-x-[-2px] translate-y-[2px]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

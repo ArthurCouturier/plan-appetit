@@ -82,15 +82,15 @@ function DefaultMode({
 
     return (
         <button
-            className="flex-1 bg-secondary border-4 border-borderColor rounded-md p-3 hover:scale-[0.98] transition duration-200"
+            className="flex-1 bg-secondary border-4 border-border-color rounded-md p-3 hover:scale-[0.98] transition duration-200"
             onClick={() => setEditMode(true)}
         >
-            <h3 className="text-lg font-medium text-textSecondary mb-2">
+            <h3 className="text-lg font-medium text-text-secondary mb-2">
                 {name}
             </h3>
             <div className="space-y-2">
-                <div className="my-2 rounded border-2 border-borderColor p-2">
-                    <h3 className="text-textSecondary text-left pb-3">Service du midi ☀️</h3>
+                <div className="my-2 rounded-sm border-2 border-border-color p-2">
+                    <h3 className="text-text-secondary text-left pb-3">Service du midi ☀️</h3>
                     <Meal
                         covers={day.meals[0].covers}
                         starterPrice={day.meals[0].starterPrice}
@@ -99,8 +99,8 @@ function DefaultMode({
                         drinkPrice={day.meals[0].drinkPrice}
                         editMode={false} />
                 </div>
-                <div className="my-2 rounded border-2 border-borderColor p-2">
-                    <h3 className="text-textSecondary text-left pb-3">Service du soir 🌙</h3>
+                <div className="my-2 rounded-sm border-2 border-border-color p-2">
+                    <h3 className="text-text-secondary text-left pb-3">Service du soir 🌙</h3>
                     <Meal
                         covers={day.meals[1].covers}
                         starterPrice={day.meals[1].starterPrice}
@@ -155,15 +155,15 @@ function EditMode({
 
     return (
         <div
-            className={`${bgColor} border-4 border-borderColor rounded-lg p-5 shadow-md transition duration-300 flex-1`}
+            className={`${bgColor} border-4 border-border-color rounded-lg p-5 shadow-md transition duration-300 flex-1`}
         >
-            <h3 className="text-xl font-semibold text-textPrimary mb-4 text-center">
+            <h3 className="text-xl font-semibold text-text-primary mb-4 text-center">
                 {day.name} (Modif)
             </h3>
 
             <div className="space-y-4">
-                <div className="bg-bgColor rounded-lg p-4 shadow hover:shadow-lg transition duration-200">
-                    <h3 className="text-textSecondary text-left pb-3">Service du midi ☀️</h3>
+                <div className="bg-bg-color rounded-lg p-4 shadow-sm hover:shadow-lg transition duration-200">
+                    <h3 className="text-text-secondary text-left pb-3">Service du midi ☀️</h3>
                     <Meal
                         covers={mealsState[0].covers}
                         starterPrice={mealsState[0].starterPrice}
@@ -173,8 +173,8 @@ function EditMode({
                         editMode={true}
                         onChange={(updatedMeal: MealInterface) => handleMealChange(0, updatedMeal)} />
                 </div>
-                <div className="bg-bgColor rounded-lg p-4 shadow hover:shadow-lg transition duration-200">
-                    <h3 className="text-textSecondary text-left pb-3">Service du soir 🌙</h3>
+                <div className="bg-bg-color rounded-lg p-4 shadow-sm hover:shadow-lg transition duration-200">
+                    <h3 className="text-text-secondary text-left pb-3">Service du soir 🌙</h3>
                     <Meal
                         covers={mealsState[1].covers}
                         starterPrice={mealsState[1].starterPrice}
@@ -188,24 +188,24 @@ function EditMode({
 
             <div className="mt-6 flex justify-center gap-6">
                 <button
-                    className="bg-confirmation1 text-white font-medium px-6 py-2 rounded-lg shadow-md hover:bg-indigo-600 hover:shadow-lg focus:ring focus:ring-indigo-300 transition duration-300"
+                    className="bg-confirmation-1 text-white font-medium px-6 py-2 rounded-lg shadow-md hover:bg-indigo-600 hover:shadow-lg focus:ring-3 focus:ring-indigo-300 transition duration-300"
                     onClick={() => {
                         saveConfig(mealsState);
                         setEditMode(false);
                     }}
-                    onMouseEnter={() => setBgColor("bg-confirmation2")}
+                    onMouseEnter={() => setBgColor("bg-confirmation-2")}
                     onMouseLeave={() => setBgColor("bg-secondary")}
                 >
                     Sauvegarder
                 </button>
 
                 <button
-                    className="bg-cancel1 text-white font-medium px-6 py-2 rounded-lg shadow-md hover:bg-red-600 hover:shadow-lg focus:ring focus:ring-gray-200 transition duration-300"
+                    className="bg-cancel-1 text-white font-medium px-6 py-2 rounded-lg shadow-md hover:bg-red-600 hover:shadow-lg focus:ring-3 focus:ring-gray-200 transition duration-300"
                     onClick={() => {
                         setMealsState(day.meals);
                         setEditMode(false);
                     }}
-                    onMouseEnter={() => setBgColor("bg-cancel2")}
+                    onMouseEnter={() => setBgColor("bg-cancel-2")}
                     onMouseLeave={() => setBgColor("bg-secondary")}
                 >
                     Annuler

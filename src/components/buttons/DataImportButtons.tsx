@@ -67,7 +67,7 @@ export function ExportConfigurationButton() {
     return (
         <button
             onClick={handleExport}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-sm"
         >
             Export
         </button>
@@ -95,7 +95,7 @@ export function ImportConfigurationButton({
         <>
             <button
                 onClick={handleImportClick}
-                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2"
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-sm mr-2"
             >
                 Import
             </button>
@@ -120,7 +120,7 @@ export function ExportRecipeButton({ recipe }: { recipe: RecipeInterface }) {
     return (
         <button
             onClick={handleExport}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-sm"
         >
             Exporter la recette
         </button>

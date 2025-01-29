@@ -18,7 +18,7 @@ export default function UnitSelector({
                     setUnit(e.target.value as UnitEnum);
                     onChange(e.target.value as UnitEnum);
                 }}
-                className="border border-gray-200 rounded-sm p-1 w-28 text-center"
+                className="border border-gray-200 rounded-sm p-1 w-28 text-center bg-secondary text-text-secondary"
             >
                 {Object.values(UnitEnum).map((unit) => (
                     <option key={unit} value={unit}>

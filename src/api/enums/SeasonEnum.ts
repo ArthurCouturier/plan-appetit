@@ -3,4 +3,5 @@ export enum SeasonEnum {
     SPRING = "Printemps",
     SUMMER = "Été",
     FALL = "Automne",
+    ALL = "Toute saison"
 }

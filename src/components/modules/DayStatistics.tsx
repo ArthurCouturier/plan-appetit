@@ -24,7 +24,7 @@ export default function DayStatistics({
 
     return (
         <ModuleCard moduleName="">
-            <div className="text-textSecondary my-2 h-full">
+            <div className="text-text-secondary my-2 h-full">
                 <div className="mt-2">
                     <SubPart title="C.A. de la journée 💰">
                         <div className="grid grid-cols-2 items-center text-right">

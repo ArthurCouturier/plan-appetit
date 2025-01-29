@@ -1,6 +1,39 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-thirdary: var(--thirdary);
+  --color-bg-color: var(--bg-color);
+  --color-cout-yellow: var(--cout-yellow);
+  --color-cout-purple: var(--cout-purple);
+  --color-cout-base: var(--cout-base);
+  --color-border-color: var(--border-color);
+  --color-confirmation-1: var(--confirmation-1);
+  --color-cancel-1: var(--cancel-1);
+  --color-confirmation-2: var(--confirmation-2);
+  --color-cancel-2: var(--cancel-2);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
 
 :root {
   background-color: rgb(165 180 252);
@@ -27,36 +60,36 @@ input[type="number"] {
 
 /* Thème 1 */
 .theme1 {
-  --coutYellow: #f4cf77;
-  --coutPurple: #2f2e6e;
-  --coutBase: #a5b4fc;
-  --bgColor: #f3f4f6; /* gray-100 */
+  --cout-yellow: #f4cf77;
+  --cout-purple: #2f2e6e;
+  --cout-base: #a5b4fc;
+  --bg-color: #f3f4f6; /* gray-100 */
   --primary: #ffffff; /* white */
-  --textPrimary: #1f2937; /* gray-800 */
+  --text-primary: #1f2937; /* gray-800 */
   --secondary: #f9fafb; /* gray-50 */
-  --textSecondary: #374151; /* gray-700 */
+  --text-secondary: #374151; /* gray-700 */
   --thirdary: #d1d5db; /* gray-300 */
-  --borderColor: #e5e7eb; /* gray-200 */
-  --confirmation1: #a5b4fc; /* indigo-300 */
-  --cancel1: #fca5a5; /* red-300 */
-  --confirmation2: #818cf8; /* indigo-400 */
-  --cancel2: #f87171; /* red-400 */
+  --border-color: #e5e7eb; /* gray-200 */
+  --confirmation-1: #a5b4fc; /* indigo-300 */
+  --cancel-1: #fca5a5; /* red-300 */
+  --confirmation-2: #818cf8; /* indigo-400 */
+  --cancel-2: #f87171; /* red-400 */
 }
 
 /* Thème 2 */
 .theme2 {
-  --coutYellow: #f4cf77;
-  --coutPurple: #2f2e6e;
-  --coutBase: #a5b4fc;
-  --bgColor: #1f2937; /* gray-800 */
+  --cout-yellow: #f4cf77;
+  --cout-purple: #2f2e6e;
+  --cout-base: #a5b4fc;
+  --bg-color: #1f2937; /* gray-800 */
   --primary: #111827; /* gray-900 */
-  --textPrimary: #f3f4f6; /* gray-100 */
+  --text-primary: #f3f4f6; /* gray-100 */
   --secondary: #374151; /* gray-700 */
-  --textSecondary: #d1d5db; /* gray-300 */
+  --text-secondary: #d1d5db; /* gray-300 */
   --thirdary: #4b5563; /* gray-600 */
-  --borderColor: #6b7280; /* gray-500 */
-  --confirmation1: #6366f1; /* indigo-500 */
-  --cancel1: #ef4444; /* red-500 */
-  --confirmation2: #4338ca; /* indigo-700 */
-  --cancel2: #b91c1c; /* red-700 */
+  --border-color: #6b7280; /* gray-500 */
+  --confirmation-1: #6366f1; /* indigo-500 */
+  --cancel-1: #ef4444; /* red-500 */
+  --confirmation-2: #4338ca; /* indigo-700 */
+  --cancel-2: #b91c1c; /* red-700 */
 }

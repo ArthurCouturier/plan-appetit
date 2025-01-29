@@ -24,14 +24,14 @@ export default function RecipeDetail() {
     }
 
     return recipe ? (
-        <div className="w-full bg-bgColor p-6">
+        <div className="w-full bg-bg-color p-6">
             <RecipeHeader />
-            <div className="bg-primary shadow rounded-lg p-4 w-full">
-                <div className="p-4 mb-2 text-textPrimary text-lg font-bold flex justify-center">
+            <div className="bg-primary shadow-sm rounded-lg p-4 w-full">
+                <div className="p-4 mb-2 text-text-primary text-lg font-bold flex justify-center">
                     {editMode && (
                         <Link to={"/recettes"}>
                             <button
-                                className="absolute left-20 -translate-y-3 bg-cancel1 hover:bg-cancel2 text-textPrimary p-2 rounded-lg transition duration-200"
+                                className="absolute left-20 -translate-y-3 bg-cancel-1 hover:bg-cancel-2 text-text-primary p-2 rounded-lg transition duration-200"
                                 onClick={() => RecipeManager.deleteRecipe(recipe.uuid)}
                             >
                                 Supprimer
@@ -43,7 +43,7 @@ export default function RecipeDetail() {
                     </div>
                     {editMode && (
                         <button
-                            className="relative rotate-90 rounded-full bg-secondary p-1 mx-2 -translate-y-1"
+                            className="relative rotate-90 rounded-full bg-thirdary p-1 mx-2 -translate-y-1"
                             onClick={() => {
                                 const newRecipe = RecipeManager.changeRecipeName(recipe.uuid);
                                 if (newRecipe) {
@@ -66,7 +66,7 @@ export default function RecipeDetail() {
                                     const covers = parseInt(e.target.value);
                                     handleSetRepice({ ...recipe, covers: !covers ? 0 : covers < 0 ? 0 : (covers > 99) ? 99 : covers });
                                 }}
-                                className="w-10 mx-1 text-center text-secondary"
+                                className="w-10 mx-1 text-center bg-thirdary text-text-secondary"
                             />
                             pers.
                         </div>
@@ -74,7 +74,7 @@ export default function RecipeDetail() {
                         <div className="ml-1">({recipe.covers} personne{recipe.covers > 1 && "s"})</div>
                     )}
                     <button
-                        className="absolute right-20 -translate-y-3 bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 rounded-lg transition duration-200"
+                        className="absolute right-20 -translate-y-3 bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-lg transition duration-200"
                         onClick={() => setEditMode(!editMode)}
                     >
                         {editMode ? "Sauvegarder" : "Modifier"}
@@ -91,7 +91,7 @@ export default function RecipeDetail() {
             </div>
         </div >
     ) : (
-        <div className="w-full bg-bgColor p-6">
+        <div className="w-full bg-bg-color p-6">
             <RecipeHeader />
             <RecipeError />
         </div>
@@ -104,7 +104,7 @@ function RecipeHeader() {
             <div className="flex items-center">
                 <BackButton />
                 <HomeButton />
-                <h1 className="text-3xl font-bold text-textPrimary ml-2">
+                <h1 className="text-3xl font-bold text-text-primary ml-2">
                     Plan'Appétit
                 </h1>
             </div>
@@ -114,7 +114,7 @@ function RecipeHeader() {
 
 function DefaultMode({ recipe }: { recipe: RecipeInterface }) {
     return (
-        <div className="w-full bg-secondary text-textSecondary p-6 rounded-md">
+        <div className="w-full bg-secondary text-text-secondary p-6 rounded-md">
             <IngredientsList ingredients={recipe.ingredients} />
             <RecipeStepsList steps={recipe.steps} />
         </div>
@@ -141,7 +141,7 @@ function EditMode({
     }
 
     return (
-        <div className="w-full bg-secondary text-textSecondary p-6 rounded-md">
+        <div className="w-full bg-secondary text-text-secondary p-6 rounded-md">
             <IngredientsList
                 ingredients={recipe.ingredients}
                 recipeEditMode={editIngredients}
@@ -169,7 +169,7 @@ function RecipeFooter({ recipe }: { recipe: RecipeInterface }) {
 function RecipeError() {
     return (
         <div className="flex bg-primary p-4 rounded-lg">
-            <h2 className="text-textPrimary text-3xl font-bold text-center w-full">
+            <h2 className="text-text-primary text-3xl font-bold text-center w-full">
                 Recette introuvable
             </h2>
         </div>

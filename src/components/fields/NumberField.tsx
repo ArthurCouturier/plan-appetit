@@ -21,7 +21,7 @@ export default function NumberField({ label, value, onChange, min = 0, max = 999
 
     return (
         <div className="flex items-center space-x-2">
-            <label htmlFor="number" className="text-sm text-textSecondary">{label}</label>
+            <label htmlFor="number" className="text-sm text-text-secondary">{label}</label>
             <input
                 type="number"
                 id="number"
@@ -32,26 +32,26 @@ export default function NumberField({ label, value, onChange, min = 0, max = 999
                     const newValue = Math.min(Math.max(Number(e.target.value), min), max);
                     onChange(newValue);
                 }}
-                className="border border-gray-200 rounded p-1 w-16 text-center"
+                className="border border-gray-200 rounded-sm p-1 w-16 text-center bg-secondary text-text-secondary"
             />
             <button
                 type="button"
                 onClick={increment}
-                className="border border-gray-300 rounded px-2 py-1 text-sm bg-green-200 hover:bg-green-400 transition duration-200"
+                className="border border-gray-300 rounded-sm px-2 py-1 text-sm bg-green-200 hover:bg-green-400 transition duration-200"
             >
                 +
             </button>
             <button
                 type="button"
                 onClick={decrement}
-                className="border border-gray-300 rounded px-2 py-1 text-sm bg-red-200 hover:bg-red-400 transition duration-200"
+                className="border border-gray-300 rounded-sm px-2 py-1 text-sm bg-red-200 hover:bg-red-400 transition duration-200"
             >
                 -
             </button>
             <button
                 type="button"
                 onClick={zero}
-                className="border border-gray-300 rounded px-2 py-1 text-sm bg-gray-300 hover:bg-gray-400 transition duration-200"
+                className="border border-gray-300 rounded-sm px-2 py-1 text-sm bg-gray-300 hover:bg-gray-400 transition duration-200"
             >
                 0
             </button>

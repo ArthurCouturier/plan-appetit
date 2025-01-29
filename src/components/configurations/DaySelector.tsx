@@ -12,7 +12,7 @@ export default function DaySelector({
     return (
         <div className="flex justify-center items-center">
             <select
-                className="border-2 border-borderColor bg-primary rounded-md p-2"
+                className="border-2 border-border-color bg-primary rounded-md p-2"
                 value={selectedDay.name}
                 onChange={(e) => {
                     const selected = days.find(day => day.name === e.target.value);

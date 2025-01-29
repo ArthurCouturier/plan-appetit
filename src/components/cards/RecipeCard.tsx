@@ -9,7 +9,7 @@ export default function RecipeCard({
 
     return (
         <Link to={`/recettes/${recipe.uuid}`}>
-            <div className="bg-secondary text-textPrimary p-2 rounded-md m-2 border-4 border-borderColor aspect-square hover:scale-95 transition duration-200">
+            <div className="bg-secondary text-text-primary p-2 rounded-md m-2 border-4 border-border-color aspect-square hover:scale-95 transition duration-200">
                 <h3 className="font-bold underline text-lg overflow-auto">{recipe.name}</h3>
                 <p>pour {recipe.covers} pers.</p>
                 <p>achat {recipe.buyPrice}€</p>

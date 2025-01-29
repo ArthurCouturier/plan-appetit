@@ -13,16 +13,16 @@ export default function Recipes() {
     // }
 
     return (
-        <div className="w-full bg-bgColor p-6">
+        <div className="w-full bg-bg-color p-6">
             <div className="relative flex items-center w-full p-2">
                 <div className="flex items-center">
                     <HomeButton />
-                    <h1 className="text-3xl font-bold text-textPrimary ml-2">
+                    <h1 className="text-3xl font-bold text-text-primary ml-2">
                         Plan'Appétit
                     </h1>
                 </div>
 
-                <h2 className="text-3xl font-bold text-textPrimary text-center
+                <h2 className="text-3xl font-bold text-text-primary text-center
                                absolute left-1/2 -translate-x-1/2">
                     Livre des recettes
                 </h2>
@@ -30,7 +30,7 @@ export default function Recipes() {
 
             <div className="grid grid-cols-5 bg-primary p-4 rounded-lg">
                 <button
-                    className="bg-confirmation1 hover:bg-confirmation2 text-textPrimary p-2 aspect-square rounded-md m-2 transition duration-200"
+                    className="bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200"
                     onClick={() => {
                         RecipeManager.addEmptyRecipe();
                         setRecipes(RecipeManager.fetchRecipes());

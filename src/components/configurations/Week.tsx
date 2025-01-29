@@ -20,9 +20,9 @@ export default function Week({
     const [activeEditDay, setActiveEditDay] = useState<string | null>(null);
 
     return (
-        <div key={config.week.name} className="bg-primary shadow rounded-lg p-4 w-full">
+        <div key={config.week.name} className="bg-primary shadow-sm rounded-lg p-4 w-full">
             <h2
-                className="text-xl font-semibold text-textSecondary mb-3 flex items-center justify-center"
+                className="text-xl font-semibold text-text-secondary mb-3 flex items-center justify-center"
                 onClick={handleOpen}
             >
                 {config.name}

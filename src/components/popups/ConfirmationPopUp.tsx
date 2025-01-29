@@ -22,13 +22,13 @@ export default function ConfirmationPopUp({
                 <p className="text-gray-600 mb-6">{message}</p>
                 <div className="flex justify-end space-x-4">
                     <button
-                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-sm hover:bg-gray-300"
                         onClick={onCancel}
                     >
                         Cancel
                     </button>
                     <button
-                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                        className="px-4 py-2 bg-red-600 text-white rounded-sm hover:bg-red-700"
                         onClick={onConfirm}
                     >
                         Delete

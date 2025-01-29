@@ -78,7 +78,7 @@ function DefaultMode({
     }, [covers, mainCoursePrice, drinkPrice]);
 
     return (
-        <div className="flex justify-between items-center text-sm text-textSecondary">
+        <div className="flex justify-between items-center text-sm text-text-secondary">
             <div className="flex">
                 <p className="mr-4">Couverts: {covers}</p>
                 <p className="mr-4">Entrée: {starterPrice}</p>
@@ -117,16 +117,16 @@ function EditMode({
     setDrinkPrice: (value: number) => void;
 }) {
     return (
-        <div className="grid grid-cols-[auto,1fr] gap-x-2 gap-y-2 w-fit items-center">
-            <p className="text-sm text-textSecondary text-right">Couverts</p>
+        <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-2 w-fit items-center">
+            <p className="text-sm text-text-secondary text-right">Couverts</p>
             <NumberField label="" value={covers} onChange={setCovers} min={0} max={9999} />
-            <p className="text-sm text-textSecondary text-right">Entrée</p>
+            <p className="text-sm text-text-secondary text-right">Entrée</p>
             <NumberField label="" value={starterPrice} onChange={setStarterPrice} min={0} max={9999} />
-            <p className="text-sm text-textSecondary text-right">Plat</p>
+            <p className="text-sm text-text-secondary text-right">Plat</p>
             <NumberField label="" value={mainCoursePrice} onChange={setMainCoursePrice} min={0} max={9999} />
-            <p className="text-sm text-textSecondary text-right">Dessert</p>
+            <p className="text-sm text-text-secondary text-right">Dessert</p>
             <NumberField label="" value={dessertPrice} onChange={setDessertPrice} min={0} max={9999} />
-            <p className="text-sm text-textSecondary text-right">Boisson</p>
+            <p className="text-sm text-text-secondary text-right">Boisson</p>
             <NumberField label="" value={drinkPrice} onChange={setDrinkPrice} min={0} max={9999} />
         </div>
     );

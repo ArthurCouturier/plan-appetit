@@ -31,7 +31,7 @@ export default function IngredientsList({
             uuid: uuidv4(),
             name: "Ingrédient" + String(ingredients.length + 1),
             category: IngredientCategoryEnum.CEREAL,
-            season: SeasonEnum.FALL,
+            season: [SeasonEnum.FALL],
             quantity: {
                 value: 0,
                 unit: UnitEnum.CENTILITER
@@ -97,7 +97,7 @@ export function Ingredient({
         onChange?.({ ...ingredient, name: e.target.value });
     };
 
-    const handleSeasonChange = (newSeason: SeasonEnum) => {
+    const handleSeasonChange = (newSeason: SeasonEnum[]) => {
         onChange?.({ ...ingredient, season: newSeason });
     };
 
@@ -142,7 +142,7 @@ function DefaultMode({
     return (
         <li className="flex">
             <ul className="p-1">
-                <SeasonDisplayer season={ingredient.season} />
+                <SeasonDisplayer seasons={ingredient.season} />
             </ul>
             <ul className="p-1">{ingredient.name}:</ul>
             <ul className="p-1">{ingredient.quantity.value}</ul>
@@ -167,7 +167,7 @@ function EditMode({
     ingredient: IngredientInterface;
     setName: (e: ChangeEvent<HTMLInputElement>) => void;
     setCategory: (e: ChangeEvent<HTMLInputElement>) => void;
-    setSeason: (season: SeasonEnum) => void;
+    setSeason: (season: SeasonEnum[]) => void;
     setQuantityValue: (n: number) => void;
     setQuantityUnit: (newUnit: UnitEnum) => void;
     onRemove?: () => void;

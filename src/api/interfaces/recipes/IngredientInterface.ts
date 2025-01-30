@@ -7,6 +7,6 @@ export default interface IngredientInterface {
     uuid: UUIDTypes;
     name: string;
     category: IngredientCategoryEnum;
-    season: SeasonEnum;
+    season: SeasonEnum[];
     quantity: QuantityInterface;
 }

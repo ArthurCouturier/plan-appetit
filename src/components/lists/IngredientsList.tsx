@@ -6,6 +6,8 @@ import { IngredientCategoryEnum } from "../../api/enums/IngredientCategoryEnum";
 import { v4 as uuidv4 } from "uuid";
 import NumberField from "../fields/NumberField";
 import UnitSelector from "../selectors/UnitSelector";
+import SeasonSelector from "../selectors/SeasonSelector";
+import SeasonDisplayer, { SeasonDisplayerExplaination } from "../displayers/SeasonDisplayer";
 
 export default function IngredientsList({
     ingredients,
@@ -29,7 +31,7 @@ export default function IngredientsList({
             uuid: uuidv4(),
             name: "Ingrédient" + String(ingredients.length + 1),
             category: IngredientCategoryEnum.CEREAL,
-            season: SeasonEnum.FALL,
+            season: [SeasonEnum.FALL],
             quantity: {
                 value: 0,
                 unit: UnitEnum.CENTILITER
@@ -45,6 +47,7 @@ export default function IngredientsList({
 
     return (
         <div className="border-2 border-text-primary p-2 rounded-md mb-4">
+            <SeasonDisplayerExplaination />
             <div className="flex justify-center items-center">
                 <h2 className="font-bold text-lg underline text-text-primary">Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
@@ -94,8 +97,8 @@ export function Ingredient({
         onChange?.({ ...ingredient, name: e.target.value });
     };
 
-    const handleSeasonChange = () => {
-        onChange?.({ ...ingredient, season: SeasonEnum.FALL });
+    const handleSeasonChange = (newSeason: SeasonEnum[]) => {
+        onChange?.({ ...ingredient, season: newSeason });
     };
 
     const handleQuantityValueChange = (number: number) => {
@@ -131,11 +134,32 @@ export function Ingredient({
     );
 }
 
+function DefaultMode({
+    ingredient,
+}: {
+    ingredient: IngredientInterface;
+}) {
+    return (
+        <li className="flex">
+            <ul className="p-1">
+                <SeasonDisplayer seasons={ingredient.season} />
+            </ul>
+            <ul className="p-1">{ingredient.name}:</ul>
+            <ul className="p-1">{ingredient.quantity.value}</ul>
+            <ul className="p-1">
+                {!(ingredient.quantity.unit == UnitEnum.NONE) ? ingredient.quantity.unit : ""}
+                {ingredient.quantity.value > 1 ? "s" : ""}
+            </ul>
+            {/* <p className="p-1">{ingredient.category}</p> */}
+        </li>
+    );
+}
+
 function EditMode({
     ingredient,
     setName,
     // setCategory,
-    // setSeason,
+    setSeason,
     setQuantityValue,
     setQuantityUnit,
     onRemove,
@@ -143,16 +167,16 @@ function EditMode({
     ingredient: IngredientInterface;
     setName: (e: ChangeEvent<HTMLInputElement>) => void;
     setCategory: (e: ChangeEvent<HTMLInputElement>) => void;
-    setSeason: (e: ChangeEvent<HTMLInputElement>) => void;
+    setSeason: (season: SeasonEnum[]) => void;
     setQuantityValue: (n: number) => void;
     setQuantityUnit: (newUnit: UnitEnum) => void;
     onRemove?: () => void;
 }) {
     return (
         <div className="flex my-1 text-gray-800">
+            <SeasonSelector initialSeason={ingredient.season} onChange={setSeason} />
             <input className="mx-2 rounded-md bg-secondary border-2 border-border-color opacity-80 text-opacity-100 text-text-primary px-1" type="text" value={ingredient.name} onChange={setName} />
-            {/* <input type="number" value={ingredient.category} onChange={setCategory} />
-            <input type="number" value={ingredient.season} onChange={setSeason} /> */}
+            {/* <input type="number" value={ingredient.category} onChange={setCategory} /> */}
             <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} />
             {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
             <UnitSelector actualUnit={ingredient.quantity.unit} onChange={setQuantityUnit} />
@@ -163,21 +187,5 @@ function EditMode({
                 Remove
             </button>
         </div>
-    );
-}
-
-function DefaultMode({
-    ingredient,
-}: {
-    ingredient: IngredientInterface;
-}) {
-    return (
-        <li className="flex">
-            <ul className="p-1">{ingredient.name}:</ul>
-            <ul className="p-1">{ingredient.quantity.value}</ul>
-            <ul className="p-1">{!(ingredient.quantity.unit == UnitEnum.NONE) ? ingredient.quantity.unit : ""}</ul>
-            {/* <p className="p-1">{ingredient.category}</p>
-            <p className="p-1">{ingredient.season}</p> */}
-        </li>
     );
 }

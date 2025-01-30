@@ -10,7 +10,7 @@ export default class RecipeManager {
         return {
             uuid: uuidv4(),
             name: "Nouvelle recette",
-            ingredients: [{ uuid: uuidv4(), name: "Ingrédient", category: IngredientCategoryEnum.CEREAL, season: SeasonEnum.FALL, quantity: { value: 0, unit: UnitEnum.CENTILITER } }],
+            ingredients: [{ uuid: uuidv4(), name: "Ingrédient", category: IngredientCategoryEnum.CEREAL, season: [], quantity: { value: 0, unit: UnitEnum.CENTILITER } }],
             covers: 0,
             buyPrice: 0,
             sellPrice: 0,

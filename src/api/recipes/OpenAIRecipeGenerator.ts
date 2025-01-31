@@ -44,7 +44,7 @@ const Recipe = z.object({
 
 export type RecipeType = z.infer<typeof Recipe>;
 
-export async function getRecipe(): Promise<RecipeType> {
+export async function generateRecipe(): Promise<RecipeType> {
     const openai = new OpenAI({
         apiKey: import.meta.env.VITE_OPENAI_API_KEY,
         dangerouslyAllowBrowser: true,

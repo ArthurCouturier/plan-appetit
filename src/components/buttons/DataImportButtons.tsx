@@ -1,5 +1,7 @@
 import { ChangeEvent, useRef } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
+import RecipeManager from "../../api/recipes/RecipeManager";
+import { ImportRecipeButtonDetail } from "./NewRecipeButton";
 
 function exportData(datakey: string, uuid?: string, name?: string) {
     const storedData = localStorage.getItem(datakey);
@@ -142,37 +144,12 @@ export function ExportOpenAIRecipeButton() {
     );
 };
 
-function importRecipe(fetchRecipes: () => RecipeInterface[], file: File, setRecipes: (recipes: RecipeInterface[]) => void): RecipeInterface[] {
-    const reader = new FileReader();
-    const recipes: RecipeInterface[] = fetchRecipes() as RecipeInterface[];
-
-    reader.onload = (event) => {
-        const fileText = event.target?.result as string;
-        const jsonData = JSON.parse(fileText);
-
-        recipes.push(jsonData);
-        localStorage.setItem("recipes", JSON.stringify(recipes));
-
-        alert(`Importation réussie ! Les données ont été enregistrées dans localStorage (clé 'recipes').`);
-        setRecipes(recipes);
-        return recipes;
-    };
-
-    reader.onerror = (event) => {
-        alert('Une erreur est survenue lors de la lecture du fichier.');
-        console.error(event);
-    };
-
-    reader.readAsText(file);
-    return recipes;
-}
-
 export function ImportRecipeButton({
-    fetchRecipes,
-    setRecipes
+    setRecipes,
+    disabled
 }: {
-    fetchRecipes: () => RecipeInterface[];
     setRecipes: (recipes: RecipeInterface[]) => void;
+    disabled: boolean;
 }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -183,17 +160,12 @@ export function ImportRecipeButton({
     const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-        importRecipe(fetchRecipes, file, setRecipes);
+        RecipeManager.importRecipe(file, setRecipes);
     };
 
     return (
         <>
-            <button
-                onClick={handleImportClick}
-                className="bg-green-500 hover:bg-green-600 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200"
-            >
-                Importer une recette
-            </button>
+            <ImportRecipeButtonDetail handleImportClick={handleImportClick} disabled={disabled} />
 
             <input
                 type="file"

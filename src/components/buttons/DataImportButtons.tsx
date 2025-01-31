@@ -126,3 +126,82 @@ export function ExportRecipeButton({ recipe }: { recipe: RecipeInterface }) {
         </button>
     );
 };
+
+export function ExportOpenAIRecipeButton() {
+    const handleExport = () => {
+        exportData('recipe_ai');
+    };
+
+    return (
+        <button
+            onClick={handleExport}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-sm"
+        >
+            Exporter la recette générée
+        </button>
+    );
+};
+
+function importRecipe(fetchRecipes: () => RecipeInterface[], file: File, setRecipes: (recipes: RecipeInterface[]) => void): RecipeInterface[] {
+    const reader = new FileReader();
+    const recipes: RecipeInterface[] = fetchRecipes() as RecipeInterface[];
+
+    reader.onload = (event) => {
+        const fileText = event.target?.result as string;
+        const jsonData = JSON.parse(fileText);
+
+        recipes.push(jsonData);
+        localStorage.setItem("recipes", JSON.stringify(recipes));
+
+        alert(`Importation réussie ! Les données ont été enregistrées dans localStorage (clé 'recipes').`);
+        setRecipes(recipes);
+        return recipes;
+    };
+
+    reader.onerror = (event) => {
+        alert('Une erreur est survenue lors de la lecture du fichier.');
+        console.error(event);
+    };
+
+    reader.readAsText(file);
+    return recipes;
+}
+
+export function ImportRecipeButton({
+    fetchRecipes,
+    setRecipes
+}: {
+    fetchRecipes: () => RecipeInterface[];
+    setRecipes: (recipes: RecipeInterface[]) => void;
+}) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        importRecipe(fetchRecipes, file, setRecipes);
+    };
+
+    return (
+        <>
+            <button
+                onClick={handleImportClick}
+                className="bg-green-500 hover:bg-green-600 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200"
+            >
+                Importer une recette
+            </button>
+
+            <input
+                type="file"
+                accept="application/json"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+            />
+        </>
+    );
+}

@@ -20,8 +20,6 @@ export default function Planning() {
         const config = Configurator.getConfigByUuid(lastConfigViewedNumber);
         setLastConfigViewedNumber(config.uuid);
         setActualConfig(config);
-        console.log("configs", configs);
-        console.log("actual config", actualConfig);
     }
 
     const handleSaveConfig = (config: ConfigurationInterface) => {

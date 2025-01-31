@@ -3,6 +3,7 @@ import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import { useState } from "react";
 import RecipeManager from "../api/recipes/RecipeManager";
 import RecipeCard from "../components/cards/RecipeCard";
+import { ImportRecipeButton } from "../components/buttons/DataImportButtons";
 
 export default function Recipes() {
 
@@ -38,6 +39,11 @@ export default function Recipes() {
                 >
                     Ajouter une recette
                 </button>
+                <ImportRecipeButton fetchRecipes={() => {
+                    return RecipeManager.fetchRecipes()
+                }}
+                    setRecipes={setRecipes}
+                />
                 {recipes.map((recipe: RecipeInterface, index: number) => (
                     <RecipeCard key={index} recipe={recipe} />
                 ))}

@@ -1,5 +1,7 @@
 import { ChangeEvent, useRef } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
+import RecipeManager from "../../api/recipes/RecipeManager";
+import { ImportRecipeButtonDetail } from "./NewRecipeButton";
 
 function exportData(datakey: string, uuid?: string, name?: string) {
     const storedData = localStorage.getItem(datakey);
@@ -126,3 +128,52 @@ export function ExportRecipeButton({ recipe }: { recipe: RecipeInterface }) {
         </button>
     );
 };
+
+export function ExportOpenAIRecipeButton() {
+    const handleExport = () => {
+        exportData('recipe_ai');
+    };
+
+    return (
+        <button
+            onClick={handleExport}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-sm"
+        >
+            Exporter la recette générée
+        </button>
+    );
+};
+
+export function ImportRecipeButton({
+    setRecipes,
+    disabled
+}: {
+    setRecipes: (recipes: RecipeInterface[]) => void;
+    disabled: boolean;
+}) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        RecipeManager.importRecipe(file, setRecipes);
+    };
+
+    return (
+        <>
+            <ImportRecipeButtonDetail handleImportClick={handleImportClick} disabled={disabled} />
+
+            <input
+                type="file"
+                accept="application/json"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+            />
+        </>
+    );
+}

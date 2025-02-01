@@ -21,7 +21,7 @@ export default class RecipeManager {
         };
     }
 
-    static fetchRecipes() {
+    static fetchRecipes(): RecipeInterface[] {
         const storedRecipes = localStorage.getItem('recipes');
         if (storedRecipes) {
             try {
@@ -77,5 +77,43 @@ export default class RecipeManager {
             RecipeManager.updateRecipe(newRecipe);
         }
         return newRecipe;
+    }
+
+    static importRecipe(data: File | JSON, setRecipes?: (recipes: RecipeInterface[]) => void): RecipeInterface[] {
+        const reader = new FileReader();
+        const recipes: RecipeInterface[] = RecipeManager.fetchRecipes() as RecipeInterface[];
+
+        reader.onload = (event) => {
+            const fileText = event.target?.result as string;
+            const jsonData = JSON.parse(fileText);
+
+            recipes.push(jsonData);
+            localStorage.setItem("recipes", JSON.stringify(recipes));
+
+            alert(`Importation réussie ! Les données ont été enregistrées dans localStorage (clé 'recipes').`);
+            if (setRecipes) {
+                setRecipes(recipes);
+            }
+            return recipes;
+        };
+
+        reader.onerror = (event) => {
+            alert('Une erreur est survenue lors de la lecture du fichier.');
+            console.error(event);
+        };
+
+        if (data instanceof File) {
+            reader.readAsText(data);
+        } else {
+            const stringed = JSON.stringify(data)
+            const parsed = JSON.parse(stringed);
+            recipes.push(parsed);
+            localStorage.setItem("recipes", JSON.stringify(recipes));
+            alert(`Importation réussie ! Les données ont été enregistrées dans localStorage (clé 'recipes').`);
+            if (setRecipes) {
+                setRecipes(recipes);
+            }
+        }
+        return recipes;
     }
 }

@@ -15,7 +15,6 @@ export default function SeasonDisplayer({
     seasons: SeasonEnum[];
     className?: string;
 }) {
-    console.log(seasons, seasons.length)
     switch (seasons.length) {
         case 0:
             return <div

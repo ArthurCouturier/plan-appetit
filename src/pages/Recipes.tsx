@@ -1,19 +1,37 @@
+import { useState } from "react";
 import { HomeButton } from "../components/buttons/BackAndHomeButton";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
-import { useState } from "react";
 import RecipeManager from "../api/recipes/RecipeManager";
 import RecipeCard from "../components/cards/RecipeCard";
+import { ImportRecipeButton } from "../components/buttons/DataImportButtons";
+import { AddRecipeButton, GenerateAIRecipeButton } from "../components/buttons/NewRecipeButton";
+import { generateRecipe } from "../api/recipes/OpenAIRecipeGenerator";
 
 export default function Recipes() {
-
     const [recipes, setRecipes] = useState<RecipeInterface[]>(RecipeManager.fetchRecipes());
+    const [isLoading, setIsLoading] = useState<boolean>(false); // État de chargement
 
-    // const handleFetchRecipes = () => {
-    //     setRecipes(RecipeManager.fetchRecipes());
-    // }
+    const handleGenerateRecipe = async () => {
+        setIsLoading(true); // Active le chargement
+        try {
+            await generateRecipe();
+            setRecipes(RecipeManager.fetchRecipes());
+        } finally {
+            setIsLoading(false); // Désactive le chargement
+        }
+    };
 
     return (
-        <div className="w-full bg-bg-color p-6">
+        <div className="w-full bg-bg-color p-6 relative">
+            {/* Overlay de chargement */}
+            {isLoading && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+                        <p className="text-lg font-semibold">Génération de la recette en cours...</p>
+                    </div>
+                </div>
+            )}
+
             <div className="relative flex items-center w-full p-2">
                 <div className="flex items-center">
                     <HomeButton />
@@ -29,15 +47,9 @@ export default function Recipes() {
             </div>
 
             <div className="grid grid-cols-5 bg-primary p-4 rounded-lg">
-                <button
-                    className="bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200"
-                    onClick={() => {
-                        RecipeManager.addEmptyRecipe();
-                        setRecipes(RecipeManager.fetchRecipes());
-                    }}
-                >
-                    Ajouter une recette
-                </button>
+                <AddRecipeButton setRecipes={setRecipes} disabled={isLoading} />
+                <ImportRecipeButton setRecipes={setRecipes} disabled={isLoading} />
+                <GenerateAIRecipeButton handleGenerate={handleGenerateRecipe} disabled={isLoading} />
                 {recipes.map((recipe: RecipeInterface, index: number) => (
                     <RecipeCard key={index} recipe={recipe} />
                 ))}

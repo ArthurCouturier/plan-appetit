@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
 import RecipeManager from "./RecipeManager";
+import RecipeGenerationParametersInterface from "../interfaces/recipes/RecipeGenerationParametersInterface";
 
 const IngredientCategoryEnum = z.enum(["Viande", "Poisson", "Légume", "Fruit", "Produit laitier", "Céréale", "Epice", "Autre"]);
 
@@ -44,7 +45,19 @@ const Recipe = z.object({
 
 export type RecipeType = z.infer<typeof Recipe>;
 
-export async function generateRecipe(): Promise<RecipeType> {
+function createPrompt(generationInterface: RecipeGenerationParametersInterface): string {
+
+    const { localisation, seasons, ingredients, book, allergens } = generationInterface;
+
+    const basePrompt = `Vous êtes un chef créatif et vous vivez à ${localisation}. La saison est ${seasons.join(" et ")} et vous êtes particulièrement doué pour créer des recettes de saison pour votre emplacement.`;
+    const prompt = `Créez une recette innovante ${ingredients ? " basée autour des ingrédients suivants: " + ingredients : ""} ${allergens ? " mais excluant pour causes d'allergies les ingrédients suivants: " + allergens : ""} pour votre restaurant, pour un budget de €10 par personne que nous pouvons vendre pour €20 par personne. Répondez à tout en français.`;
+    const bookPrompt = book ? "Les recettes suivantes seront une base d'inspiration pour votre création: " + String(RecipeManager.fetchRecipes()) : "";
+    const moderationPrompt = "Veuillez ne pas inclure de contenu inapproprié ou offensant dans votre réponse. Veuillez également ne pas inclure de contenu protégé par des droits d'auteur ou vous semblant étrange, sensible ou offensant.";
+
+    return `${basePrompt} ${prompt} ${bookPrompt} ${moderationPrompt}`;
+}
+
+export async function generateRecipe(generationInterface: RecipeGenerationParametersInterface): Promise<RecipeType> {
     const openai = new OpenAI({
         apiKey: import.meta.env.VITE_OPENAI_API_KEY,
         dangerouslyAllowBrowser: true,
@@ -53,8 +66,7 @@ export async function generateRecipe(): Promise<RecipeType> {
     const completion = await openai.beta.chat.completions.parse({
         model: "gpt-4o-mini",
         messages: [
-            { role: "system", content: "You are a creative chef and you live in Toulouse. It is winter and you are particularly gifted at creating seasonal recipes for your location." },
-            { role: "user", content: "Create an innovative recipe for your restaurant, for a budget of €10 per person that we can sell for €20 per person. Answer everything in french." },
+            { role: "user", content: createPrompt(generationInterface) },
         ],
         response_format: zodResponseFormat(Recipe, "recipe"),
     });

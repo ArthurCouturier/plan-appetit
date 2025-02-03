@@ -5,31 +5,12 @@ import RecipeManager from "../api/recipes/RecipeManager";
 import RecipeCard from "../components/cards/RecipeCard";
 import { ImportRecipeButton } from "../components/buttons/DataImportButtons";
 import { AddRecipeButton, GenerateAIRecipeButton } from "../components/buttons/NewRecipeButton";
-import { generateRecipe } from "../api/recipes/OpenAIRecipeGenerator";
 
 export default function Recipes() {
     const [recipes, setRecipes] = useState<RecipeInterface[]>(RecipeManager.fetchRecipes());
-    const [isLoading, setIsLoading] = useState<boolean>(false); // État de chargement
-
-    const handleGenerateRecipe = async () => {
-        setIsLoading(true);
-        try {
-            await generateRecipe();
-            setRecipes(RecipeManager.fetchRecipes());
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     return (
         <div className="w-full bg-bg-color p-6 relative">
-            {isLoading && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-                        <p className="text-lg font-semibold">Génération de la recette en cours...</p>
-                    </div>
-                </div>
-            )}
 
             <div className="relative flex items-center w-full p-2">
                 <div className="flex items-center">
@@ -45,9 +26,9 @@ export default function Recipes() {
             </div>
 
             <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 bg-primary p-4 rounded-lg">
-                <AddRecipeButton setRecipes={setRecipes} disabled={isLoading} />
-                <ImportRecipeButton setRecipes={setRecipes} disabled={isLoading} />
-                <GenerateAIRecipeButton disabled={isLoading} />
+                <AddRecipeButton setRecipes={setRecipes} disabled={false} />
+                <ImportRecipeButton setRecipes={setRecipes} disabled={false} />
+                <GenerateAIRecipeButton disabled={false} />
                 {recipes.map((recipe: RecipeInterface, index: number) => (
                     <RecipeCard key={index} recipe={recipe} />
                 ))}

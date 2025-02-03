@@ -4,6 +4,8 @@ import TextualField from "../components/fields/TextualField";
 import { SeasonEnum } from "../api/enums/SeasonEnum";
 import LabeledSeasonSelectorField from "../components/fields/SeasonSelectorField";
 import SwitchField from "../components/fields/SwitchField";
+import { generateRecipe } from "../api/recipes/OpenAIRecipeGenerator";
+import RecipeGenerationParametersInterface from "../api/interfaces/recipes/RecipeGenerationParametersInterface";
 
 export default function RecipeGeneration() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -15,16 +17,25 @@ export default function RecipeGeneration() {
     const [useBook, setUseBook] = useState<boolean>(false);
 
     const handleGenerateRecipe = async () => {
+        const generationInterface: RecipeGenerationParametersInterface = {
+            localisation,
+            seasons,
+            ingredients,
+            book: useBook,
+            allergens,
+        };
+
         setIsLoading(true);
+
         try {
-            setTimeout(() => {
-                alert("Recette générée !");
-                setIsLoading(false);
-            }, 2000);
+            await generateRecipe(generationInterface);
+        } catch (error) {
+            console.error(error);
+
         } finally {
             setIsLoading(false);
         }
-    }
+    };
 
     return (
         <div className="w-full bg-bg-color p-6 relative">

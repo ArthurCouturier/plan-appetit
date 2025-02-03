@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeManager from "../../api/recipes/RecipeManager";
 import PremiumFeatureDisplayer from "../displayers/PremiumFeatureDisplayer";
@@ -42,24 +43,24 @@ export function ImportRecipeButtonDetail({
 }
 
 export function GenerateAIRecipeButton({
-    handleGenerate,
     disabled
 }: {
-    handleGenerate: () => void;
     disabled: boolean;
 }) {
     return (
-        <button
-            onClick={handleGenerate}
-            disabled={disabled}
+        <Link to="/recettes/generer"
             className={`relative bg-amber-300 hover:bg-amber-400 border-6 border-amber-700 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200 flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed" : ""
                 }`}
         >
-            <div className="absolute -top-3 -left-3">
-                <PremiumFeatureDisplayer />
-            </div>
+            <button
+                disabled={disabled}
+            >
+                <div className="absolute -top-3 -left-3">
+                    <PremiumFeatureDisplayer />
+                </div>
 
-            Générer une recette
-        </button>
+                Générer une recette
+            </button>
+        </Link>
     );
 }

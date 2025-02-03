@@ -47,7 +47,7 @@ export default function Recipes() {
             <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 bg-primary p-4 rounded-lg">
                 <AddRecipeButton setRecipes={setRecipes} disabled={isLoading} />
                 <ImportRecipeButton setRecipes={setRecipes} disabled={isLoading} />
-                <GenerateAIRecipeButton handleGenerate={handleGenerateRecipe} disabled={isLoading} />
+                <GenerateAIRecipeButton disabled={isLoading} />
                 {recipes.map((recipe: RecipeInterface, index: number) => (
                     <RecipeCard key={index} recipe={recipe} />
                 ))}

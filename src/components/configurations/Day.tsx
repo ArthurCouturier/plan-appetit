@@ -33,7 +33,7 @@ export default function Day({
     }, [activeEditDay, day.name, editMode, day.meals]);
 
     return (
-        <div className="h-full flex">
+        <div className="h-full flex flex-col lg:flex-row">
             {editMode ? (
                 <EditMode
                     day={dynamicDay}

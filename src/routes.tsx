@@ -3,6 +3,7 @@ import Planning from "./pages/Planning";
 import Home from "./pages/Home";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
+import RecipeGeneration from "./pages/RecipeGeneration";
 
 const router = createBrowserRouter([
     {
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
     {
         path: "/recettes/:uuid",
         element: <RecipeDetail />,
+    },
+    {
+        path: "/recettes/generer",
+        element: <RecipeGeneration />,
     },
 ]);
 

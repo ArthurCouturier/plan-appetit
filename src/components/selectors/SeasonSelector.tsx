@@ -64,6 +64,7 @@ function SeasonSelectorUnit({
         <div
             className={`relative rounded-full w-6 h-6 overflow-hidden mr-2 transition duration-200 ease-in-out ${seasons.length === 4 ? "opacity-100" : "opacity-30"}`}
             onClick={onClick}
+            title={"Toutes saisons"}
         >
             <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-blue-300"></div>
             <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-green-600"></div>
@@ -77,6 +78,7 @@ function SeasonSelectorUnit({
                         ${seasons.includes(season) ? "opacity-100" : "opacity-30"}
                         `}
             onClick={onClick}
+            title={season}
         ></div>
     ))
 }

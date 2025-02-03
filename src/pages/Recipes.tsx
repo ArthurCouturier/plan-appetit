@@ -12,18 +12,17 @@ export default function Recipes() {
     const [isLoading, setIsLoading] = useState<boolean>(false); // État de chargement
 
     const handleGenerateRecipe = async () => {
-        setIsLoading(true); // Active le chargement
+        setIsLoading(true);
         try {
             await generateRecipe();
             setRecipes(RecipeManager.fetchRecipes());
         } finally {
-            setIsLoading(false); // Désactive le chargement
+            setIsLoading(false);
         }
     };
 
     return (
         <div className="w-full bg-bg-color p-6 relative">
-            {/* Overlay de chargement */}
             {isLoading && (
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg text-center">
@@ -35,18 +34,17 @@ export default function Recipes() {
             <div className="relative flex items-center w-full p-2">
                 <div className="flex items-center">
                     <HomeButton />
-                    <h1 className="text-3xl font-bold text-text-primary ml-2">
+                    <h1 className="text-lg lg:text-2xl xl:text-3xl font-bold text-text-primary ml-2">
                         Plan'Appétit
                     </h1>
                 </div>
 
-                <h2 className="text-3xl font-bold text-text-primary text-center
-                               absolute left-1/2 -translate-x-1/2">
+                <h2 className="text-lg lg:text-2xl xl:text-3xl font-bold text-text-primary absolute left-1/2 -translate-x-1/2">
                     Livre des recettes
                 </h2>
             </div>
 
-            <div className="grid grid-cols-5 bg-primary p-4 rounded-lg">
+            <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 bg-primary p-4 rounded-lg">
                 <AddRecipeButton setRecipes={setRecipes} disabled={isLoading} />
                 <ImportRecipeButton setRecipes={setRecipes} disabled={isLoading} />
                 <GenerateAIRecipeButton handleGenerate={handleGenerateRecipe} disabled={isLoading} />

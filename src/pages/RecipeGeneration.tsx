@@ -6,6 +6,7 @@ import LabeledSeasonSelectorField from "../components/fields/SeasonSelectorField
 import SwitchField from "../components/fields/SwitchField";
 import { generateRecipe } from "../api/recipes/OpenAIRecipeGenerator";
 import RecipeGenerationParametersInterface from "../api/interfaces/recipes/RecipeGenerationParametersInterface";
+import LinearNumberField from "../components/fields/LinearNumberField";
 
 export default function RecipeGeneration() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -13,8 +14,11 @@ export default function RecipeGeneration() {
     const [localisation, setLocalisation] = useState<string>("");
     const [seasons, setSeasons] = useState<SeasonEnum[]>([]);
     const [ingredients, setIngredients] = useState<string>("");
-    const [allergens, setAllergens] = useState<string>("");
     const [useBook, setUseBook] = useState<boolean>(false);
+    const [vegan, setVegan] = useState<boolean>(false);
+    const [allergens, setAllergens] = useState<string>("");
+    const [buyingPrice, setBuyingPrice] = useState<number>(10);
+    const [sellingPrice, setSellingPrice] = useState<number>(20);
 
     const handleGenerateRecipe = async () => {
         const generationInterface: RecipeGenerationParametersInterface = {
@@ -22,7 +26,10 @@ export default function RecipeGeneration() {
             seasons,
             ingredients,
             book: useBook,
+            vegan,
             allergens,
+            buyingPrice,
+            sellingPrice,
         };
 
         setIsLoading(true);
@@ -69,13 +76,32 @@ export default function RecipeGeneration() {
                 <SwitchField
                     value={useBook}
                     onChange={(e) => setUseBook(e.target.checked)}
+                    uncheckedColor="red"
+                    checkedColor="blue"
                     label={"S'inspirer de mon livre des recettes"}
+                />
+                <SwitchField
+                    value={vegan}
+                    onChange={(e) => setVegan(e.target.checked)}
+                    uncheckedColor="red"
+                    checkedColor="green"
+                    label={"La recette doit être vegan"}
                 />
                 <TextualField
                     label={"Retirer une liste d'allergènes"}
                     placeholder={"Le gluten et les fruits à coques"}
                     value={allergens}
                     onChange={(e) => setAllergens(e.target.value)}
+                />
+                <LinearNumberField
+                    label={"Prix d'achat par personne"}
+                    value={buyingPrice}
+                    onChange={(e) => setBuyingPrice(Number(e.target.value))}
+                />
+                <LinearNumberField
+                    label={"Prix de vente par personne"}
+                    value={sellingPrice}
+                    onChange={(e) => setSellingPrice(Number(e.target.value))}
                 />
                 <button
                     className="bg-confirmation-1 hover:bg-confirmation-2 hover:scale-95 text-text-primary p-2 rounded-lg w-[30vw] mx-auto transition duration-200"

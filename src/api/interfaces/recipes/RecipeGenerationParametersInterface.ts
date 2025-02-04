@@ -5,5 +5,8 @@ export default interface RecipeGenerationParametersInterface {
     seasons: SeasonEnum[];
     ingredients: string;
     book: boolean;
+    vegan: boolean;
     allergens: string;
+    buyingPrice: number;
+    sellingPrice: number;
 }

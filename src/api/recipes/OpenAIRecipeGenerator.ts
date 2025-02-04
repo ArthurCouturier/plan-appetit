@@ -47,10 +47,10 @@ export type RecipeType = z.infer<typeof Recipe>;
 
 function createPrompt(generationInterface: RecipeGenerationParametersInterface): string {
 
-    const { localisation, seasons, ingredients, book, allergens } = generationInterface;
+    const { localisation, seasons, ingredients, book, vegan, allergens, buyingPrice, sellingPrice } = generationInterface;
 
     const basePrompt = `Vous êtes un chef créatif et vous vivez à ${localisation}. La saison est ${seasons.join(" et ")} et vous êtes particulièrement doué pour créer des recettes de saison pour votre emplacement.`;
-    const prompt = `Créez une recette innovante ${ingredients ? " basée autour des ingrédients suivants: " + ingredients : ""} ${allergens ? " mais excluant pour causes d'allergies les ingrédients suivants: " + allergens : ""} pour votre restaurant, pour un budget de €10 par personne que nous pouvons vendre pour €20 par personne. Répondez à tout en français.`;
+    const prompt = `Créez une recette innovante ${ingredients ? " basée autour des ingrédients suivants: " + ingredients : ""} ${allergens ? " mais excluant pour causes d'allergies les ingrédients suivants: " + allergens : ""} pour votre restaurant, pour un budget de ${buyingPrice ? buyingPrice : 10}€ par personne que nous vendrons pour ${sellingPrice ? sellingPrice : "20"}€ par personne. ${vegan && "Cette recette doit absolument respecter le fait d'être vegan."} Répondez à tout en français.`;
     const bookPrompt = book ? "Les recettes suivantes seront une base d'inspiration pour votre création: " + String(RecipeManager.fetchRecipes()) : "";
     const moderationPrompt = "Veuillez ne pas inclure de contenu inapproprié ou offensant dans votre réponse. Veuillez également ne pas inclure de contenu protégé par des droits d'auteur ou vous semblant étrange, sensible ou offensant.";
 

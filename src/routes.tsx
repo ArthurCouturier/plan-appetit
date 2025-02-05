@@ -4,11 +4,16 @@ import Home from "./pages/Home";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
 import RecipeGeneration from "./pages/RecipeGeneration";
+import LandingPage from "./pages/LandingPage";
 
 const router = createBrowserRouter([
     {
         path: "/",
         element: <Home />,
+    },
+    {
+        path: "/landing",
+        element: <LandingPage />,
     },
     {
         path: "/planning",

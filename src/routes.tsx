@@ -1,9 +1,12 @@
+// routes.tsx
 import { createBrowserRouter } from "react-router-dom";
-import Planning from "./pages/Planning";
 import Home from "./pages/Home";
+import Planning from "./pages/Planning";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
 import RecipeGeneration from "./pages/RecipeGeneration";
+import Login from "./components/authentication/Login";
+import ProtectedRoute from "./components/authentication/ProtectedRoute";
 
 const router = createBrowserRouter([
     {
@@ -11,8 +14,21 @@ const router = createBrowserRouter([
         element: <Home />,
     },
     {
-        path: "/planning",
-        element: <Planning />,
+        path: "/login",
+        element: <Login />,
+    },
+    {
+        element: <ProtectedRoute />,
+        children: [
+            {
+                path: "/planning",
+                element: <Planning />,
+            },
+            {
+                path: "/recettes/generer",
+                element: <RecipeGeneration />,
+            },
+        ],
     },
     {
         path: "/recettes",
@@ -21,10 +37,6 @@ const router = createBrowserRouter([
     {
         path: "/recettes/:uuid",
         element: <RecipeDetail />,
-    },
-    {
-        path: "/recettes/generer",
-        element: <RecipeGeneration />,
     },
 ]);
 

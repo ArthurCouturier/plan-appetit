@@ -5,8 +5,9 @@ import Planning from "./pages/Planning";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
 import RecipeGeneration from "./pages/RecipeGeneration";
-import LoginPage from "./pages/LoginPage";
+import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
+import Account from "./pages/Account";
 
 const router = createBrowserRouter([
     {
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
     {
         element: <ProtectedRoute />,
         children: [
+            {
+                path: "/profile",
+                element: <Account />,
+            },
             {
                 path: "/planning",
                 element: <Planning />,

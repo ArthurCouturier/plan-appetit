@@ -1,5 +1,3 @@
-// src/pages/Login.tsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -18,9 +16,12 @@ import {
     Typography,
 } from '@material-tailwind/react';
 import { auth } from '../api/authentication/firebase';
+import useAuth from '../api/hooks/useAuth';
+import { convertFirebaseUser } from '../api/authentication/convertFirebaseUser';
 
 export default function LoginPage() {
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -33,8 +34,10 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            navigate('/planning');
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            login(convertFirebaseUser(userCredential.user));
+            navigate('/profile');
+
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
         }
@@ -47,8 +50,9 @@ export default function LoginPage() {
 
         try {
             const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
-            navigate('/planning');
+            const userCredential = await signInWithPopup(auth, provider);
+            login(convertFirebaseUser(userCredential.user));
+            navigate('/profile');
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
         }
@@ -61,8 +65,9 @@ export default function LoginPage() {
 
         try {
             const provider = new FacebookAuthProvider();
-            await signInWithPopup(auth, provider);
-            navigate('/planning');
+            const userCredential = await signInWithPopup(auth, provider);
+            login(convertFirebaseUser(userCredential.user));
+            navigate('/profile');
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
         }
@@ -75,8 +80,9 @@ export default function LoginPage() {
 
         try {
             const provider = new OAuthProvider('apple.com');
-            await signInWithPopup(auth, provider);
-            navigate('/planning');
+            const userCredential = await signInWithPopup(auth, provider);
+            login(convertFirebaseUser(userCredential.user));
+            navigate('/profile');
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
         }

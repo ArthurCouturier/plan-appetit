@@ -6,6 +6,7 @@ export default function Home() {
             <div className="bg-bg-color p-6 rounded-md">
                 <MenuButton link={"/planning"}>Configurer le planning</MenuButton>
                 <MenuButton link={"/recettes"}>Livre des recettes</MenuButton>
+                <MenuButton link="/profile">Mon compte</MenuButton>
             </div>
         </div>
     );

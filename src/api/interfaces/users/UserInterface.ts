@@ -8,4 +8,5 @@ export default interface UserInterface {
     isPremium: boolean;
     createdAt: Date;
     lastLogin?: Date;
+    profilePhoto?: string;
 }

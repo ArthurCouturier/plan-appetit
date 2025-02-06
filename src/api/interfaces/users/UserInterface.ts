@@ -1,5 +1,5 @@
 export default interface UserInterface {
-    /** L'identifiant unique généré par Firebase */
+    /** Firebase generated ID */
     uid: string;
     email: string;
     displayName: string;

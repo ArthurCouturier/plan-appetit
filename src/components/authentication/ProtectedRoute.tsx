@@ -1,11 +1,9 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { AuthContextType } from './AuthProvider';
 import useAuth from '../../api/hooks/useAuth';
+import AuthContextInterface from '../../api/interfaces/users/AuthContextInterface';
 
 export default function ProtectedRoute() {
-    const user: AuthContextType | null = useAuth();
-
-    console.log("user", user);
+    const user: AuthContextInterface | null = useAuth();
 
     if (!user) {
         return <Navigate to="/login" replace />;

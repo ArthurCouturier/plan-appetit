@@ -17,18 +17,16 @@ import {
     CardFooter,
     Typography,
 } from '@material-tailwind/react';
-import { auth } from '../../api/authentication/firebase';
+import { auth } from '../api/authentication/firebase';
 
-export default function Login() {
+export default function LoginPage() {
     const navigate = useNavigate();
 
-    // États pour le formulaire
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
-    // Connexion par email/mot de passe
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -36,15 +34,13 @@ export default function Login() {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            // Une fois connecté, redirigez l'utilisateur vers la page principale ou le dashboard
-            navigate('/planning'); // À adapter selon vos routes protégées
+            navigate('/planning');
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+            setError(err instanceof Error ? err.message : 'An error happened');
         }
         setLoading(false);
     };
 
-    // Connexion via Google
     const handleGoogleLogin = async () => {
         setLoading(true);
         setError(null);
@@ -54,12 +50,11 @@ export default function Login() {
             await signInWithPopup(auth, provider);
             navigate('/planning');
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+            setError(err instanceof Error ? err.message : 'An error happened');
         }
         setLoading(false);
     };
 
-    // Connexion via Facebook
     const handleFacebookLogin = async () => {
         setLoading(true);
         setError(null);
@@ -69,12 +64,11 @@ export default function Login() {
             await signInWithPopup(auth, provider);
             navigate('/planning');
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+            setError(err instanceof Error ? err.message : 'An error happened');
         }
         setLoading(false);
     };
 
-    // Connexion via Apple
     const handleAppleLogin = async () => {
         setLoading(true);
         setError(null);
@@ -84,7 +78,7 @@ export default function Login() {
             await signInWithPopup(auth, provider);
             navigate('/planning');
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+            setError(err instanceof Error ? err.message : 'An error happened');
         }
         setLoading(false);
     };

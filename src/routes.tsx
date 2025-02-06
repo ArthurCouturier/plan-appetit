@@ -5,7 +5,7 @@ import Planning from "./pages/Planning";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
 import RecipeGeneration from "./pages/RecipeGeneration";
-import Login from "./components/authentication/Login";
+import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
 
 const router = createBrowserRouter([
@@ -15,7 +15,7 @@ const router = createBrowserRouter([
     },
     {
         path: "/login",
-        element: <Login />,
+        element: <LoginPage />,
     },
     {
         element: <ProtectedRoute />,

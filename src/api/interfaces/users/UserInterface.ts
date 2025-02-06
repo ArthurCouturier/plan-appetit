@@ -1,8 +1,11 @@
-import { UUIDTypes } from "uuid";
-
-export default interface USerInterface {
-    uuid: UUIDTypes;
+export default interface UserInterface {
+    /** L'identifiant unique généré par Firebase */
+    uid: string;
     email: string;
-    pseudo: string;
-    token: string;
+    displayName: string;
+    token?: string;
+    provider: "email" | "google" | "facebook" | "apple";
+    isPremium: boolean;
+    createdAt: Date;
+    lastLogin?: Date;
 }

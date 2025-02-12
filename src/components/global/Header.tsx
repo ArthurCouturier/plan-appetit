@@ -1,6 +1,7 @@
 import { Avatar } from "@material-tailwind/react";
 import { BackButton, HomeButton } from "../buttons/BackAndHomeButton";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 export default function Header({
     back = false,
@@ -17,6 +18,8 @@ export default function Header({
     pageName?: string;
     children?: React.ReactNode;
 }) {
+    const [profilePhoto] = useState<string>(localStorage.getItem("profilePhoto") || "/no-pp.jpg");
+
     return (
         <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
@@ -42,7 +45,7 @@ export default function Header({
                         color="blue"
                         size="lg"
                         withBorder={true}
-                        src="/no-pp.jpg"
+                        src={profilePhoto}
                         className="border-2 hover:scale-105 transition duration-200"
                     />
                 </Link>

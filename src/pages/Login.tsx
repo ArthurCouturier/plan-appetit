@@ -36,7 +36,7 @@ export default function LoginPage() {
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            login(convertFirebaseUser(userCredential.user));
+            login(await convertFirebaseUser(userCredential.user));
             navigate('/profile');
 
         } catch (err: unknown) {
@@ -52,7 +52,12 @@ export default function LoginPage() {
         try {
             const provider = new GoogleAuthProvider();
             const userCredential = await signInWithPopup(auth, provider);
-            login(convertFirebaseUser(userCredential.user));
+
+            const userData = await convertFirebaseUser(userCredential.user);
+            localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
+            localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
+
+            login(userData);
             navigate('/profile');
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
@@ -67,7 +72,7 @@ export default function LoginPage() {
         try {
             const provider = new FacebookAuthProvider();
             const userCredential = await signInWithPopup(auth, provider);
-            login(convertFirebaseUser(userCredential.user));
+            login(await convertFirebaseUser(userCredential.user));
             navigate('/profile');
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
@@ -82,7 +87,7 @@ export default function LoginPage() {
         try {
             const provider = new OAuthProvider('apple.com');
             const userCredential = await signInWithPopup(auth, provider);
-            login(convertFirebaseUser(userCredential.user));
+            login(await convertFirebaseUser(userCredential.user));
             navigate('/profile');
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');

@@ -25,6 +25,8 @@ export default function Account() {
     }
 
     const handleLogout = async () => {
+        localStorage.removeItem('firebaseIdToken');
+        localStorage.removeItem('profilePhoto');
         await auth.signOut();
         logout();
         navigate('/login');

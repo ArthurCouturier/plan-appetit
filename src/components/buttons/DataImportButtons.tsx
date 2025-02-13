@@ -19,7 +19,6 @@ function exportData(datakey: string, uuid?: string, name?: string) {
             alert(`Aucune donnée trouvée avec l'uuid ${uuid}.`);
             return;
         }
-        console.log("data", data)
     } else {
         data = storedData;
     }

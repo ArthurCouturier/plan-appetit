@@ -1,6 +1,5 @@
 import { UUIDTypes } from "uuid";
 import { useParams } from "react-router-dom";
-import { BackButton, HomeButton } from "../components/buttons/BackAndHomeButton";
 import RecipeManager from "../api/recipes/RecipeManager";
 import { useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
@@ -10,6 +9,7 @@ import IngredientInterface from "../api/interfaces/recipes/IngredientInterface";
 import RecipeStepsList from "../components/lists/RecipeStepsList";
 import StepInterface from "../api/interfaces/recipes/StepInterface";
 import { ExportRecipeButton } from "../components/buttons/DataImportButtons";
+import Header from "../components/global/Header";
 
 export default function RecipeDetail() {
 
@@ -100,15 +100,12 @@ export default function RecipeDetail() {
 
 function RecipeHeader() {
     return (
-        <div className="relative flex items-center w-full p-2">
-            <div className="flex items-center">
-                <BackButton />
-                <HomeButton />
-                <h1 className="text-3xl font-bold text-text-primary ml-2">
-                    Plan'Appétit
-                </h1>
-            </div>
-        </div>
+        <Header
+            back={true}
+            home={true}
+            title={true}
+            profile={true}
+        />
     )
 }
 

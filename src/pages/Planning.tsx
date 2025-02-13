@@ -5,7 +5,7 @@ import Week from "../components/configurations/Week";
 import Statistics from "../components/statistics/Statistics";
 import ConfigurationSelector from "../components/configurations/ConfigurationSelector";
 import { ExportConfigurationButton, ImportConfigurationButton } from "../components/buttons/DataImportButtons";
-import { HomeButton } from "../components/buttons/BackAndHomeButton";
+import Header from "../components/global/Header";
 
 export default function Planning() {
 
@@ -37,17 +37,13 @@ export default function Planning() {
     return (
         <div className="w-full">
             <div className="p-6 bg-bg-color">
-                <div className="flex w-full items-center p-2">
-                    <div className="flex flex-1 items-center">
-                        <HomeButton />
-                        <h1 className="flex-1 text-3xl font-bold text-text-primary">Plan'Appétit</h1>
-                    </div>
-                    <div className="flex flex-1 justify-center">
-                        <ConfigurationSelector configurations={configs} setConfigurations={setConfigs} actualConfig={actualConfig} onSelect={handleSetActualConfig} />
-                    </div>
-                    <ImportConfigurationButton fetchConfigs={handleFetchConfigurations} />
-                    <ExportConfigurationButton />
-                </div>
+                <PlanningHeader
+                    configs={configs}
+                    setConfigs={setConfigs}
+                    actualConfig={actualConfig}
+                    setActualConfig={handleSetActualConfig}
+                    handleFetchConfigurations={handleFetchConfigurations}
+                />
                 <div className="flex">
                     <Week config={actualConfig} saveConfig={handleSaveConfig} />
                 </div>
@@ -56,6 +52,40 @@ export default function Planning() {
                 <h1 className="text-3xl font-bold mb-4 text-text-primary">Statistiques</h1>
                 <Statistics actualConfig={actualConfig} saveConfig={handleSaveConfig} />
             </div>
+        </div>
+    );
+}
+
+function PlanningHeader({
+    configs,
+    setConfigs,
+    actualConfig,
+    setActualConfig,
+    handleFetchConfigurations
+}: {
+    configs: ConfigurationInterface[];
+    setConfigs: (configs: ConfigurationInterface[]) => void;
+    actualConfig: ConfigurationInterface;
+    setActualConfig: (config: ConfigurationInterface) => void;
+    handleFetchConfigurations: () => void;
+}) {
+    return (
+        <div className="p-2 bg-bg-color">
+            <Header
+                back={false}
+                home={true}
+                title={true}
+                profile={false}
+            >
+                <h1 className="flex-1 text-lg lg:text-xl xl:text-xl font-bold text-text-primary ml-2">
+                    Planning
+                </h1>
+                <div className="flex flex-1 justify-center w-min mr-4">
+                    <ConfigurationSelector configurations={configs} setConfigurations={setConfigs} actualConfig={actualConfig} onSelect={setActualConfig} />
+                </div>
+                <ImportConfigurationButton fetchConfigs={handleFetchConfigurations} />
+                <ExportConfigurationButton />
+            </Header>
         </div>
     );
 }

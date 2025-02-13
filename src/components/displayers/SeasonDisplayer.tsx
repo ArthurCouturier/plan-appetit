@@ -22,10 +22,22 @@ export default function SeasonDisplayer({
                 title={seasons.map((s) => s).join(", ")}
             ></div>;
         case 1:
-            return <div
-                className={`relative rounded-full w-6 h-6 overflow-hidden ${seasonColor[seasons[0]]} ${className}`}
-                title={seasons.map((s) => s).join(", ")}
-            ></div>;
+            return seasons[0] == SeasonEnum.ALL ? (
+                <div
+                    className={`relative rounded-full w-6 h-6 overflow-hidden ${className}`}
+                    title={"Toute saison"}
+                >
+                    <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-blue-300"></div>
+                    <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-green-600"></div>
+                    <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-yellow-300"></div>
+                    <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-amber-800"></div>
+                </div>
+            ) : (
+                <div
+                    className={`relative rounded-full w-6 h-6 overflow-hidden ${seasonColor[seasons[0]]} ${className}`}
+                    title={seasons.map((s) => s).join(", ")}
+                ></div>
+            );
         case 2:
             return (
                 <div

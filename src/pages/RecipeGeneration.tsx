@@ -28,14 +28,16 @@ export default function RecipeGeneration() {
             book: useBook,
             vegan,
             allergens,
-            buyingPrice,
+            buyPrice: buyingPrice,
             sellingPrice,
         };
 
         setIsLoading(true);
 
         try {
-            await generateRecipe(generationInterface);
+            const email = localStorage.getItem("email") || "";
+            const token = localStorage.getItem("firebaseIdToken") || "";
+            await generateRecipe(generationInterface, email, token);
         } catch (error) {
             console.error(error);
 

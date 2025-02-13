@@ -55,6 +55,7 @@ export default function LoginPage() {
 
             const userData = await convertFirebaseUser(userCredential.user);
             localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
+            localStorage.setItem('email', userData.email ? userData.email : "");
             localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
 
             login(userData);

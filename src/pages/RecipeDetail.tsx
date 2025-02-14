@@ -1,6 +1,6 @@
 import { UUIDTypes } from "uuid";
 import { useParams } from "react-router-dom";
-import RecipeManager from "../api/recipes/RecipeManager";
+import RecipeService from "../api/services/RecipeService";
 import { useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import { Link } from "react-router-dom";
@@ -15,12 +15,12 @@ export default function RecipeDetail() {
 
     const { uuid } = useParams<{ uuid: string }>();
 
-    const [recipe, setRecipe] = useState<RecipeInterface | undefined>(RecipeManager.getRecipe(uuid as UUIDTypes));
+    const [recipe, setRecipe] = useState<RecipeInterface | undefined>(RecipeService.getRecipe(uuid as UUIDTypes));
     const [editMode, setEditMode] = useState<boolean>(false);
 
     const handleSetRepice = (recipe: RecipeInterface) => {
         setRecipe(recipe);
-        RecipeManager.updateRecipe(recipe);
+        RecipeService.updateRecipe(recipe);
     }
 
     return recipe ? (
@@ -32,7 +32,7 @@ export default function RecipeDetail() {
                         <Link to={"/recettes"}>
                             <button
                                 className="absolute left-20 -translate-y-3 bg-cancel-1 hover:bg-cancel-2 text-text-primary p-2 rounded-lg transition duration-200"
-                                onClick={() => RecipeManager.deleteRecipe(recipe.uuid)}
+                                onClick={async () => await RecipeService.deleteRecipe(recipe.uuid)}
                             >
                                 Supprimer
                             </button>
@@ -45,7 +45,7 @@ export default function RecipeDetail() {
                         <button
                             className="relative rotate-90 rounded-full bg-thirdary p-1 mx-2 -translate-y-1"
                             onClick={() => {
-                                const newRecipe = RecipeManager.changeRecipeName(recipe.uuid);
+                                const newRecipe = RecipeService.changeRecipeName(recipe.uuid);
                                 if (newRecipe) {
                                     setRecipe(newRecipe);
                                 }

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
-import RecipeManager from "../api/recipes/RecipeManager";
+import RecipeService from "../api/services/RecipeService";
 import RecipeCard from "../components/cards/RecipeCard";
 import { ImportRecipeButton } from "../components/buttons/DataImportButtons";
 import { AddRecipeButton, GenerateAIRecipeButton } from "../components/buttons/NewRecipeButton";
 import Header from "../components/global/Header";
 
 export default function Recipes() {
-    const [recipes, setRecipes] = useState<RecipeInterface[]>(RecipeManager.fetchRecipes());
+    const [recipes, setRecipes] = useState<RecipeInterface[]>(RecipeService.fetchRecipesLocally());
 
     return (
         <div className="w-full bg-bg-color p-6 relative">

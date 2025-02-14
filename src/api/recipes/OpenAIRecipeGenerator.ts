@@ -9,5 +9,5 @@ export async function generateRecipe(
     email: string,
     token: string
 ): Promise<RecipeInterface | null> {
-    return backendService.generateRepice(generationInterface, email, token);
+    return backendService.generateRepiceWithOpenAI(generationInterface, email, token);
 }

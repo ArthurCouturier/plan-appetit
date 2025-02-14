@@ -26,14 +26,14 @@ const router = createBrowserRouter([
                 element: <Account />,
             },
             {
-                path: "/planning",
-                element: <Planning />,
-            },
-            {
                 path: "/recettes/generer",
                 element: <RecipeGeneration />,
             },
         ],
+    },
+    {
+        path: "/planning",
+        element: <Planning />,
     },
     {
         path: "/recettes",

@@ -19,6 +19,7 @@ import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import { convertFirebaseUser } from '../api/authentication/convertFirebaseUser';
 import Header from '../components/global/Header';
+import RecipeService from '../api/services/RecipeService';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -59,6 +60,9 @@ export default function LoginPage() {
             localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
 
             login(userData);
+
+            await RecipeService.fetchRecipesRemotly();
+
             navigate('/profile');
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');

@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
-import RecipeManager from "../../api/recipes/RecipeManager";
+import RecipeService from "../../api/services/RecipeService";
 import PremiumFeatureDisplayer from "../displayers/PremiumFeatureDisplayer";
 
 export function AddRecipeButton({
@@ -10,13 +10,20 @@ export function AddRecipeButton({
     setRecipes: (recipes: RecipeInterface[]) => void;
     disabled: boolean;
 }) {
+    const navigate = useNavigate();
+
     return (
         <button
             className="bg-confirmation-1 hover:bg-confirmation-2 border-6 border-blue-800 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200"
             disabled={disabled}
-            onClick={() => {
-                RecipeManager.addEmptyRecipe();
-                setRecipes(RecipeManager.fetchRecipes());
+            onClick={async () => {
+                try {
+                    await RecipeService.addEmptyRecipe();
+                    setRecipes(RecipeService.fetchRecipesLocally());
+                } catch (err) {
+                    console.error(err);
+                    navigate('/login');
+                }
             }}
         >
             Ajouter une recette

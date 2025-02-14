@@ -5,6 +5,8 @@ import RecipeInterface from "../interfaces/recipes/RecipeInterface";
 export default class BackendService {
     private baseUrl: string;
     private port: string;
+    static baseUrl: string = import.meta.env.VITE_API_URL;
+    static port: string = import.meta.env.VITE_API_PORT;
 
     constructor() {
         this.baseUrl = import.meta.env.VITE_API_URL as string;
@@ -27,12 +29,13 @@ export default class BackendService {
         return response.json();
     }
 
-    public async updateSomething(token: string, data: unknown): Promise<unknown> {
+    public async updateSomething(data: unknown, email: string, token: string): Promise<unknown> {
         const response = await fetch(`${this.baseUrl}:${this.port}/api/something`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Email': email
             },
             body: JSON.stringify(data),
         });
@@ -44,7 +47,15 @@ export default class BackendService {
         return response.json();
     }
 
-    public async getPersonalRecipes(
+    public async updateRecipe(
+        recipe: RecipeInterface,
+        email: string,
+        token: string
+    ): Promise<RecipeInterface[]> {
+        return this.updateSomething(recipe, email, token) as Promise<RecipeInterface[]>;
+    }
+
+    public static async getPersonalRecipes(
         email: string,
         token: string
     ): Promise<RecipeInterface[]> {
@@ -64,7 +75,63 @@ export default class BackendService {
         return response.json();
     }
 
-    public async generateRepice(
+    public static async createNewEmptyRecipe(
+        email: string,
+        token: string
+    ): Promise<RecipeInterface> {
+        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la mise à jour');
+        }
+
+        const newRecipe: Promise<RecipeInterface> = response.json().then((recipe) => {
+            const allRecipes: RecipeInterface[] = localStorage.getItem("recipes") ? JSON.parse(localStorage.getItem("recipes") as string) : [];
+            allRecipes.push(recipe);
+            localStorage.setItem("recipes", JSON.stringify(allRecipes));
+            return recipe;
+        });
+
+        return newRecipe;
+    }
+
+    public static async importRecipeFromLocalFile(
+        recipe: RecipeInterface,
+        email: string,
+        token: string
+    ): Promise<RecipeInterface> {
+        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/import`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email,
+            },
+            body: JSON.stringify(recipe),
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la mise à jour');
+        }
+
+        const newRecipe: Promise<RecipeInterface> = response.json().then((recipe) => {
+            const allRecipes: RecipeInterface[] = localStorage.getItem("recipes") ? JSON.parse(localStorage.getItem("recipes") as string) : [];
+            allRecipes.push(recipe);
+            localStorage.setItem("recipes", JSON.stringify(allRecipes));
+            return recipe;
+        });
+
+        return newRecipe;
+    }
+
+    public async generateRepiceWithOpenAI(
         generationParameters: RecipeGenerationParametersInterface,
         email: string,
         token: string
@@ -98,6 +165,29 @@ export default class BackendService {
         });
 
         return recipe;
+    }
+
+    public static async deleteRecipe(
+        email: string,
+        token: string,
+        recipeUuid: string
+    ): Promise<void> {
+        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/delete/${recipeUuid}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la mise à jour');
+        }
+
+        this.getPersonalRecipes(email, token).then((recipes) => {
+            localStorage.setItem("recipes", JSON.stringify(recipes));
+        });
     }
 
 }

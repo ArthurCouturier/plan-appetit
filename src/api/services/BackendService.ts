@@ -1,6 +1,7 @@
 import { redirect } from "react-router-dom";
 import RecipeGenerationParametersInterface from "../interfaces/recipes/RecipeGenerationParametersInterface";
 import RecipeInterface from "../interfaces/recipes/RecipeInterface";
+import UserInterface from "../interfaces/users/UserInterface";
 
 export default class BackendService {
     private baseUrl: string;
@@ -13,13 +14,15 @@ export default class BackendService {
         this.port = import.meta.env.VITE_API_PORT as string;
     }
 
-    public async checkProfile(token: string): Promise<unknown> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/users/checkProfile`, {
-            method: 'GET',
+    public static async registerNewUser(user: UserInterface, token: string): Promise<UserInterface> {
+        console.log("token", token)
+        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/users/register`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-            }
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(user),
         });
 
         if (!response.ok) {

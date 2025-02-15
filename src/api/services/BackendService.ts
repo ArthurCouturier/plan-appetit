@@ -5,18 +5,18 @@ import UserInterface from "../interfaces/users/UserInterface";
 
 export default class BackendService {
     private baseUrl: string;
-    private port: string;
+    // private port: string;
     static baseUrl: string = import.meta.env.VITE_API_URL;
     static port: string = import.meta.env.VITE_API_PORT;
 
     constructor() {
         this.baseUrl = import.meta.env.VITE_API_URL as string;
-        this.port = import.meta.env.VITE_API_PORT as string;
+        // this.port = import.meta.env.VITE_API_PORT as string;
     }
 
     public static async registerNewUser(user: UserInterface, token: string): Promise<UserInterface> {
         console.log("token", token)
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/users/register`, {
+        const response = await fetch(`https://${this.baseUrl}/api/v1/users/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ export default class BackendService {
     }
 
     public async updateSomething(data: unknown, email: string, token: string): Promise<unknown> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/something`, {
+        const response = await fetch(`https://${this.baseUrl}/api/something`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface[]> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/all`, {
+        const response = await fetch(`https://${this.baseUrl}/api/v1/recipes/all`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/create`, {
+        const response = await fetch(`https://${this.baseUrl}/api/v1/recipes/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/import`, {
+        const response = await fetch(`https://${this.baseUrl}/api/v1/recipes/import`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -139,7 +139,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface | null> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/generate`, {
+        const response = await fetch(`https://${this.baseUrl}/api/v1/recipes/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -175,7 +175,7 @@ export default class BackendService {
         token: string,
         recipeUuid: string
     ): Promise<void> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/delete/${recipeUuid}`, {
+        const response = await fetch(`https://${this.baseUrl}/api/v1/recipes/delete/${recipeUuid}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

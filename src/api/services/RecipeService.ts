@@ -67,11 +67,10 @@ export default class RecipeService {
         return recipes.find((recipe) => recipe.uuid === recipeUuid);
     }
 
-    static updateRecipe(recipe: RecipeInterface) {
-        const recipes = RecipeService.fetchRecipesLocally();
-        const index = recipes.findIndex((r) => r.uuid === recipe.uuid);
-        recipes[index] = recipe;
-        localStorage.setItem('recipes', JSON.stringify(recipes));
+    static async updateRecipe(recipe: RecipeInterface) {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+        await BackendService.updateRecipe(email, token, recipe);
     }
 
     static async deleteRecipe(recipeUuid: UUIDTypes) {
@@ -81,14 +80,14 @@ export default class RecipeService {
         await RecipeService.fetchRecipesRemotly();
     }
 
-    static changeRecipeName(recipeUuid: UUIDTypes) {
+    static async changeRecipeName(recipeUuid: UUIDTypes) {
         const recipe = this.getRecipe(recipeUuid);
         const newRecipeName = prompt("Nouveau nom de la recette", recipe?.name);
-        const recipes = RecipeService.fetchRecipesLocally();
+        const recipes = await RecipeService.fetchRecipesRemotly();
         const newRecipe = recipes.find((r) => r.uuid === recipeUuid);
         if (newRecipeName && newRecipe) {
             newRecipe.name = newRecipeName;
-            RecipeService.updateRecipe(newRecipe);
+            await this.updateRecipe(newRecipe);
         }
         return newRecipe;
     }
@@ -113,7 +112,7 @@ export default class RecipeService {
             recipes.push(newRecipe);
             localStorage.setItem("recipes", JSON.stringify(recipes));
 
-            alert(`Importation réussie ! Les données ont été enregistrées dans localStorage (clé 'recipes').`);
+            alert(`Importation réussie !`);
             if (setRecipes) {
                 setRecipes(recipes);
             }

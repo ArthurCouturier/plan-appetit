@@ -1,9 +1,8 @@
 import { UUIDTypes } from "uuid";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import RecipeService from "../api/services/RecipeService";
 import { useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
-import { Link } from "react-router-dom";
 import IngredientsList from "../components/lists/IngredientsList";
 import IngredientInterface from "../api/interfaces/recipes/IngredientInterface";
 import RecipeStepsList from "../components/lists/RecipeStepsList";
@@ -13,14 +12,19 @@ import Header from "../components/global/Header";
 
 export default function RecipeDetail() {
 
+    const navigate = useNavigate();
     const { uuid } = useParams<{ uuid: string }>();
 
     const [recipe, setRecipe] = useState<RecipeInterface | undefined>(RecipeService.getRecipe(uuid as UUIDTypes));
     const [editMode, setEditMode] = useState<boolean>(false);
 
-    const handleSetRepice = (recipe: RecipeInterface) => {
+    const handleSetRepice = async (recipe: RecipeInterface) => {
         setRecipe(recipe);
-        RecipeService.updateRecipe(recipe);
+    }
+
+    const handleSaveRecipe = async (recipe: RecipeInterface) => {
+        await RecipeService.updateRecipe(recipe);
+        await RecipeService.fetchRecipesRemotly();
     }
 
     return recipe ? (
@@ -29,14 +33,15 @@ export default function RecipeDetail() {
             <div className="bg-primary shadow-sm rounded-lg p-4 w-full">
                 <div className="p-4 mb-2 text-text-primary text-lg font-bold flex justify-center">
                     {editMode && (
-                        <Link to={"/recettes"}>
-                            <button
-                                className="absolute left-20 -translate-y-3 bg-cancel-1 hover:bg-cancel-2 text-text-primary p-2 rounded-lg transition duration-200"
-                                onClick={async () => await RecipeService.deleteRecipe(recipe.uuid)}
-                            >
-                                Supprimer
-                            </button>
-                        </Link>
+                        <button
+                            className="absolute left-20 -translate-y-3 bg-cancel-1 hover:bg-cancel-2 text-text-primary p-2 rounded-lg transition duration-200"
+                            onClick={async () => {
+                                await RecipeService.deleteRecipe(recipe.uuid)
+                                navigate('/recettes')
+                            }}
+                        >
+                            Supprimer
+                        </button>
                     )}
                     <div className="flex">
                         <div className="overflow-hidden max-w-[70vw]">{recipe.name}</div>
@@ -44,8 +49,8 @@ export default function RecipeDetail() {
                     {editMode && (
                         <button
                             className="relative rotate-90 rounded-full bg-thirdary p-1 mx-2 -translate-y-1"
-                            onClick={() => {
-                                const newRecipe = RecipeService.changeRecipeName(recipe.uuid);
+                            onClick={async () => {
+                                const newRecipe = await RecipeService.changeRecipeName(recipe.uuid);
                                 if (newRecipe) {
                                     setRecipe(newRecipe);
                                 }
@@ -75,7 +80,12 @@ export default function RecipeDetail() {
                     )}
                     <button
                         className="absolute right-20 -translate-y-3 bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-lg transition duration-200"
-                        onClick={() => setEditMode(!editMode)}
+                        onClick={async () => {
+                            if (editMode) {
+                                await handleSaveRecipe(recipe)
+                            }
+                            setEditMode(!editMode);
+                        }}
                     >
                         {editMode ? "Sauvegarder" : "Modifier"}
                     </button>
@@ -86,7 +96,7 @@ export default function RecipeDetail() {
                         <RecipeFooter recipe={recipe} />
                     </>
                 ) : (
-                    <EditMode recipe={recipe} setRecipe={handleSetRepice} />
+                    <EditMode recipe={recipe} setRecipe={handleSetRepice} saveRecipe={handleSaveRecipe} />
                 )}
             </div>
         </div >
@@ -121,20 +131,30 @@ function DefaultMode({ recipe }: { recipe: RecipeInterface }) {
 function EditMode({
     recipe,
     setRecipe,
+    saveRecipe,
 }: {
     recipe: RecipeInterface;
     setRecipe: (recipe: RecipeInterface) => void;
+    saveRecipe: (recipe: RecipeInterface) => void;
 }) {
 
     const [editIngredients, setEditIngredients] = useState<boolean>(false);
     const [editSteps, setEditSteps] = useState<boolean>(false);
 
-    const handleAddIngredient = (updatedIngredients: IngredientInterface[]) => {
+    const handleChangeIngredient = (updatedIngredients: IngredientInterface[]) => {
         setRecipe({ ...recipe, ingredients: updatedIngredients });
     }
 
     const handleAddStep = (updatedSteps: StepInterface[]) => {
         setRecipe({ ...recipe, steps: updatedSteps });
+    }
+
+    const handleSaveIngredients = (updatedIngredients: IngredientInterface[]) => {
+        saveRecipe({ ...recipe, ingredients: updatedIngredients });
+    }
+
+    const handleSaveSteps = (updatedSteps: StepInterface[]) => {
+        saveRecipe({ ...recipe, steps: updatedSteps });
     }
 
     return (
@@ -143,13 +163,15 @@ function EditMode({
                 ingredients={recipe.ingredients}
                 recipeEditMode={editIngredients}
                 setRecipeEditMode={setEditIngredients}
-                onChange={handleAddIngredient}
+                onChange={handleChangeIngredient}
+                onSave={handleSaveIngredients}
             />
             <RecipeStepsList
                 steps={recipe.steps}
                 recipeEditMode={editSteps}
                 setRecipeEditMode={setEditSteps}
                 onChange={handleAddStep}
+                onSave={handleSaveSteps}
             />
         </div>
     )

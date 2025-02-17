@@ -5,12 +5,14 @@ export default function RecipeStepsList({
     steps,
     recipeEditMode,
     setRecipeEditMode,
-    onChange
+    onChange,
+    onSave
 }: {
     steps: StepInterface[];
     recipeEditMode?: boolean;
     setRecipeEditMode?: (editMode: boolean) => void;
     onChange?: (updatedSteps: StepInterface[]) => void;
+    onSave?: (steps: StepInterface[]) => void;
 }) {
 
     const handleStepChange = (updatedStep: StepInterface) => {
@@ -43,9 +45,11 @@ export default function RecipeStepsList({
                 {!(recipeEditMode === undefined) &&
                     <button
                         className={`bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200`}
-                        onClick={() => {
+                        onClick={async () => {
+                            if (recipeEditMode) {
+                                await onSave?.(steps)
+                            }
                             setRecipeEditMode?.(!recipeEditMode)
-                            onChange?.(steps)
                         }}
                     >
                         {recipeEditMode ? "Sauvegarder" : "Modifier"}

@@ -193,4 +193,35 @@ export default class BackendService {
         });
     }
 
+    public static async updateRecipe(
+        email: string,
+        token: string,
+        recipe: RecipeInterface
+    ): Promise<RecipeInterface> {
+        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/update`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email,
+            },
+            body: JSON.stringify(recipe),
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la mise à jour');
+        }
+
+        const updatedRecipe: Promise<RecipeInterface> = response.json();
+
+        const allRecipes: RecipeInterface[] = localStorage.getItem("recipes") ? JSON.parse(localStorage.getItem("recipes") as string) : [];
+        updatedRecipe.then((recipe) => {
+            const index = allRecipes.findIndex((r) => r.uuid === recipe.uuid);
+            allRecipes[index] = recipe;
+            localStorage.setItem("recipes", JSON.stringify(allRecipes));
+        });
+
+        return updatedRecipe;
+    }
+
 }

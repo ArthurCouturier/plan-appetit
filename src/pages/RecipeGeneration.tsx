@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { BackButton, HomeButton } from "../components/buttons/BackAndHomeButton";
 import TextualField from "../components/fields/TextualField";
 import { SeasonEnum } from "../api/enums/SeasonEnum";
 import LabeledSeasonSelectorField from "../components/fields/SeasonSelectorField";
@@ -7,6 +6,7 @@ import SwitchField from "../components/fields/SwitchField";
 import { generateRecipe } from "../api/recipes/OpenAIRecipeGenerator";
 import RecipeGenerationParametersInterface from "../api/interfaces/recipes/RecipeGenerationParametersInterface";
 import LinearNumberField from "../components/fields/LinearNumberField";
+import Header from "../components/global/Header";
 
 export default function RecipeGeneration() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -28,14 +28,16 @@ export default function RecipeGeneration() {
             book: useBook,
             vegan,
             allergens,
-            buyingPrice,
+            buyPrice: buyingPrice,
             sellingPrice,
         };
 
         setIsLoading(true);
 
         try {
-            await generateRecipe(generationInterface);
+            const email = localStorage.getItem("email") || "";
+            const token = localStorage.getItem("firebaseIdToken") || "";
+            await generateRecipe(generationInterface, email, token);
         } catch (error) {
             console.error(error);
 
@@ -116,20 +118,9 @@ export default function RecipeGeneration() {
 
 function RecipeGenerationHeader() {
     return (
-        <div className="flex items-center">
-            <div className="relative flex items-center w-full p-2">
-                <div className="flex items-center">
-                    <BackButton />
-                    <HomeButton />
-                    <h1 className="text-lg lg:text-2xl xl:text-3xl font-bold text-text-primary ml-2">
-                        Plan'Appétit
-                    </h1>
-                </div>
-            </div>
-
-            <h2 className="text-lg lg:text-2xl xl:text-3xl font-bold text-text-primary w-full h-min lg:text-left lg:-translate-x-10 xl:-translate-x-20">
-                Génération de recette (IA)
-            </h2>
-        </div>
+        <Header
+            back={true}
+            pageName={"Génération de recette (IA)"}
+        />
     )
 }

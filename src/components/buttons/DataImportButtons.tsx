@@ -1,7 +1,8 @@
 import { ChangeEvent, useRef } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
-import RecipeManager from "../../api/recipes/RecipeManager";
+import RecipeService from "../../api/services/RecipeService";
 import { ImportRecipeButtonDetail } from "./NewRecipeButton";
+import { useNavigate } from "react-router-dom";
 
 function exportData(datakey: string, uuid?: string, name?: string) {
     const storedData = localStorage.getItem(datakey);
@@ -19,7 +20,6 @@ function exportData(datakey: string, uuid?: string, name?: string) {
             alert(`Aucune donnée trouvée avec l'uuid ${uuid}.`);
             return;
         }
-        console.log("data", data)
     } else {
         data = storedData;
     }
@@ -151,16 +151,22 @@ export function ImportRecipeButton({
     setRecipes: (recipes: RecipeInterface[]) => void;
     disabled: boolean;
 }) {
+    const navigate = useNavigate();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleImportClick = () => {
-        fileInputRef.current?.click();
+        try {
+            fileInputRef.current?.click();
+        } catch (err) {
+            console.error(err);
+            navigate('/login');
+        }
     };
 
     const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-        RecipeManager.importRecipe(file, setRecipes);
+        RecipeService.importRecipe(file, setRecipes);
     };
 
     return (

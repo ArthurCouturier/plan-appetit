@@ -4,6 +4,7 @@ import router from './routes';
 import { useState, useEffect } from 'react';
 import DarkModeButton from './components/buttons/DarkModeButton';
 import Monitor from './components/three/Monitor';
+import { AuthProvider } from './components/authentication/AuthProvider';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -36,7 +37,9 @@ function App() {
   return (
     <div className={`${theme}`}>
       {!isMobile && <DarkModeButton mode={theme} changeMode={changeTheme} />}
-      {isMobile ? <Monitor /> : <RouterProvider router={router} />}
+      <AuthProvider>
+        {isMobile ? <Monitor /> : <RouterProvider router={router} />}
+      </AuthProvider>
     </div>
   );
 }

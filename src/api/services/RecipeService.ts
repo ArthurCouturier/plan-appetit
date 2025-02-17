@@ -4,8 +4,10 @@ import { SeasonEnum } from "../enums/SeasonEnum";
 import RecipeInterface from "../interfaces/recipes/RecipeInterface";
 import { IngredientCategoryEnum } from "../enums/IngredientCategoryEnum";
 import { UnitEnum } from "../enums/UnitEnum";
+import BackendService from "./BackendService";
 
-export default class RecipeManager {
+export default class RecipeService {
+
     static getEmptyRecipe() {
         return {
             uuid: uuidv4(),
@@ -21,7 +23,7 @@ export default class RecipeManager {
         };
     }
 
-    static fetchRecipes(): RecipeInterface[] {
+    static fetchRecipesLocally(): RecipeInterface[] {
         const storedRecipes = localStorage.getItem('recipes');
         if (storedRecipes) {
             try {
@@ -38,62 +40,83 @@ export default class RecipeManager {
                 console.error('Invalid recipes in localStorage. Resetting to default.');
             }
         }
-        const recipes = [RecipeManager.getEmptyRecipe()];
+        const recipes = [RecipeService.getEmptyRecipe()];
         localStorage.setItem('recipes', JSON.stringify(recipes));
         return recipes;
     }
 
-    static addEmptyRecipe() {
-        const recipes = RecipeManager.fetchRecipes();
-        recipes.push(RecipeManager.getEmptyRecipe());
+    static async fetchRecipesRemotly(): Promise<RecipeInterface[]> {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+        const recipes: RecipeInterface[] = await BackendService.getPersonalRecipes(email, token);
         localStorage.setItem('recipes', JSON.stringify(recipes));
+        return recipes;
+    }
+
+    static async addEmptyRecipe() {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+        if (!email || !token) {
+            throw new Error('User not logged in');
+        }
+        await BackendService.createNewEmptyRecipe(email, token);
     }
 
     static getRecipe(recipeUuid: UUIDTypes) {
-        const recipes = RecipeManager.fetchRecipes();
+        const recipes = RecipeService.fetchRecipesLocally();
         return recipes.find((recipe) => recipe.uuid === recipeUuid);
     }
 
-    static updateRecipe(recipe: RecipeInterface) {
-        const recipes = RecipeManager.fetchRecipes();
-        const index = recipes.findIndex((r) => r.uuid === recipe.uuid);
-        recipes[index] = recipe;
-        localStorage.setItem('recipes', JSON.stringify(recipes));
+    static async updateRecipe(recipe: RecipeInterface) {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+        await BackendService.updateRecipe(email, token, recipe);
     }
 
-    static deleteRecipe(recipeUuid: UUIDTypes) {
-        let recipes = RecipeManager.fetchRecipes();
-        recipes = recipes.filter((recipe) => recipe.uuid !== recipeUuid);
-        localStorage.setItem('recipes', JSON.stringify(recipes));
+    static async deleteRecipe(recipeUuid: UUIDTypes) {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+        await BackendService.deleteRecipe(email, token, recipeUuid.toString());
+        await RecipeService.fetchRecipesRemotly();
     }
 
-    static changeRecipeName(recipeUuid: UUIDTypes) {
+    static async changeRecipeName(recipeUuid: UUIDTypes) {
         const recipe = this.getRecipe(recipeUuid);
         const newRecipeName = prompt("Nouveau nom de la recette", recipe?.name);
-        const recipes = RecipeManager.fetchRecipes();
+        const recipes = await RecipeService.fetchRecipesRemotly();
         const newRecipe = recipes.find((r) => r.uuid === recipeUuid);
         if (newRecipeName && newRecipe) {
             newRecipe.name = newRecipeName;
-            RecipeManager.updateRecipe(newRecipe);
+            await this.updateRecipe(newRecipe);
         }
         return newRecipe;
     }
 
     static importRecipe(data: File | JSON, setRecipes?: (recipes: RecipeInterface[]) => void): RecipeInterface[] {
         const reader = new FileReader();
-        const recipes: RecipeInterface[] = RecipeManager.fetchRecipes() as RecipeInterface[];
+        const recipes: RecipeInterface[] = RecipeService.fetchRecipesLocally() as RecipeInterface[];
 
-        reader.onload = (event) => {
+
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+
+        if (!email || !token) {
+            throw new Error('User not logged in');
+        }
+
+        reader.onload = async (event) => {
             const fileText = event.target?.result as string;
             const jsonData = JSON.parse(fileText);
 
-            recipes.push(jsonData);
+            const newRecipe = await BackendService.importRecipeFromLocalFile(jsonData, email, token);
+            recipes.push(newRecipe);
             localStorage.setItem("recipes", JSON.stringify(recipes));
 
-            alert(`Importation réussie ! Les données ont été enregistrées dans localStorage (clé 'recipes').`);
+            alert(`Importation réussie !`);
             if (setRecipes) {
                 setRecipes(recipes);
             }
+
             return recipes;
         };
 

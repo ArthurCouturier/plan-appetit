@@ -13,12 +13,14 @@ export default function IngredientsList({
     ingredients,
     recipeEditMode,
     setRecipeEditMode,
-    onChange
+    onChange,
+    onSave,
 }: {
     ingredients: IngredientInterface[];
     recipeEditMode?: boolean;
     setRecipeEditMode?: (editMode: boolean) => void;
     onChange?: (updatedIngredients: IngredientInterface[]) => void;
+    onSave?: (ingredients: IngredientInterface[]) => void;
 }) {
     const handleIngredientChange = (ingredient: IngredientInterface, index: number) => {
         const updatedIngredients = [...ingredients];
@@ -53,7 +55,12 @@ export default function IngredientsList({
                 {!(recipeEditMode === undefined) &&
                     <button
                         className={`bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200`}
-                        onClick={() => setRecipeEditMode?.(!recipeEditMode)}
+                        onClick={async () => {
+                            if (recipeEditMode) {
+                                await onSave?.(ingredients)
+                            }
+                            setRecipeEditMode?.(!recipeEditMode)
+                        }}
                     >
                         {recipeEditMode ? "Sauvegarder" : "Modifier"}
                     </button>
@@ -140,11 +147,11 @@ function DefaultMode({
     ingredient: IngredientInterface;
 }) {
     return (
-        <li className="flex">
+        <li className="flex w-fit">
             <ul className="p-1">
                 <SeasonDisplayer seasons={ingredient.season} />
             </ul>
-            <ul className="p-1">{ingredient.name}:</ul>
+            <ul className="p-1 w-max max-w-50 text-left">{ingredient.name}:</ul>
             <ul className="p-1">{ingredient.quantity.value}</ul>
             <ul className="p-1">
                 {!(ingredient.quantity.unit == UnitEnum.NONE) ? ingredient.quantity.unit : ""}

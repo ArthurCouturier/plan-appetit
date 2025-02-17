@@ -7,6 +7,6 @@ export default interface RecipeGenerationParametersInterface {
     book: boolean;
     vegan: boolean;
     allergens: string;
-    buyingPrice: number;
+    buyPrice: number;
     sellingPrice: number;
 }

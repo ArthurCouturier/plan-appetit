@@ -1,5 +1,6 @@
 import MenuButton from "../components/buttons/BackAndHomeButton";
 import Header from "../components/global/Header";
+import RecipesThree from "../components/three/Recipes";
 
 export default function Home() {
     return (
@@ -11,8 +12,13 @@ export default function Home() {
                     title={true}
                     profile={true}
                 />
-                <MenuButton link={"/planning"}>Configurer le planning</MenuButton>
-                <MenuButton link={"/recettes"}>Livre des recettes</MenuButton>
+                <MenuButton link={"/planning"}>
+                    Configurer le planning
+                </MenuButton>
+                <MenuButton link={"/recettes"}>
+                    Livre des recettes
+                    <RecipesThree />
+                </MenuButton>
             </div>
         </div>
     );

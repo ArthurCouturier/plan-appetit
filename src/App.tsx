@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import DarkModeButton from './components/buttons/DarkModeButton';
 import Monitor from './components/three/Monitor';
 import { AuthProvider } from './components/authentication/AuthProvider';
+import { useGLTF } from '@react-three/drei';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -43,5 +44,9 @@ function App() {
     </div>
   );
 }
+
+useGLTF.preload("/models/business-plan-lower.glb");
+useGLTF.preload("/models/Monitor.glb");
+useGLTF.preload("/models/Recipes.glb");
 
 export default App;

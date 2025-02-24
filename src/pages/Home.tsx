@@ -1,5 +1,6 @@
 import MenuButton from "../components/buttons/BackAndHomeButton";
 import Header from "../components/global/Header";
+import BusinessPlanThree from "../components/three/BusinessPlan";
 import RecipesThree from "../components/three/Recipes";
 
 export default function Home() {
@@ -14,6 +15,7 @@ export default function Home() {
                 />
                 <MenuButton link={"/planning"}>
                     Configurer le planning
+                    <BusinessPlanThree />
                 </MenuButton>
                 <MenuButton link={"/recettes"}>
                     Livre des recettes

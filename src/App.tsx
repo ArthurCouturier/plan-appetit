@@ -36,7 +36,7 @@ function App() {
   };
 
   return (
-    <div className={`${theme}`}>
+    <div className={`w-full h-full ${theme}`}>
       {!isMobile && <DarkModeButton mode={theme} changeMode={changeTheme} />}
       <AuthProvider>
         {isMobile ? <Monitor /> : <RouterProvider router={router} />}

@@ -5,8 +5,8 @@ import RecipesThree from "../components/three/Recipes";
 
 export default function Home() {
     return (
-        <div className="w-full">
-            <div className="bg-bg-color p-6 rounded-md">
+        <div className="w-full h-full">
+            <div className="bg-bg-color h-full min-h-fit p-6 rounded-md">
                 <Header
                     back={true}
                     home={true}

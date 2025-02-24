@@ -45,7 +45,7 @@ export default function BusinessPlanThree() {
             <Canvas
                 className="w-full h-full"
                 shadows
-                camera={{ position: [0, 1.4, 1.5], near: 0.01, far: 10, fov: 100, zoom: 1.1 }}
+                camera={{ position: [0, 1.4, 1.5], near: 0.01, far: 10, fov: 100, zoom: 1 }}
             >
                 <ambientLight intensity={5} />
                 <pointLight position={[0, 4, 2]} intensity={100} />

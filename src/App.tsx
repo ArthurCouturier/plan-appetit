@@ -6,7 +6,7 @@ import DarkModeButton from './components/buttons/DarkModeButton';
 import Monitor from './components/three/Monitor';
 import { AuthProvider } from './components/authentication/AuthProvider';
 import { useGLTF } from '@react-three/drei';
-import Mobile from './pages/Mobile';
+import Mobile from './components/mobilesComponents/HomeMobile';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -40,7 +40,7 @@ function App() {
     <div className={`w-full h-full ${theme}`}>
       {!isMobile && <DarkModeButton mode={theme} changeMode={changeTheme} />}
       <AuthProvider>
-        {isMobile ? <Mobile /> : <RouterProvider router={router} />}
+        <RouterProvider router={router} />
       </AuthProvider>
     </div>
   );

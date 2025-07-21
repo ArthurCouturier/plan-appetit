@@ -1,14 +1,11 @@
 import { Button } from "@material-tailwind/react";
-import fleche from "@/icons/icon-fleche.png";
-
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 export default function Mobile() {
   return (
     <div className="">
       <header className="absolute inset-x-0 top-0 border-0 rounded-b-3xl bg-blue-600 shadow-md flex justify-between items-center">
         <Button className="bg bg-blue-900 py-2 px-4"> 
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="text-black size-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-          </svg>
+          <ArrowLeftIcon className="w-6 h-6 text-black" />
         </Button>
           <h1 className="text-xl font-bold">Plan'Appetit</h1>
         <Button className="bg bg-blue-900 py-2 px-4"> 

@@ -15,7 +15,7 @@ export default function FooterMobile() {
         <LightBulbIcon className="w-6 h-6 text-white" />
         </Button>
         <Button className="bg-blue-900 rounded-3xl border-0">
-          <BookOpenIcon className="w-6 h-6 text-white" onClick={() => navigateTo("/")}/>
+          <BookOpenIcon className="w-6 h-6 text-white" onClick={() => navigateTo("/recettes")}/>
         </Button>
         <Button className="bg-blue-900 rounded-3xl border-0" onClick={() => navigateTo("/login")}>
           <UserCircleIcon className="w-6 h-6 text-white" />

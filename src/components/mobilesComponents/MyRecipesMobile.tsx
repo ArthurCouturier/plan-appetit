@@ -21,7 +21,7 @@ export default function MyRecipesMobile({
     <div>
       <HeaderMobile pageName="Mes Recettes"/>
 
-      <div className="w-full h-screen mt-4">  {/* Faudra revoir le taille de la div */}
+      <div className="w-full h-screen mt-4">  {/* Faudra revoir la taille de la div */}
         {recipesList}
       </div>
 

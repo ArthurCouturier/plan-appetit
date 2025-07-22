@@ -29,9 +29,3 @@ export default function MyRecipesMobile({
     </div>
   )
 }
-
-function Recipe() {
-  return (
-    <div></div>
-  )
-}

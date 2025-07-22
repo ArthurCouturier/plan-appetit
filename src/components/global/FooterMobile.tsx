@@ -2,8 +2,13 @@ import { Button } from "@material-tailwind/react";
 import { UserCircleIcon, BookOpenIcon, LightBulbIcon, PlusIcon } from "@heroicons/react/24/solid"
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 
-export default function FooterMobile() {
+export default function FooterMobile({
+  recipes
+}: {
+  recipes? : RecipeInterface[]
+}) {
 
   const navigateTo = useNavigate();
 
@@ -26,6 +31,13 @@ export default function FooterMobile() {
     return () => {
       window.removeEventListener("scroll", handleScroll)};
     }, [lastScrollY]);
+
+    const goToMyRecipes = () => 
+      navigateTo("/mesrecettes", {
+        state:{
+          recipes: recipes
+        }
+      })
   
   return (
     <footer className={`absolute inset-x-0 gap-1 bottom-4 flex justify-between bg-blue-600 rounded-3xl transition-transform duration-2000 ${
@@ -38,7 +50,7 @@ export default function FooterMobile() {
         <LightBulbIcon className="w-6 h-6 text-white" />
         </Button>
         <Button className="bg-blue-900 rounded-3xl border-0">
-          <BookOpenIcon className="w-6 h-6 text-white" onClick={() => navigateTo("/recettes")}/>
+          <BookOpenIcon className="w-6 h-6 text-white" onClick={() => goToMyRecipes()}/>
         </Button>
         <Button className="bg-blue-900 rounded-3xl border-0" onClick={() => navigateTo("/login")}>
           <UserCircleIcon className="w-6 h-6 text-white" />

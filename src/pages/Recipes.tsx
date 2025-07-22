@@ -5,7 +5,7 @@ import RecipeCard from "../components/cards/RecipeCard";
 import { ImportRecipeButton } from "../components/buttons/DataImportButtons";
 import { AddRecipeButton, GenerateAIRecipeButton } from "../components/buttons/NewRecipeButton";
 import Header from "../components/global/Header";
-import MyRecipesMobile from "../components/mobilesComponents/MyRecipesMobile";
+import HomeMobile from "../components/mobilesComponents/HomeMobile";
 
 export default function Recipes() {
 
@@ -25,7 +25,7 @@ export default function Recipes() {
     const [recipes, setRecipes] = useState<RecipeInterface[]>(RecipeService.fetchRecipesLocally());
 
     return (
-        isMobile ? <MyRecipesMobile recipes={recipes} isMobile={isMobile} /> :
+        isMobile ? <HomeMobile recipes={recipes}/> :
         <div className="w-full bg-bg-color p-6 relative">
 
             <RecipesHeader />

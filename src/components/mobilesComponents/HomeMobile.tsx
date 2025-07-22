@@ -4,17 +4,29 @@ import { UserCircleIcon, BookOpenIcon, LightBulbIcon, PlusIcon } from "@heroicon
 import FooterMobile from "../global/FooterMobile";
 import HeaderMobile from "../global/HeaderMobile";
 import { useNavigate } from "react-router-dom";
+import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 
-export default function HomeMobile() {
+export default function HomeMobile({
+  recipes
+}: {
+  recipes : RecipeInterface[]
+}) {
 
   const navigateTo = useNavigate();
+
+  const goToMyRecipes = () => 
+    navigateTo("/mesrecettes", {
+      state:{
+        recipes: recipes
+      }
+    })
 
   return (
     <div>
       <HeaderMobile pageName="Accueil" />
 
       <div className="flex flex-col items-center pt-10 space-y-20">
-        <Button className="bg-blue-900 w-full text-xl flex items-center justify-center gap-2">
+        <Button className="bg-blue-900 w-full text-xl flex items-center justify-center gap-2" >
           <PlusIcon className="w-6 h-6 text-white font-bold"/>
           <span className="lowercase first-letter:uppercase">Ajouter une recette</span>
         </Button>
@@ -26,7 +38,7 @@ export default function HomeMobile() {
         </Button>
         <Button 
           className="bg-blue-900 w-full flex text-xl items-center justify-center gap-2"
-          onClick={() => navigateTo("/recettes")}>
+          onClick={() => goToMyRecipes()}>
           <BookOpenIcon className="w-6 h-6 text-white font-bold"/>
           <span className="lowercase first-letter:uppercase">Mes recettes</span>        
         </Button>
@@ -38,7 +50,7 @@ export default function HomeMobile() {
         </Button>
       </div>
 
-      <FooterMobile />
+      <FooterMobile recipes={recipes}/>
     </div>
   )
 }

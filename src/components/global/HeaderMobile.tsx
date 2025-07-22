@@ -16,6 +16,7 @@ export default function HeaderMobile({
           <ArrowLeftIcon className="w-6 h-6 text-white"/>
         </Button>
           <h1 className="text-xl text-white font-bold">Plan'Appetit</h1>
+          <p className="text-2xl">🧂</p>
           <h1 className="text-xl font-bold">{pageName}</h1>
         <Button className="bg rounded-t-none bg-blue-900 py-2 px-4" onClick={() =>navigateTo("/")}> 
           <HomeIcon className="w-6 h-6 text-white"/>

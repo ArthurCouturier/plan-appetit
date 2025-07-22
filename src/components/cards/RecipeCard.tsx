@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import { Button } from "@material-tailwind/react";
@@ -25,10 +25,11 @@ export default function RecipeCard({
 
     const nbrEtapes = recipe.steps.length;
 
+    const navigateTo = useNavigate();
 
     return (
         isMobile ? 
-        <div className="bg-blue-600 w-max rounded-xl flex-col text-left p-2">
+        <div className="bg-blue-600 mr-4w-screen max-w-max rounded-xl flex-col text-left p-2">
             <button className="text-left text-white flex gap-2" onClick={() => handleClick()}>
                 <div>
                     <h2 className="font-bold first-letter:uppercase lowercase">{recipe.name}<span className="font-normal"> ({recipe.covers} pers)</span></h2>
@@ -45,7 +46,7 @@ export default function RecipeCard({
             {showDetails ? 
             <div className="flex justify-center"> 
                 {/* Je n'arrive pas à mettre le V en majuscule */}
-                <Button className="bg-blue-900 px-3">👩‍🍳 <span className="first-letter:uppercase lowercase">Voir la recette </span> 👨‍🍳</Button>
+                <Button onClick={() => navigateTo(`/recettes/${recipe.uuid}`)} className="bg-blue-900 px-3">👩‍🍳 <span className="first-letter:uppercase lowercase">Voir la recette </span> 👨‍🍳</Button>
             </div>
             : null
             }

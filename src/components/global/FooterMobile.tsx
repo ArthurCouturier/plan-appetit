@@ -28,7 +28,7 @@ export default function FooterMobile() {
     }, [lastScrollY]);
   
   return (
-    <footer className={`absolute inset-x-0 gap-1 bottom-4 flex justify-between bg-blue-600 rounded-3xl transition-transform duration-2000 ${
+    <footer className={`absolute inset-x-0 gap-1 bottom-4 mx-4 px-4 flex justify-between bg-blue-600 rounded-3xl transition-transform duration-2000 ${
       showFooter ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
     }`}>
         <Button className="bg-blue-900 rounded-3xl border-0" onClick={() => navigateTo("/recettes")}>

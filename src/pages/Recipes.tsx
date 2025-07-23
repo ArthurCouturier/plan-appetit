@@ -25,7 +25,7 @@ export default function Recipes() {
     const [recipes, setRecipes] = useState<RecipeInterface[]>(RecipeService.fetchRecipesLocally());
 
     return (
-        isMobile ? <HomeMobile recipes={recipes}/> :
+        isMobile ? <HomeMobile recipes={recipes} setRecipes={setRecipes}/> :
         <div className="w-full bg-bg-color p-6 relative">
 
             <RecipesHeader />

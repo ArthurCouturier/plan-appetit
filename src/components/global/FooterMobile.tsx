@@ -3,11 +3,14 @@ import { UserCircleIcon, BookOpenIcon, LightBulbIcon, PlusIcon } from "@heroicon
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
+// import RecipeService from "../../api/services/RecipeService";
 
 export default function FooterMobile({
-  recipes
+  recipes,
+  // setRecipes
 }: {
-  recipes? : RecipeInterface[]
+  recipes : RecipeInterface[],
+  // setRecipes : (recipes: RecipeInterface[]) => void
 }) {
 
   const navigateTo = useNavigate();
@@ -35,17 +38,28 @@ export default function FooterMobile({
     const goToMyRecipes = () => 
       navigateTo("/mesrecettes", {
         state:{
-          recipes: recipes
-        }
+          recipes: recipes        }
       })
+
+      // const handleClick = async () => {
+      //   try {
+      //       await RecipeService.addEmptyRecipe();
+      //       const newRecipes = RecipeService.fetchRecipesLocally();
+      //       setRecipes(newRecipes);
+      //       navigateTo(`/recettes/${newRecipes[newRecipes.length - 1].uuid}`) 
+      //   } catch (err) {
+      //       console.error(err);
+      //       navigateTo('/login');
+      //   }
+      // }
   
   return (
-    <footer className={`absolute inset-x-0 gap-1 bottom-4 mx-4 px-4 flex justify-between bg-blue-600 rounded-3xl transition-transform duration-2000 ${
+    <footer className={`absolute px-4 mx-20 inset-x-0 gap-1 bottom-4 flex justify-between bg-blue-600 rounded-3xl transition-transform duration-2000 ${
       showFooter ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
     }`}>
-        <Button className="bg-blue-900 rounded-3xl border-0" onClick={() => navigateTo("/recettes")}>
+        {/* <Button className="bg-blue-900 rounded-3xl border-0" onClick={() => handleClick()}>
         <PlusIcon className="w-6 h-6 text-white"/>
-        </Button>
+        </Button> */}
         <Button className="bg-blue-900 rounded-3xl border-0" onClick={() => navigateTo("/recettes/generer")}>
         <LightBulbIcon className="w-6 h-6 text-white" />
         </Button>

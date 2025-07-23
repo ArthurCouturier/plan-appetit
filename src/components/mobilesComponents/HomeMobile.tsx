@@ -30,7 +30,6 @@ export default function HomeMobile({
           const newRecipes = RecipeService.fetchRecipesLocally();
           setRecipes(newRecipes);
           navigateTo(`/recettes/${newRecipes[newRecipes.length - 1].uuid}`) 
-          // Il me faut le uuid de la recette que je viens de créer
       } catch (err) {
           console.error(err);
           navigateTo('/login');
@@ -52,12 +51,12 @@ export default function HomeMobile({
           <LightBulbIcon className="w-6 h-6 text-white font-bold"/>
           <span className="lowercase first-letter:uppercase">Générer une recette</span>        
         </Button>
-        <Button 
-          className="bg-blue-900 w-full flex text-xl items-center justify-center gap-2"
-          onClick={() => goToMyRecipes()}>
-          <BookOpenIcon className="w-6 h-6 text-white font-bold"/>
-          <span className="lowercase first-letter:uppercase">Mes recettes</span>        
-        </Button>
+          <Button 
+            className="bg-blue-900 w-full flex text-xl items-center justify-center gap-2" 
+            onClick={() => goToMyRecipes()}>
+            <BookOpenIcon className="w-6 h-6 text-white font-bold"/>
+            <span className="lowercase first-letter:uppercase">Mes recettes</span>        
+          </Button>
         <Button 
           className="bg-blue-900 w-full flex text-xl items-center justify-center gap-2"
           onClick={() => navigateTo("/login")}>
@@ -66,7 +65,7 @@ export default function HomeMobile({
         </Button>
       </div>
 
-      <FooterMobile recipes={recipes}/>
+      <FooterMobile recipes={recipes} setRecipes={setRecipes}/>
     </div>
   )
 }

@@ -25,7 +25,7 @@ export default function MyRecipesMobile({
         {recipesList}
       </div>
 
-      <FooterMobile />
+      <FooterMobile recipes={recipes}/>
     </div>
   )
 }

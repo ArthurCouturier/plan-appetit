@@ -23,7 +23,7 @@ export default function MesRecettes() {
   const { recipes }: { recipes: RecipeInterface[] } = location.state || {};
 
   return (
-    isMobile ? <MyRecipesMobile recipes={recipes} isMobile={isMobile} /> :
+    isMobile ? <MyRecipesMobile recipes={recipes} isMobile={isMobile}/> :
     <div>
       salut
     </div>

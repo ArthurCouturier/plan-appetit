@@ -6,23 +6,31 @@ import HeaderMobile from "../global/HeaderMobile";
 import { useNavigate } from "react-router-dom";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeService from "../../api/services/RecipeService";
+import { useRecipeContext } from "../../contexts/RecipeContext";
 
-export default function HomeMobile({
-  recipes,
-  setRecipes
-}: {
-  recipes : RecipeInterface[],
-  setRecipes : (recipes: RecipeInterface[]) => void;
-}) {
+export default function HomeMobile(
+//   {
+//   recipes,
+//   setRecipes
+// }: {
+//   recipes : RecipeInterface[],
+//   setRecipes : (recipes: RecipeInterface[]) => void;
+// }
+) 
+{
 
   const navigateTo = useNavigate();
 
+  const { recipes, setRecipes } = useRecipeContext();
+
   const goToMyRecipes = () => 
-    navigateTo("/mesrecettes", {
-      state:{
-        recipes: recipes
-      }
-    })
+    navigateTo("/mesrecettes"
+      // , {
+      // state:{
+      //   recipes: recipes
+      // }
+    // }
+  )
 
     const handleClick = async () => {
       try {
@@ -65,7 +73,7 @@ export default function HomeMobile({
         </Button>
       </div>
 
-      <FooterMobile recipes={recipes} setRecipes={setRecipes}/>
+      <FooterMobile/>
     </div>
   )
 }

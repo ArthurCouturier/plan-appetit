@@ -6,6 +6,7 @@ import { ImportRecipeButton } from "../components/buttons/DataImportButtons";
 import { AddRecipeButton, GenerateAIRecipeButton } from "../components/buttons/NewRecipeButton";
 import Header from "../components/global/Header";
 import HomeMobile from "../components/mobilesComponents/HomeMobile";
+import { useRecipeContext } from "../contexts/RecipeContext";
 
 export default function Recipes() {
 
@@ -22,10 +23,10 @@ export default function Recipes() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const [recipes, setRecipes] = useState<RecipeInterface[]>(RecipeService.fetchRecipesLocally());
+    const { recipes, setRecipes } = useRecipeContext();
 
     return (
-        isMobile ? <HomeMobile recipes={recipes} setRecipes={setRecipes}/> :
+        isMobile ? <HomeMobile /> :
         <div className="w-full bg-bg-color p-6 relative">
 
             <RecipesHeader />

@@ -1,7 +1,7 @@
 import { UUIDTypes } from "uuid";
 import { useNavigate, useParams } from "react-router-dom";
 import RecipeService from "../api/services/RecipeService";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import IngredientsList from "../components/lists/IngredientsList";
 import IngredientInterface from "../api/interfaces/recipes/IngredientInterface";
@@ -9,6 +9,7 @@ import RecipeStepsList from "../components/lists/RecipeStepsList";
 import StepInterface from "../api/interfaces/recipes/StepInterface";
 import { ExportRecipeButton } from "../components/buttons/DataImportButtons";
 import Header from "../components/global/Header";
+import { useRecipeContext } from "../contexts/RecipeContext";
 
 export default function RecipeDetail() {
 
@@ -23,9 +24,13 @@ export default function RecipeDetail() {
     }
 
     const handleSaveRecipe = async (recipe: RecipeInterface) => {
+        console.log("recipe before save");
         await RecipeService.updateRecipe(recipe);
         await RecipeService.fetchRecipesRemotly();
+        setRecipes(RecipeService.fetchRecipesLocally());
     }
+
+    const { recipes, setRecipes } = useRecipeContext();
 
     return recipe ? (
         <div className="w-full bg-bg-color p-6">
@@ -37,6 +42,7 @@ export default function RecipeDetail() {
                             className="absolute left-20 -translate-y-3 bg-cancel-1 hover:bg-cancel-2 text-text-primary p-2 rounded-lg transition duration-200"
                             onClick={async () => {
                                 await RecipeService.deleteRecipe(recipe.uuid)
+                                setRecipes(RecipeService.fetchRecipesLocally())
                                 navigate('/recettes')
                             }}
                         >

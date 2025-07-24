@@ -6,13 +6,15 @@ export default function RecipeStepsList({
     recipeEditMode,
     setRecipeEditMode,
     onChange,
-    onSave
+    onSave,
+    isMobile
 }: {
     steps: StepInterface[];
     recipeEditMode?: boolean;
     setRecipeEditMode?: (editMode: boolean) => void;
     onChange?: (updatedSteps: StepInterface[]) => void;
     onSave?: (steps: StepInterface[]) => void;
+    isMobile: boolean;
 }) {
 
     const handleStepChange = (updatedStep: StepInterface) => {
@@ -39,9 +41,9 @@ export default function RecipeStepsList({
     };
 
     return (
-        <div className="border-2 border-text-primary p-2 rounded-md mt-4">
+        <div className={`border-2 border-text-primary p-2 rounded-md mt-4 ${isMobile ? "text-white" : null}`}>
             <div className="flex justify-center items-center">
-                <h2 className="font-bold text-lg underline text-text-primary">Préparation</h2>
+                <h2 className={`font-bold text-lg underline text-text-primary${isMobile ? "text-white" : null}`}>Préparation</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
                         className={`bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200`}
@@ -64,6 +66,7 @@ export default function RecipeStepsList({
                         editMode={recipeEditMode}
                         onChange={(updatedStep) => handleStepChange(updatedStep)}
                         onRemove={() => handleRemoveStep(step.key - 1)}
+                        isMobile={isMobile}
                     />
                 ))}
             </div>
@@ -83,12 +86,14 @@ export function Step({
     step,
     editMode,
     onChange,
-    onRemove
+    onRemove,
+    isMobile
 }: {
     step: StepInterface;
     editMode?: boolean;
     onChange: (updatedStep: StepInterface) => void;
     onRemove: () => void;
+    isMobile: boolean;
 }) {
 
     const handleStepChange = (value: string) => {
@@ -96,9 +101,9 @@ export function Step({
     }
 
     return (
-        <div className="flex items-center justify-center p-2 mb-2 w-1/2 mx-auto">
+        <div className={`flex items-center justify-center p-2 mb-2 mx-auto ${isMobile ? "" : "w-1/2"}`}>
             {!editMode ? (
-                <DefaultMode step={step} />
+                <DefaultMode step={step} isMobile={isMobile}/>
             ) : (
                 <EditMode step={step} onChange={handleStepChange} onRemove={onRemove} />
             )}
@@ -107,14 +112,16 @@ export function Step({
 }
 
 function DefaultMode({
-    step
+    step,
+    isMobile
 }: {
     step: StepInterface;
+    isMobile: boolean
 }) {
     return (
         <div className="flex flex-col">
             <h3 className="font-extrabold mb-1">Etape {step.key}:</h3>
-            <pre className="w-[50vw] break-word whitespace-normal">{step.value}</pre>
+            <pre className={`break-word whitespace-normal ${isMobile ? "w-full" : "w-[50vw]"}`}>{step.value}</pre>
         </div>
     )
 }

@@ -15,12 +15,14 @@ export default function IngredientsList({
     setRecipeEditMode,
     onChange,
     onSave,
+    isMobile
 }: {
     ingredients: IngredientInterface[];
     recipeEditMode?: boolean;
     setRecipeEditMode?: (editMode: boolean) => void;
     onChange?: (updatedIngredients: IngredientInterface[]) => void;
     onSave?: (ingredients: IngredientInterface[]) => void;
+    isMobile: boolean;
 }) {
     const handleIngredientChange = (ingredient: IngredientInterface, index: number) => {
         const updatedIngredients = [...ingredients];
@@ -48,10 +50,10 @@ export default function IngredientsList({
     };
 
     return (
-        <div className="border-2 border-text-primary p-2 rounded-md mb-4">
-            <SeasonDisplayerExplaination />
+        <div className={`border-2 border-text-primary p-2 w-full rounded-md mb-4 ${isMobile ? "text-white" : null}`}>
+            <SeasonDisplayerExplaination isMobile={isMobile}/>
             <div className="flex justify-center items-center">
-                <h2 className="font-bold text-lg underline text-text-primary">Ingredients</h2>
+                <h2 className={`font-bold text-lg underline text-text-primary ${isMobile ? "text-white" : null}`}>Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
                         className={`bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200`}
@@ -66,7 +68,7 @@ export default function IngredientsList({
                     </button>
                 }
             </div>
-            <div className="w-min mx-auto">
+            <div className={`mx-auto ${isMobile ? "flex-col" : "w-min"}`}>
                 {ingredients.map((ingredient, index) => (
                     <Ingredient
                         key={index}
@@ -74,6 +76,7 @@ export default function IngredientsList({
                         editMode={recipeEditMode}
                         onChange={(updatedIngredient) => handleIngredientChange(updatedIngredient, index)}
                         onRemove={() => handleRemoveIngredient(index)}
+                        isMobile={isMobile}
                     />
                 ))}
             </div>
@@ -93,12 +96,14 @@ export function Ingredient({
     ingredient,
     editMode,
     onChange,
-    onRemove
+    onRemove,
+    isMobile
 }: {
     ingredient: IngredientInterface;
     editMode?: boolean;
     onChange?: (updatedIngredient: IngredientInterface) => void;
     onRemove?: () => void;
+    isMobile: boolean;
 }) {
     const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
         onChange?.({ ...ingredient, name: e.target.value });
@@ -123,8 +128,10 @@ export function Ingredient({
     return (
         <div className="">
             {!editMode ? (
+                isMobile ? <DefaultModeMobile isMobile={isMobile} ingredient={ingredient}/> :
                 <DefaultMode
                     ingredient={ingredient}
+                    isMobile={isMobile}
                 />
             ) : (
                 <EditMode
@@ -143,13 +150,15 @@ export function Ingredient({
 
 function DefaultMode({
     ingredient,
+    isMobile
 }: {
     ingredient: IngredientInterface;
+    isMobile: boolean;
 }) {
     return (
         <li className="flex w-fit">
             <ul className="p-1">
-                <SeasonDisplayer seasons={ingredient.season} />
+                <SeasonDisplayer isMobile={isMobile} seasons={ingredient.season} />
             </ul>
             <ul className="p-1 w-max max-w-50 text-left">{ingredient.name}:</ul>
             <ul className="p-1">{ingredient.quantity.value}</ul>
@@ -159,6 +168,29 @@ function DefaultMode({
             </ul>
             {/* <p className="p-1">{ingredient.category}</p> */}
         </li>
+    );
+}
+
+function DefaultModeMobile({
+    ingredient,
+    isMobile
+}: {
+    ingredient: IngredientInterface;
+    isMobile: boolean;
+}) {
+    return (
+        <div className="flex w-full">
+            <p className="p-1">
+                <SeasonDisplayer isMobile={isMobile} seasons={ingredient.season} />
+            </p>
+            <p className="p-1 w-max max-w-50 text-left ">
+                <span className="font-bold">{ingredient.name} : </span>
+                {ingredient.quantity.value} {" "}
+                <span className="lowercase">{!(ingredient.quantity.unit == UnitEnum.NONE) ? ingredient.quantity.unit : ""}</span>
+                {ingredient.quantity.value > 1 ? "s" : ""}
+            </p>
+            {/* <p className="p-1">{ingredient.category}</p> */}
+        </div>
     );
 }
 

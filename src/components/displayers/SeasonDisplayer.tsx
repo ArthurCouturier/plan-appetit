@@ -11,11 +11,9 @@ const seasonColor = {
 export default function SeasonDisplayer({
     seasons,
     className,
-    isMobile
 }: {
     seasons: SeasonEnum[];
     className?: string;
-    isMobile: boolean;
 }) {
     switch (seasons.length) {
         case 0:
@@ -94,34 +92,34 @@ export function SeasonDisplayerExplaination({
         isMobile ? 
         <div className="flex flex-col justify-center mt-2 mb-4 px-1 space-y-2">
             <div className="flex  space-x-1 items-center">
-                <SeasonDisplayer isMobile={isMobile} seasons={[SeasonEnum.WINTER]} className="" />
+                <SeasonDisplayer seasons={[SeasonEnum.WINTER]} className="" />
                 <p>: Hiver</p>
             </div>
             <div className="flex  space-x-1 items-center">
-                <SeasonDisplayer isMobile={isMobile} seasons={[SeasonEnum.SPRING]} className="" />
+                <SeasonDisplayer seasons={[SeasonEnum.SPRING]} className="" />
                 <p>: Printemps</p>
             </div>
             <div className="flex  space-x-1 items-center">
-                <SeasonDisplayer isMobile={isMobile} seasons={[SeasonEnum.SUMMER]} className="" />
+                <SeasonDisplayer seasons={[SeasonEnum.SUMMER]} className="" />
                 <p>: Été</p>
             </div>
             <div className="flex  space-x-1 items-center">
-                <SeasonDisplayer isMobile={isMobile} seasons={[SeasonEnum.FALL]} className="" />
+                <SeasonDisplayer seasons={[SeasonEnum.FALL]} className="" />
                 <p>: Automne</p>
             </div>
             <div className="flex  space-x-1 items-center">
-                <SeasonDisplayer isMobile={isMobile} seasons={[SeasonEnum.WINTER, SeasonEnum.SPRING, SeasonEnum.SUMMER, SeasonEnum.FALL]} className="" />
+                <SeasonDisplayer seasons={[SeasonEnum.WINTER, SeasonEnum.SPRING, SeasonEnum.SUMMER, SeasonEnum.FALL]} className="" />
                 <p>: Toute saison</p>
             </div>
         </div>
 
         : 
         <div className="flex justify-center mt-2 mb-4">
-            <SeasonDisplayer isMobile={isMobile} seasons={[SeasonEnum.WINTER]} className="" />: Hiver
-            <SeasonDisplayer isMobile={isMobile} seasons={[SeasonEnum.SPRING]} className="ml-2" />: Printemps
-            <SeasonDisplayer isMobile={isMobile} seasons={[SeasonEnum.SUMMER]} className="ml-2" />: Été
-            <SeasonDisplayer isMobile={isMobile} seasons={[SeasonEnum.FALL]} className="ml-2" />: Automne
-            <SeasonDisplayer isMobile={isMobile} seasons={[SeasonEnum.WINTER, SeasonEnum.SPRING, SeasonEnum.SUMMER, SeasonEnum.FALL]} className="ml-2" />: Toute saison
+            <SeasonDisplayer seasons={[SeasonEnum.WINTER]} className="" />: Hiver
+            <SeasonDisplayer seasons={[SeasonEnum.SPRING]} className="ml-2" />: Printemps
+            <SeasonDisplayer seasons={[SeasonEnum.SUMMER]} className="ml-2" />: Été
+            <SeasonDisplayer seasons={[SeasonEnum.FALL]} className="ml-2" />: Automne
+            <SeasonDisplayer seasons={[SeasonEnum.WINTER, SeasonEnum.SPRING, SeasonEnum.SUMMER, SeasonEnum.FALL]} className="ml-2" />: Toute saison
         </div> 
     )
 }

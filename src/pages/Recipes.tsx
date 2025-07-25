@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
-import RecipeService from "../api/services/RecipeService";
 import RecipeCard from "../components/cards/RecipeCard";
 import { ImportRecipeButton } from "../components/buttons/DataImportButtons";
 import { AddRecipeButton, GenerateAIRecipeButton } from "../components/buttons/NewRecipeButton";

@@ -6,13 +6,10 @@ import HeaderMobile from "../global/HeaderMobile";
 import { useRecipeContext } from "../../contexts/RecipeContext";
 import RecipeService from "../../api/services/RecipeService";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 
 export default function MyRecipesMobile({
-  // recipes,
   isMobile
 }: {
-  // recipes: RecipeInterface[];
   isMobile: boolean;
 }) {
 
@@ -55,11 +52,5 @@ export default function MyRecipesMobile({
 
       <FooterMobile />
     </div>
-  )
-}
-
-function Recipe() {
-  return (
-    <div></div>
   )
 }

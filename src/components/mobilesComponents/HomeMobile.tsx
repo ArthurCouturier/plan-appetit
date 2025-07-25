@@ -4,33 +4,16 @@ import { UserCircleIcon, BookOpenIcon, LightBulbIcon, PlusIcon } from "@heroicon
 import FooterMobile from "../global/FooterMobile";
 import HeaderMobile from "../global/HeaderMobile";
 import { useNavigate } from "react-router-dom";
-import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeService from "../../api/services/RecipeService";
 import { useRecipeContext } from "../../contexts/RecipeContext";
 
-export default function HomeMobile(
-//   {
-//   recipes,
-//   setRecipes
-// }: {
-//   recipes : RecipeInterface[],
-//   setRecipes : (recipes: RecipeInterface[]) => void;
-// }
-) 
-{
+export default function HomeMobile() {
 
   const navigateTo = useNavigate();
 
-  const { recipes, setRecipes } = useRecipeContext();
+  const { setRecipes } = useRecipeContext();
 
-  const goToMyRecipes = () => 
-    navigateTo("/mesrecettes"
-      // , {
-      // state:{
-      //   recipes: recipes
-      // }
-    // }
-  )
+  const goToMyRecipes = () => navigateTo("/mesrecettes")
 
     const handleClick = async () => {
       try {

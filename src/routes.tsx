@@ -8,6 +8,7 @@ import RecipeGeneration from "./pages/RecipeGeneration";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
 import Account from "./pages/Account";
+import MyRecipes from "./pages/MyRecipes";
 
 const router = createBrowserRouter([
     {
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
             {
                 path: "/recettes/generer",
                 element: <RecipeGeneration />,
+            },
+            {
+                path: "/mesrecettes",
+                element: <MyRecipes />,
             },
         ],
     },

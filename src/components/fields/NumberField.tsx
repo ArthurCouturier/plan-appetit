@@ -21,7 +21,7 @@ export default function NumberField({ label, value, onChange, min = 0, max = 999
 
     return (
         <div className="flex items-center space-x-2">
-            <label htmlFor="number" className="text-sm text-text-secondary">{label}</label>
+            <label htmlFor="number" className="text-lg md:text-text-secondary text-white font-bold md:text-sm">{label}</label>
             <input
                 type="number"
                 id="number"
@@ -32,26 +32,26 @@ export default function NumberField({ label, value, onChange, min = 0, max = 999
                     const newValue = Math.min(Math.max(Number(e.target.value), min), max);
                     onChange(newValue);
                 }}
-                className="border border-gray-200 rounded-sm p-1 w-16 text-center bg-secondary text-text-secondary"
+                className="border border-gray-200 rounded-sm p-1 text-center bg-secondary text-text-secondary w-8 md:w-16 "
             />
             <button
                 type="button"
                 onClick={increment}
-                className="border border-gray-300 rounded-sm px-2 py-1 text-sm bg-green-200 hover:bg-green-400 transition duration-200"
+                className="bg-green-200 rounded-sm px-2 py-1 size-8 md:border md:border-gray-300 md:text-sm  md:hover:bg-green-400 md:transition md:duration-200"
             >
                 +
             </button>
             <button
                 type="button"
                 onClick={decrement}
-                className="border border-gray-300 rounded-sm px-2 py-1 text-sm bg-red-200 hover:bg-red-400 transition duration-200"
+                className="rounded-sm px-2 py-1 text-sm bg-red-200 size-8 md:border md:border-gray-300  md:hover:bg-red-400 md:transition md:duration-200"
             >
                 -
             </button>
             <button
                 type="button"
                 onClick={zero}
-                className="border border-gray-300 rounded-sm px-2 py-1 text-sm bg-gray-300 hover:bg-gray-400 transition duration-200"
+                className="rounded-sm px-2 py-1 text-sm bg-gray-300 size-8 md:border md:border-gray-300  md:hover:bg-gray-400 md:transition md:duration-200"
             >
                 0
             </button>

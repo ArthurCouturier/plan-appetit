@@ -3,7 +3,6 @@ import './App.css';
 import router from './routes';
 import { useState, useEffect } from 'react';
 import DarkModeButton from './components/buttons/DarkModeButton';
-import Monitor from './components/three/Monitor';
 import { AuthProvider } from './components/authentication/AuthProvider';
 import { useGLTF } from '@react-three/drei';
 
@@ -39,7 +38,7 @@ function App() {
     <div className={`w-full h-full ${theme}`}>
       {!isMobile && <DarkModeButton mode={theme} changeMode={changeTheme} />}
       <AuthProvider>
-        {isMobile ? <Monitor /> : <RouterProvider router={router} />}
+        <RouterProvider router={router} />
       </AuthProvider>
     </div>
   );

@@ -4,12 +4,15 @@ import './index.css'
 import App from './App.tsx'
 import { Analytics } from "@vercel/analytics/react"
 import { ThemeProvider } from '@material-tailwind/react'
+import { RecipeProvider } from './contexts/RecipeContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <RecipeProvider>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </RecipeProvider>
     <Analytics />
   </StrictMode>,
 )

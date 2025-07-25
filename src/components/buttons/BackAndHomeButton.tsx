@@ -24,7 +24,7 @@ function Button({
     return (
         <button
             onClick={onClick}
-            className="bg-primary hover:opacity-80 hover:scale-105 shadow-sm border-border-color rounded-lg border-4 text-text-secondary font-bold p-4 lg:m-2 m-1 lg:m-2 xl:m-4 transition duration-200"
+            className="bg-primary hover:opacity-80 hover:scale-105 shadow-sm border-border-color rounded-lg border-4 text-text-secondary font-bold p-4 m-1 lg:m-2 xl:m-4 transition duration-200"
         >
             {children}
         </button>

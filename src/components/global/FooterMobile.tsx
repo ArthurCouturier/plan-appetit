@@ -1,55 +1,63 @@
 import { Button } from "@material-tailwind/react";
-import { UserCircleIcon, BookOpenIcon, LightBulbIcon } from "@heroicons/react/24/solid"
+import { UserCircleIcon, BookOpenIcon, LightBulbIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useRecipeContext } from "../../contexts/RecipeContext";
 
 export default function FooterMobile() {
-
-  const { recipes } = useRecipeContext();
-
   const navigateTo = useNavigate();
 
-  const [lastScrollY, setLastScrollY] = useState(window.scrollY);
-
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [showFooter, setShowFooter] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY) {
-        setShowFooter(false);
-      } else {
-        setShowFooter(true);
-      }
-      setLastScrollY(currentScrollY);
-    }
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
 
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
+      const isAtBottom = currentScrollY >= maxScroll - 1;
+
+      if (!isAtBottom) {
+        if (currentScrollY > lastScrollY) {
+          setShowFooter(false);
+        } else if (currentScrollY < lastScrollY) {
+          setShowFooter(true);
+        }
+      } else {
+        setShowFooter(false)
+      }
+
+      setLastScrollY(currentScrollY);
     };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  const goToMyRecipes = () =>
-    navigateTo("/mesrecettes", {
-      state: {
-        recipes: recipes
-      }
-    })
+  const goToMyRecipes = () => navigateTo("/mesrecettes");
 
   return (
-    <footer className={`absolute px-4 mx-20 inset-x-0 gap-1 bottom-4 flex justify-between bg-blue-600 rounded-3xl transition-transform duration-2000 ${showFooter ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
-      }`}>
-      <Button className="bg-blue-900 rounded-3xl border-0" onClick={() => navigateTo("/recettes/generer")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-        <LightBulbIcon className="w-6 h-6 text-white" />
-      </Button>
-      <Button className="bg-blue-900 rounded-3xl border-0" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-        <BookOpenIcon className="w-6 h-6 text-white" onClick={() => goToMyRecipes()} />
-      </Button>
-      <Button className="bg-blue-900 rounded-3xl border-0" onClick={() => navigateTo("/login")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-        <UserCircleIcon className="w-6 h-6 text-white" />
-      </Button>
+    <footer className="fixed flex justify-center inset-x-0 bottom-4 z-40">
+      <div
+        className={`w-min h-14 mx-6 flex items-center justify-between bg-cout-purple rounded-3xl px-6 py-3 transition-all duration-500 shadow-md
+        ${showFooter ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0"}`}
+      >
+        <Button
+          className="bg-cout-purple shadow-none rounded-full"
+          onClick={() => navigateTo("/recettes/generer")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}        >
+          <LightBulbIcon className="w-6 h-6 text-white" />
+        </Button>
+        <Button
+          className="bg-cout-purple shadow-none rounded-full"
+          onClick={goToMyRecipes} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}        >
+          <BookOpenIcon className="w-6 h-6 text-white" />
+        </Button>
+        <Button
+          className="bg-cout-purple shadow-none rounded-full"
+          onClick={() => navigateTo("/login")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}        >
+          <UserCircleIcon className="w-6 h-6 text-white" />
+        </Button>
+      </div>
     </footer>
-  )
+  );
 }

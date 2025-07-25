@@ -29,8 +29,8 @@ export default function RecipeCard({
 
     return (
         isMobile ?
-            <div className="bg-blue-600 mr-4w-screen max-w-max rounded-xl flex-col text-left p-2">
-                <button className="text-left text-white flex gap-2" onClick={() => handleClick()}>
+            <div className="bg-primary mr-4w-screen max-w-max rounded-xl flex-col text-left p-2">
+                <button className="text-left text-text-primary flex gap-2" onClick={() => handleClick()}>
                     <div>
                         <h2 className="font-bold first-letter:uppercase lowercase">{recipe.name}<span className="font-normal"> ({recipe.covers} pers)</span></h2>
                         {showDetails ?
@@ -41,11 +41,19 @@ export default function RecipeCard({
                             </div>
                             : null}
                     </div>
-                    <ArrowRightIcon className={`w-6 h-6 text-white transition-opacity duration-300 ${showDetails ? "rotate-90" : null}`} />
+                    <ArrowRightIcon
+                        className={`
+                        w-6 h-6 text-text-primary
+                        transform transition-transform duration-300
+                        ${showDetails ? "rotate-90" : "rotate-0"}
+                        `}
+                    />
                 </button>
                 {showDetails ?
                     <div className="flex justify-center">
-                        <Button onClick={() => navigateTo(`/recettes/${recipe.uuid}`)} className="bg-blue-900 px-3" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>👩‍🍳 <span className="first-letter:uppercase lowercase">Voir la recette </span> 👨‍🍳</Button>
+                        <Button
+                            onClick={() => navigateTo(`/recettes/${recipe.uuid}`)}
+                            className="text-text-primary first-letter:uppercase lowercase bg-thirdary px-3" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>Voir la recette </Button>
                     </div>
                     : null
                 }

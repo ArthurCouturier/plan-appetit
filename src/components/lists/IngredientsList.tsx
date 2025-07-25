@@ -50,13 +50,13 @@ export default function IngredientsList({
     };
 
     return (
-        <div className="border-2 border-text-primary p-2 w-full rounded-md mb-4 text-white md:text-text-primary">
+        <div className={`"md:border-2 border-text-primary p-2 w-full rounded-md mb-4 text-text-primary" ${recipeEditMode ? "border border-dashed" : null}`}>
             <SeasonDisplayerExplaination isMobile={isMobile} />
             <div className="flex justify-center items-center gap-2 md:gap-0">
-                <h2 className="font-bold text-lg underline text-white md:text-text-primary">Ingredients</h2>
+                <h2 className="font-bold text-lg underline text-text-primary ">Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
-                        className="bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg md:bg-confirmation-1 md:hover:bg-confirmation-2 md:text-text-primary md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
+                        className="text-sm font-bold px-4 py-2 rounded-lg bg-confirmation-1 md:hover:bg-confirmation-2 text-text-primary md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
                         onClick={async () => {
                             if (recipeEditMode) {
                                 await onSave?.(ingredients)
@@ -82,7 +82,7 @@ export default function IngredientsList({
             </div>
             {recipeEditMode &&
                 <button
-                    className="bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg mt-2 md:bg-confirmation-1 md:hover:bg-confirmation-2 md:text-text-primary md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
+                    className="text-text-primary text-sm font-bold px-4 py-2 rounded-lg mt-2 bg-confirmation-1 md:hover:bg-confirmation-2 md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
                     onClick={handleAddIngredient}
                 >
                     Ajouter ingrédient
@@ -218,7 +218,7 @@ function EditMode({
             {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
             <UnitSelector actualUnit={ingredient.quantity.unit} onChange={setQuantityUnit} />
             <button
-                className="rounded-md bg-red-500 py-1 px-2 text-white font-bold w-min md:bg-cancel-1 md:hover:bg-cancel-2 md:text-text-primary md:p-1 md:m-2 md:transition md:duration-200"
+                className="rounded-md py-1 px-2 text-text-primary font-bold w-min bg-cancel-1 md:hover:bg-cancel-2  md:p-1 md:m-2 md:transition md:duration-200"
                 onClick={onRemove}
             >
                 Supprimer

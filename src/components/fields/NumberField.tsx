@@ -21,7 +21,7 @@ export default function NumberField({ label, value, onChange, min = 0, max = 999
 
     return (
         <div className="flex items-center space-x-2">
-            <label htmlFor="number" className="text-lg md:text-text-secondary text-white font-bold md:text-sm">{label}</label>
+            <label htmlFor="number" className="text-lg text-text-secondary font-bold md:text-sm">{label}</label>
             <input
                 type="number"
                 id="number"

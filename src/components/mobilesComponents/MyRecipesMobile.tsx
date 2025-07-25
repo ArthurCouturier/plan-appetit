@@ -39,11 +39,11 @@ export default function MyRecipesMobile({
     <div className="space-y-4">
       <HeaderMobile pageName="Mes Recettes" />
 
-      <div className="w-full mt-4 flex flex-col space-y-4">
+      <div className="w-full mt-4 flex flex-col space-y-4 items-center">
         {recipesList}
       </div>
       <div className="flex justify-center">
-        <Button className="bg bg-blue-900"
+        <Button className="bg bg-thirdary text-text-primary"
           onClick={() => handleClick()} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
           Ajouter une recette
         </Button>

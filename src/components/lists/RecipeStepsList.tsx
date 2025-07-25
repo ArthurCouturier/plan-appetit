@@ -39,12 +39,12 @@ export default function RecipeStepsList({
     };
 
     return (
-        <div className="border-2 border-text-primary p-2 rounded-md mt-4 text-white md:text-text-primary">
+        <div className="border-2 border-text-primary p-2 rounded-md mt-4 text-text-primary">
             <div className="flex justify-center items-center">
-                <h2 className="font-bold text-lg underline text-white md:text-text-primary">Préparation</h2>
+                <h2 className="font-bold text-lg underline text-text-primary">Préparation</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
-                        className="ml-2 bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg md:bg-confirmation-1 md:hover:bg-confirmation-2 md:text-text-primary md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
+                        className="ml-2 text-text-primary text-sm font-bold px-4 py-2 rounded-lg bg-confirmation-1 md:hover:bg-confirmation-2 md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
                         onClick={async () => {
                             if (recipeEditMode) {
                                 await onSave?.(steps)
@@ -69,7 +69,7 @@ export default function RecipeStepsList({
             </div>
             {recipeEditMode &&
                 <button
-                    className="ml-2 bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg md:bg-confirmation-1 md:hover:bg-confirmation-2 md:text-text-primary md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
+                    className="ml-2 text-text-primary text-sm font-bold px-4 py-2 rounded-lg bg-confirmation-1 md:hover:bg-confirmation-2 md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
                     onClick={handleAddStep}
                 >
                     Ajouter étape

@@ -35,17 +35,17 @@ export default function RecipeDetail() {
     const { setRecipes } = useRecipeContext();
 
     const [isMobile, setIsMobile] = useState(false);
-    
-      useEffect(() => {
+
+    useEffect(() => {
         const handleResize = () => {
-          setIsMobile(window.innerWidth <= 768);
+            setIsMobile(window.innerWidth <= 768);
         };
-    
+
         handleResize();
         window.addEventListener('resize', handleResize);
-    
+
         return () => window.removeEventListener('resize', handleResize);
-      }, []);
+    }, []);
 
     return recipe ? (
         <div className="md:w-full md:bg-bg-color md:p-6">
@@ -125,27 +125,27 @@ export default function RecipeDetail() {
                                 setEditMode(!editMode);
                             }}
                         >
-                            {editMode? "Sauvegarder" : "Modifier"}
+                            {editMode ? "Sauvegarder" : "Modifier"}
                         </button>
                     }
                 </div>
                 {!editMode ? (
                     <>
-                        <DefaultMode recipe={recipe} isMobile={isMobile}/>
+                        <DefaultMode recipe={recipe} isMobile={isMobile} />
                         {isMobile &&
-                        <button
-                            className="mt-4 bg-blue-900 text-white text-lg font-bold px-4 py-2 rounded-lg"
-                            onClick={async () => {
-                                if (editMode) {
-                                    await handleSaveRecipe(recipe)
-                                }
-                                setEditMode(!editMode);
-                            }}
-                        >
-                            {(editMode && !isMobile)? "Sauvegarder" : "Modifier"}
-                        </button>
-                    }
-                        {isMobile ? <FooterMobile/> : <RecipeFooter recipe={recipe} />}
+                            <button
+                                className="mt-4 bg-blue-900 text-white text-lg font-bold px-4 py-2 rounded-lg"
+                                onClick={async () => {
+                                    if (editMode) {
+                                        await handleSaveRecipe(recipe)
+                                    }
+                                    setEditMode(!editMode);
+                                }}
+                            >
+                                {(editMode && !isMobile) ? "Sauvegarder" : "Modifier"}
+                            </button>
+                        }
+                        {isMobile ? <FooterMobile /> : <RecipeFooter recipe={recipe} />}
                     </>
                 ) : (
                     <div className="flex flex-col items-center gap-2">
@@ -179,7 +179,7 @@ export default function RecipeDetail() {
         </div >
     ) : (
         <div className="w-full bg-bg-color p-6">
-            {isMobile ? <HeaderMobile/> : <RecipeHeader />}
+            {isMobile ? <HeaderMobile /> : <RecipeHeader />}
             <RecipeError />
         </div>
     )

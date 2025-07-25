@@ -15,40 +15,40 @@ export default function MyRecipesMobile({
 
   const { recipes, setRecipes } = useRecipeContext();
 
-  const recipesList = recipes.map((recipe: RecipeInterface, index: number) => 
-    (<RecipeCard 
-      key={index} 
-      recipe={recipe} 
-      isMobile={isMobile} />))
+  const recipesList = recipes.map((recipe: RecipeInterface, index: number) =>
+  (<RecipeCard
+    key={index}
+    recipe={recipe}
+    isMobile={isMobile} />))
 
   const navigateTo = useNavigate();
 
   const handleClick = async () => {
     try {
-        await RecipeService.addEmptyRecipe();
-        const newRecipes = RecipeService.fetchRecipesLocally();
-        setRecipes(newRecipes);
-        // navigateTo(`/recettes/${newRecipes[newRecipes.length - 1].uuid}`) 
+      await RecipeService.addEmptyRecipe();
+      const newRecipes = RecipeService.fetchRecipesLocally();
+      setRecipes(newRecipes);
+      // navigateTo(`/recettes/${newRecipes[newRecipes.length - 1].uuid}`) 
     } catch (err) {
-        console.error(err);
-        navigateTo('/login');
+      console.error(err);
+      navigateTo('/login');
     }
   }
-  
+
   return (
     <div className="space-y-4">
-      <HeaderMobile pageName="Mes Recettes"/>
+      <HeaderMobile pageName="Mes Recettes" />
 
       <div className="w-full mt-4 flex flex-col space-y-4">
         {recipesList}
       </div>
       <div className="flex justify-center">
         <Button className="bg bg-blue-900"
-        onClick={() => handleClick()}>
+          onClick={() => handleClick()} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
           Ajouter une recette
         </Button>
       </div>
-      
+
 
       <FooterMobile />
     </div>

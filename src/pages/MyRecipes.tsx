@@ -5,7 +5,7 @@ export default function MesRecettes(
 ) {
 
   const [isMobile, setIsMobile] = useState(false);
-      
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -19,8 +19,8 @@ export default function MesRecettes(
 
   return (
     isMobile ? <MyRecipesMobile isMobile={isMobile} /> :
-    <div>
-      salut
-    </div>
+      <div>
+        salut
+      </div>
   )
 }

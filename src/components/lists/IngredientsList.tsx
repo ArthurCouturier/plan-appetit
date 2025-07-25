@@ -51,7 +51,7 @@ export default function IngredientsList({
 
     return (
         <div className="border-2 border-text-primary p-2 w-full rounded-md mb-4 text-white md:text-text-primary">
-            <SeasonDisplayerExplaination isMobile={isMobile}/>
+            <SeasonDisplayerExplaination isMobile={isMobile} />
             <div className="flex justify-center items-center gap-2 md:gap-0">
                 <h2 className="font-bold text-lg underline text-white md:text-text-primary">Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
@@ -128,11 +128,10 @@ export function Ingredient({
     return (
         <div className="">
             {!editMode ? (
-                isMobile ? <DefaultModeMobile isMobile={isMobile} ingredient={ingredient}/> :
-                <DefaultMode
-                    ingredient={ingredient}
-                    isMobile={isMobile}
-                />
+                isMobile ? <DefaultModeMobile ingredient={ingredient} /> :
+                    <DefaultMode
+                        ingredient={ingredient}
+                    />
             ) : (
                 <EditMode
                     ingredient={ingredient}
@@ -151,15 +150,13 @@ export function Ingredient({
 
 function DefaultMode({
     ingredient,
-    isMobile
 }: {
     ingredient: IngredientInterface;
-    isMobile: boolean;
 }) {
     return (
         <li className="flex w-fit">
             <ul className="p-1">
-                <SeasonDisplayer isMobile={isMobile} seasons={ingredient.season} />
+                <SeasonDisplayer seasons={ingredient.season} />
             </ul>
             <ul className="p-1 w-max max-w-50 text-left">{ingredient.name}:</ul>
             <ul className="p-1">{ingredient.quantity.value}</ul>
@@ -174,15 +171,13 @@ function DefaultMode({
 
 function DefaultModeMobile({
     ingredient,
-    isMobile
 }: {
     ingredient: IngredientInterface;
-    isMobile: boolean;
 }) {
     return (
         <div className="flex w-full">
             <p className="p-1">
-                <SeasonDisplayer isMobile={isMobile} seasons={ingredient.season} />
+                <SeasonDisplayer seasons={ingredient.season} />
             </p>
             <p className="p-1 w-max max-w-50 text-left ">
                 <span className="font-bold">{ingredient.name} : </span>

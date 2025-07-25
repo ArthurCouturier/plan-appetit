@@ -93,3 +93,8 @@ input[type="number"] {
   --confirmation-2: #4338ca; /* indigo-700 */
   --cancel-2: #b91c1c; /* red-700 */
 }
+
+html, body {
+  margin: 0;
+  padding: 0;
+}

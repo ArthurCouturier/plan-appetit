@@ -6,7 +6,7 @@ export default function RecipeStepsList({
     recipeEditMode,
     setRecipeEditMode,
     onChange,
-    onSave
+    onSave,
 }: {
     steps: StepInterface[];
     recipeEditMode?: boolean;
@@ -39,12 +39,12 @@ export default function RecipeStepsList({
     };
 
     return (
-        <div className="border-2 border-text-primary p-2 rounded-md mt-4">
+        <div className={`md:border-2 border-text-primary p-2 rounded-md mt-4 text-text-primary ${recipeEditMode ? "border border-dashed" : null}`}>
             <div className="flex justify-center items-center">
                 <h2 className="font-bold text-lg underline text-text-primary">Préparation</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
-                        className={`bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200`}
+                        className="ml-2 text-text-primary text-sm font-bold px-4 py-2 rounded-lg bg-confirmation-1 md:hover:bg-confirmation-2 md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
                         onClick={async () => {
                             if (recipeEditMode) {
                                 await onSave?.(steps)
@@ -69,7 +69,7 @@ export default function RecipeStepsList({
             </div>
             {recipeEditMode &&
                 <button
-                    className="bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"
+                    className="ml-2 text-text-primary text-sm font-bold px-4 py-2 rounded-lg bg-confirmation-1 md:hover:bg-confirmation-2 md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
                     onClick={handleAddStep}
                 >
                     Ajouter étape
@@ -83,7 +83,7 @@ export function Step({
     step,
     editMode,
     onChange,
-    onRemove
+    onRemove,
 }: {
     step: StepInterface;
     editMode?: boolean;
@@ -96,7 +96,7 @@ export function Step({
     }
 
     return (
-        <div className="flex items-center justify-center p-2 mb-2 w-1/2 mx-auto">
+        <div className="flex items-center justify-center p-2 mb-2 mx-auto md:w-1/2">
             {!editMode ? (
                 <DefaultMode step={step} />
             ) : (
@@ -107,14 +107,14 @@ export function Step({
 }
 
 function DefaultMode({
-    step
+    step,
 }: {
     step: StepInterface;
 }) {
     return (
         <div className="flex flex-col">
             <h3 className="font-extrabold mb-1">Etape {step.key}:</h3>
-            <pre className="w-[50vw] break-word whitespace-normal">{step.value}</pre>
+            <pre className="break-word whitespace-normal w-full md:w-[50vw]">{step.value}</pre>
         </div>
     )
 }

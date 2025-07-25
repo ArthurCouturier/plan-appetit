@@ -8,40 +8,52 @@ import RecipeGeneration from "./pages/RecipeGeneration";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
 import Account from "./pages/Account";
+import MyRecipes from "./pages/MyRecipes";
+import Layout from "./components/global/Layout";
 
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Home />,
-    },
-    {
-        path: "/login",
-        element: <LoginPage />,
-    },
-    {
-        element: <ProtectedRoute />,
+        element: <Layout />,
         children: [
             {
-                path: "/profile",
-                element: <Account />,
+                path: "",
+                element: <Home />,
             },
             {
-                path: "/recettes/generer",
-                element: <RecipeGeneration />,
+                path: "login",
+                element: <LoginPage />,
+            },
+            {
+                path: "planning",
+                element: <Planning />,
+            },
+            {
+                path: "recettes",
+                element: <Recipes />,
+            },
+            {
+                path: "recettes/:uuid",
+                element: <RecipeDetail />,
+            },
+            {
+                element: <ProtectedRoute />,
+                children: [
+                    {
+                        path: "profile",
+                        element: <Account />,
+                    },
+                    {
+                        path: "recettes/generer",
+                        element: <RecipeGeneration />,
+                    },
+                    {
+                        path: "mesrecettes",
+                        element: <MyRecipes />,
+                    },
+                ],
             },
         ],
-    },
-    {
-        path: "/planning",
-        element: <Planning />,
-    },
-    {
-        path: "/recettes",
-        element: <Recipes />,
-    },
-    {
-        path: "/recettes/:uuid",
-        element: <RecipeDetail />,
     },
 ]);
 

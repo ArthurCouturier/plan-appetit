@@ -50,13 +50,13 @@ export default function IngredientsList({
     };
 
     return (
-        <div className={`border-2 border-text-primary p-2 w-full rounded-md mb-4 ${isMobile ? "text-white" : null}`}>
-            <SeasonDisplayerExplaination isMobile={isMobile}/>
-            <div className={`flex justify-center items-center ${isMobile ? "gap-2" : null}`}>
-                <h2 className={`font-bold text-lg underline text-text-primary ${isMobile ? "text-white" : null}`}>Ingredients</h2>
+        <div className="border-2 border-text-primary p-2 w-full rounded-md mb-4 text-white md:text-text-primary">
+            <SeasonDisplayerExplaination isMobile={isMobile} />
+            <div className="flex justify-center items-center gap-2 md:gap-0">
+                <h2 className="font-bold text-lg underline text-white md:text-text-primary">Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
-                        className={`${isMobile ? "bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg" : "bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"}`}
+                        className="bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg md:bg-confirmation-1 md:hover:bg-confirmation-2 md:text-text-primary md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
                         onClick={async () => {
                             if (recipeEditMode) {
                                 await onSave?.(ingredients)
@@ -68,7 +68,7 @@ export default function IngredientsList({
                     </button>
                 }
             </div>
-            <div className={`mx-auto ${isMobile ? "flex-col" : "w-min"}`}>
+            <div className="mx-auto flex-col md:w-min">
                 {ingredients.map((ingredient, index) => (
                     <Ingredient
                         key={index}
@@ -82,7 +82,7 @@ export default function IngredientsList({
             </div>
             {recipeEditMode &&
                 <button
-                    className={`${isMobile ? "bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg mt-2" : "bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"}`}
+                    className="bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg mt-2 md:bg-confirmation-1 md:hover:bg-confirmation-2 md:text-text-primary md:p-2 md:rounded-md md:m-2 md:transition md:duration-200"
                     onClick={handleAddIngredient}
                 >
                     Ajouter ingrédient
@@ -128,11 +128,10 @@ export function Ingredient({
     return (
         <div className="">
             {!editMode ? (
-                isMobile ? <DefaultModeMobile isMobile={isMobile} ingredient={ingredient}/> :
-                <DefaultMode
-                    ingredient={ingredient}
-                    isMobile={isMobile}
-                />
+                isMobile ? <DefaultModeMobile ingredient={ingredient} /> :
+                    <DefaultMode
+                        ingredient={ingredient}
+                    />
             ) : (
                 <EditMode
                     ingredient={ingredient}
@@ -151,15 +150,13 @@ export function Ingredient({
 
 function DefaultMode({
     ingredient,
-    isMobile
 }: {
     ingredient: IngredientInterface;
-    isMobile: boolean;
 }) {
     return (
         <li className="flex w-fit">
             <ul className="p-1">
-                <SeasonDisplayer isMobile={isMobile} seasons={ingredient.season} />
+                <SeasonDisplayer seasons={ingredient.season} />
             </ul>
             <ul className="p-1 w-max max-w-50 text-left">{ingredient.name}:</ul>
             <ul className="p-1">{ingredient.quantity.value}</ul>
@@ -174,15 +171,13 @@ function DefaultMode({
 
 function DefaultModeMobile({
     ingredient,
-    isMobile
 }: {
     ingredient: IngredientInterface;
-    isMobile: boolean;
 }) {
     return (
         <div className="flex w-full">
             <p className="p-1">
-                <SeasonDisplayer isMobile={isMobile} seasons={ingredient.season} />
+                <SeasonDisplayer seasons={ingredient.season} />
             </p>
             <p className="p-1 w-max max-w-50 text-left ">
                 <span className="font-bold">{ingredient.name} : </span>
@@ -219,11 +214,11 @@ function EditMode({
             <SeasonSelector initialSeason={ingredient.season} onChange={setSeason} />
             <input className="mx-2 rounded-md bg-secondary border-2 border-border-color opacity-80 text-opacity-100 text-text-primary px-1" type="text" value={ingredient.name} onChange={setName} />
             {/* <input type="number" value={ingredient.category} onChange={setCategory} /> */}
-            <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} isMobile={isMobile} />
+            <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} />
             {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
             <UnitSelector actualUnit={ingredient.quantity.unit} onChange={setQuantityUnit} />
             <button
-                className={`rounded-md ${isMobile ? "bg-red-500 py-1 px-2 text-white font-bold w-min" : "bg-cancel-1 hover:bg-cancel-2 text-text-primary p-1 m-2 transition duration-200"}`}
+                className="rounded-md bg-red-500 py-1 px-2 text-white font-bold w-min md:bg-cancel-1 md:hover:bg-cancel-2 md:text-text-primary md:p-1 md:m-2 md:transition md:duration-200"
                 onClick={onRemove}
             >
                 Supprimer

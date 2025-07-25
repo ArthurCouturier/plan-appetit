@@ -9,39 +9,39 @@ import { Button } from "@material-tailwind/react";
 export default function Home() {
 
     const [isMobile, setIsMobile] = useState(false);
-    
-      useEffect(() => {
+
+    useEffect(() => {
         const handleResize = () => {
-          setIsMobile(window.innerWidth <= 768);
+            setIsMobile(window.innerWidth <= 768);
         };
-    
+
         handleResize();
         window.addEventListener('resize', handleResize);
-    
+
         return () => window.removeEventListener('resize', handleResize);
-      }, []);
+    }, []);
 
     const navigateTo = useNavigate();
 
     return (
-        isMobile ? <Button onClick={() => navigateTo("/recettes")}>Mobile Version</Button> :
-        <div className="w-full h-full">
-            <div className="bg-bg-color h-full min-h-fit p-6 rounded-md">
-                <Header
-                    back={true}
-                    home={true}
-                    title={true}
-                    profile={true}
-                />
-                <MenuButton link={"/planning"}>
-                    Configurer le planning
-                    <BusinessPlanThree />
-                </MenuButton>
-                <MenuButton link={"/recettes"}>
-                    Livre des recettes
-                    <RecipesThree />
-                </MenuButton>
+        isMobile ? <Button onClick={() => navigateTo("/recettes")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>Mobile Version</Button> :
+            <div className="w-full h-full">
+                <div className="bg-bg-color h-full min-h-fit p-6 rounded-md">
+                    <Header
+                        back={true}
+                        home={true}
+                        title={true}
+                        profile={true}
+                    />
+                    <MenuButton link={"/planning"}>
+                        Configurer le planning
+                        <BusinessPlanThree />
+                    </MenuButton>
+                    <MenuButton link={"/recettes"}>
+                        Livre des recettes
+                        <RecipesThree />
+                    </MenuButton>
+                </div>
             </div>
-        </div>
     );
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
-import RecipeService from "../api/services/RecipeService";
 import RecipeCard from "../components/cards/RecipeCard";
 import { ImportRecipeButton } from "../components/buttons/DataImportButtons";
 import { AddRecipeButton, GenerateAIRecipeButton } from "../components/buttons/NewRecipeButton";
@@ -14,9 +13,9 @@ export default function Recipes() {
 
     useEffect(() => {
         const handleResize = () => {
-          setIsMobile(window.innerWidth <= 768);
+            setIsMobile(window.innerWidth <= 768);
         };
-    
+
         handleResize();
         window.addEventListener('resize', handleResize);
 
@@ -27,19 +26,19 @@ export default function Recipes() {
 
     return (
         isMobile ? <HomeMobile /> :
-        <div className="w-full bg-bg-color p-6 relative">
+            <div className="w-full bg-bg-color p-6 relative">
 
-            <RecipesHeader />
+                <RecipesHeader />
 
-            <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 bg-primary p-4 rounded-lg">
-                <AddRecipeButton setRecipes={setRecipes} disabled={false} />
-                <ImportRecipeButton setRecipes={setRecipes} disabled={false} />
-                <GenerateAIRecipeButton disabled={false} />
-                {recipes.map((recipe: RecipeInterface, index: number) => (
-                    <RecipeCard key={index} recipe={recipe} isMobile={isMobile} />
-                ))}
+                <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 bg-primary p-4 rounded-lg">
+                    <AddRecipeButton setRecipes={setRecipes} disabled={false} />
+                    <ImportRecipeButton setRecipes={setRecipes} disabled={false} />
+                    <GenerateAIRecipeButton disabled={false} />
+                    {recipes.map((recipe: RecipeInterface, index: number) => (
+                        <RecipeCard key={index} recipe={recipe} isMobile={isMobile} />
+                    ))}
+                </div>
             </div>
-        </div>
     );
 }
 

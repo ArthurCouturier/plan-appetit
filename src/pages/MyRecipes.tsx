@@ -1,17 +1,11 @@
 import { useEffect, useState } from "react";
 import MyRecipesMobile from "../components/mobilesComponents/MyRecipesMobile";
-import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 
 export default function MesRecettes(
-//   {
-//   recipes
-// }: {
-//   recipes : RecipeInterface[];
-// }
 ) {
 
   const [isMobile, setIsMobile] = useState(false);
-      
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -25,8 +19,8 @@ export default function MesRecettes(
 
   return (
     isMobile ? <MyRecipesMobile isMobile={isMobile} /> :
-    <div>
-      salut
-    </div>
+      <div>
+        salut
+      </div>
   )
 }

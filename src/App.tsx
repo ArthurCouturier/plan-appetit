@@ -3,10 +3,8 @@ import './App.css';
 import router from './routes';
 import { useState, useEffect } from 'react';
 import DarkModeButton from './components/buttons/DarkModeButton';
-import Monitor from './components/three/Monitor';
 import { AuthProvider } from './components/authentication/AuthProvider';
 import { useGLTF } from '@react-three/drei';
-import Mobile from './components/mobilesComponents/HomeMobile';
 
 function App() {
   const [theme, setTheme] = useState(() => {

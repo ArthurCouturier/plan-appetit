@@ -48,7 +48,7 @@ export default function RecipeDetail() {
       }, []);
 
     return recipe ? (
-        <div className={`${isMobile ? null : "w-full bg-bg-color p-6"}`}>
+        <div className={`${isMobile ? null : "md:w-full md:bg-bg-color md:p-6"}`}>
             {isMobile ? <HeaderMobile/> : <RecipeHeader />}
             <div className={`${isMobile ? "bg-blue-600 shadow-sm rounded-lg py-4 w-full mt-4" : "bg-primary shadow-sm rounded-lg p-4 w-full"}`}>
                 <div className={`mb-2 text-text-primary text-lg font-bold flex justify-center ${isMobile ? "ml-2" : ""}`}>
@@ -237,7 +237,7 @@ function EditMode({
     }
 
     return (
-        <div className="w-full bg-primary text-text-secondary p-6 rounded-md">
+        <div className={`w-full p-6 rounded-md ${isMobile ? null : "bg-primary text-text-secondary"}`}>
             <IngredientsList
                 ingredients={recipe.ingredients}
                 recipeEditMode={editIngredients}

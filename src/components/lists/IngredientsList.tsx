@@ -52,11 +52,11 @@ export default function IngredientsList({
     return (
         <div className={`border-2 border-text-primary p-2 w-full rounded-md mb-4 ${isMobile ? "text-white" : null}`}>
             <SeasonDisplayerExplaination isMobile={isMobile}/>
-            <div className="flex justify-center items-center">
+            <div className={`flex justify-center items-center ${isMobile ? "gap-2" : null}`}>
                 <h2 className={`font-bold text-lg underline text-text-primary ${isMobile ? "text-white" : null}`}>Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
-                        className={`bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200`}
+                        className={`${isMobile ? "bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg" : "bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"}`}
                         onClick={async () => {
                             if (recipeEditMode) {
                                 await onSave?.(ingredients)
@@ -82,7 +82,7 @@ export default function IngredientsList({
             </div>
             {recipeEditMode &&
                 <button
-                    className="bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"
+                    className={`${isMobile ? "bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg mt-2" : "bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"}`}
                     onClick={handleAddIngredient}
                 >
                     Ajouter ingrédient
@@ -142,6 +142,7 @@ export function Ingredient({
                     setQuantityValue={handleQuantityValueChange}
                     setQuantityUnit={handleQuantityUnitChange}
                     onRemove={onRemove}
+                    isMobile={isMobile}
                 />
             )}
         </div>
@@ -202,6 +203,7 @@ function EditMode({
     setQuantityValue,
     setQuantityUnit,
     onRemove,
+    isMobile
 }: {
     ingredient: IngredientInterface;
     setName: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -210,20 +212,21 @@ function EditMode({
     setQuantityValue: (n: number) => void;
     setQuantityUnit: (newUnit: UnitEnum) => void;
     onRemove?: () => void;
+    isMobile: boolean;
 }) {
     return (
-        <div className="flex my-1 text-gray-800">
+        <div className={`flex my-1 text-gray-800 ${isMobile ? "flex-col gap-6 items-center" : "bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"}`}>
             <SeasonSelector initialSeason={ingredient.season} onChange={setSeason} />
             <input className="mx-2 rounded-md bg-secondary border-2 border-border-color opacity-80 text-opacity-100 text-text-primary px-1" type="text" value={ingredient.name} onChange={setName} />
             {/* <input type="number" value={ingredient.category} onChange={setCategory} /> */}
-            <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} />
+            <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} isMobile={isMobile} />
             {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
             <UnitSelector actualUnit={ingredient.quantity.unit} onChange={setQuantityUnit} />
             <button
-                className="bg-cancel-1 hover:bg-cancel-2 text-text-primary p-1 rounded-md m-2 transition duration-200"
+                className={`rounded-md ${isMobile ? "bg-red-500 py-1 px-2 text-white font-bold w-min" : "bg-cancel-1 hover:bg-cancel-2 text-text-primary p-1 m-2 transition duration-200"}`}
                 onClick={onRemove}
             >
-                Remove
+                Supprimer
             </button>
         </div>
     );

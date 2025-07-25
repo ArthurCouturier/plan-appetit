@@ -46,7 +46,7 @@ export default function RecipeStepsList({
                 <h2 className={`font-bold text-lg underline text-text-primary${isMobile ? "text-white" : null}`}>Préparation</h2>
                 {!(recipeEditMode === undefined) &&
                     <button
-                        className={`bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200`}
+                        className={`${isMobile ? "ml-2 bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg" : "bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"}`}
                         onClick={async () => {
                             if (recipeEditMode) {
                                 await onSave?.(steps)
@@ -72,7 +72,7 @@ export default function RecipeStepsList({
             </div>
             {recipeEditMode &&
                 <button
-                    className="bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"
+                    className={`${isMobile ? "ml-2 bg-blue-900 text-white text-sm font-bold px-4 py-2 rounded-lg" : "bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"}`}
                     onClick={handleAddStep}
                 >
                     Ajouter étape

@@ -39,7 +39,7 @@ export default function RecipeStepsList({
     };
 
     return (
-        <div className="border-2 border-text-primary p-2 rounded-md mt-4 text-text-primary">
+        <div className={`md:border-2 border-text-primary p-2 rounded-md mt-4 text-text-primary ${recipeEditMode ? "border border-dashed" : null}`}>
             <div className="flex justify-center items-center">
                 <h2 className="font-bold text-lg underline text-text-primary">Préparation</h2>
                 {!(recipeEditMode === undefined) &&
@@ -98,7 +98,7 @@ export function Step({
     return (
         <div className="flex items-center justify-center p-2 mb-2 mx-auto md:w-1/2">
             {!editMode ? (
-                <DefaultMode step={step}/>
+                <DefaultMode step={step} />
             ) : (
                 <EditMode step={step} onChange={handleStepChange} onRemove={onRemove} />
             )}

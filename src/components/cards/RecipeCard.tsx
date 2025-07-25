@@ -47,11 +47,13 @@ export default function RecipeCard({
                         transform transition-transform duration-300
                         ${showDetails ? "rotate-90" : "rotate-0"}
                         `}
-                        />
+                    />
                 </button>
                 {showDetails ?
                     <div className="flex justify-center">
-                        <Button onClick={() => navigateTo(`/recettes/${recipe.uuid}`)} className="bg-thirdary px-3" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>👩‍🍳 <span className="text-text-primary first-letter:uppercase lowercase">Voir la recette </span> 👨‍🍳</Button>
+                        <Button
+                            onClick={() => navigateTo(`/recettes/${recipe.uuid}`)}
+                            className="text-text-primary first-letter:uppercase lowercase bg-thirdary px-3" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>Voir la recette </Button>
                     </div>
                     : null
                 }

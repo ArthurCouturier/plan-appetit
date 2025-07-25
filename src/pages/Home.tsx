@@ -3,8 +3,7 @@ import MenuButton from "../components/buttons/BackAndHomeButton";
 import Header from "../components/global/Header";
 import BusinessPlanThree from "../components/three/BusinessPlan";
 import RecipesThree from "../components/three/Recipes";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@material-tailwind/react";
+import Recipes from "./Recipes";
 
 export default function Home() {
 
@@ -21,10 +20,8 @@ export default function Home() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const navigateTo = useNavigate();
-
     return (
-        isMobile ? <Button onClick={() => navigateTo("/recettes")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>Mobile Version</Button> :
+        isMobile ? <Recipes /> :
             <div className="w-full h-full">
                 <div className="bg-bg-color h-full min-h-fit p-6 rounded-md">
                     <Header

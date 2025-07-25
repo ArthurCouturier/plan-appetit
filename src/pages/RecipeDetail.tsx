@@ -10,8 +10,6 @@ import StepInterface from "../api/interfaces/recipes/StepInterface";
 import { ExportRecipeButton } from "../components/buttons/DataImportButtons";
 import Header from "../components/global/Header";
 import { useRecipeContext } from "../contexts/RecipeContext";
-import HeaderMobile from "../components/global/HeaderMobile";
-import FooterMobile from "../components/global/FooterMobile";
 
 export default function RecipeDetail() {
 
@@ -49,9 +47,9 @@ export default function RecipeDetail() {
 
     return recipe ? (
         <div className="md:w-full md:bg-bg-color md:p-6">
-            {isMobile ? <HeaderMobile /> : <RecipeHeader />}
+            {isMobile ? null : <RecipeHeader />}
             <div className="bg-primary shadow-sm rounded-lg py-4 w-full mt-4 md:shadow-sm md:p-4 md:w-full">
-                <div className="mb-2 text-text-primary text-lg font-bold flex justify-center ml-2 md:ml-0">
+                <div className={`mb-2 text-text-primary text-lg font-bold flex items-center justify-center md:ml-0 ${editMode ? "flex-col" : null}`}>
                     {editMode && !isMobile && (
                         <button
                             className="p-2 rounded-lg bg-cancel-1 absolute left-20 -translate-y-3 hover:bg-cancel-2 text-text-primary transition duration-200"
@@ -64,12 +62,12 @@ export default function RecipeDetail() {
                             Supprimer
                         </button>
                     )}
-                    <div className="flex text-xl text-text-primary">
+                    <div className="flex items-center text-xl text-text-primary">
                         <div className="overflow-hidden max-w-[70vw] ">
                             {recipe.name}
                             <span> {editMode && isMobile && (
                                 <button
-                                    className="relative rotate-90 w-min h-min p-2 rounded-xl"
+                                    className="relative rotate-90 w-min h-min rounded-xl"
                                     onClick={async () => {
                                         const newRecipe = await RecipeService.changeRecipeName(recipe.uuid);
                                         if (newRecipe) {
@@ -97,7 +95,7 @@ export default function RecipeDetail() {
                         </button>
                     )}
                     {editMode ? (
-                        <div className="ml-1 text-text-primary">
+                        <div className="text-text-primary">
                             pour
                             <input
                                 type="number"
@@ -110,7 +108,7 @@ export default function RecipeDetail() {
                                 }}
                                 className="w-10 mx-1 text-center text-text-secondary bg-thirdary"
                             />
-                            pers.
+                            {!isMobile ? "pers." : recipe.covers >= 2 ? "personnes" : "personne"}
                         </div>
                     ) : (
                         <div className="ml-1 text-sm text-text-primary">({recipe.covers} personne{recipe.covers > 1 && "s"})</div>
@@ -145,7 +143,7 @@ export default function RecipeDetail() {
                                 {(editMode && !isMobile) ? "Sauvegarder" : "Modifier"}
                             </button>
                         }
-                        {isMobile ? <FooterMobile /> : <RecipeFooter recipe={recipe} />}
+                        {isMobile ? null : <RecipeFooter recipe={recipe} />}
                     </>
                 ) : (
                     <div className="flex flex-col items-center gap-2">
@@ -179,7 +177,7 @@ export default function RecipeDetail() {
         </div >
     ) : (
         <div className="w-full bg-bg-color p-6">
-            {isMobile ? <HeaderMobile /> : <RecipeHeader />}
+            {isMobile ? null : <RecipeHeader />}
             <RecipeError />
         </div>
     )
@@ -198,7 +196,7 @@ function RecipeHeader() {
 
 function DefaultMode({ recipe, isMobile }: { recipe: RecipeInterface, isMobile: boolean }) {
     return (
-        <div className="w-full text-text-secondary p-6 rounded-md bg-secondary">
+        <div className="w-full text-text-secondary px-6 md:p-6 rounded-md bg-primary md:bg-secondary">
             <IngredientsList ingredients={recipe.ingredients} isMobile={isMobile} />
             <RecipeStepsList steps={recipe.steps} />
         </div>
@@ -237,7 +235,7 @@ function EditMode({
     }
 
     return (
-        <div className="w-full p-6 rounded-md bg-primary text-text-secondary">
+        <div className="w-full px-6 md:p-6 rounded-md bg-primary text-text-secondary">
             <IngredientsList
                 ingredients={recipe.ingredients}
                 recipeEditMode={editIngredients}

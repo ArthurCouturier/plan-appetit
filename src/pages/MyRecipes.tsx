@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import MyRecipesMobile from "../components/mobilesComponents/MyRecipesMobile";
+import MyRecipesMobile from "./mobile/MyRecipesMobile";
 
 export default function MesRecettes(
 ) {

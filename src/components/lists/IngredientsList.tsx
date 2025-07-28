@@ -50,7 +50,7 @@ export default function IngredientsList({
     };
 
     return (
-        <div className={`"md:border-2 border-text-primary p-2 w-full rounded-md mb-4 text-text-primary" ${recipeEditMode ? "border border-dashed" : null}`}>
+        <div className={`md:border-2 border-text-primary p-2 w-full rounded-md mb-4 text-text-primary ${recipeEditMode ? "border border-dashed" : null}`}>
             <SeasonDisplayerExplaination isMobile={isMobile} />
             <div className="flex justify-center items-center gap-2 md:gap-0">
                 <h2 className="font-bold text-lg underline text-text-primary ">Ingredients</h2>

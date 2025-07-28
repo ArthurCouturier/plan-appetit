@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TextualField from "../components/fields/TextualField";
 import { SeasonEnum } from "../api/enums/SeasonEnum";
 import LabeledSeasonSelectorField from "../components/fields/SeasonSelectorField";
@@ -46,19 +46,32 @@ export default function RecipeGeneration() {
         }
     };
 
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
-        <div className="w-full bg-bg-color p-6 relative">
+        <div className="relative bg-primary shadow-sm rounded-lg py-4 w-full mt-4 md:bg-bg-color md:p-6 md:w-full">
             {isLoading && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="md:absolute fixed inset-0 bg-black md:size-screen bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg text-center">
                         <p className="text-lg font-semibold">Génération de la recette en cours...</p>
                     </div>
                 </div>
             )}
 
-            <RecipeGenerationHeader />
+            {isMobile ? null : <RecipeGenerationHeader />}
 
-            <div className="flex flex-col bg-primary p-4 rounded-lg">
+            <div className="flex px-4 flex-col md:bg-primary md:py-4 md:rounded-lg">
                 <TextualField
                     label={"Localité de la recette"}
                     placeholder={"La région Toulousaine"}
@@ -106,7 +119,7 @@ export default function RecipeGeneration() {
                     onChange={(e) => setSellingPrice(Number(e.target.value))}
                 />
                 <button
-                    className="bg-confirmation-1 hover:bg-confirmation-2 hover:scale-95 text-text-primary p-2 rounded-lg w-[30vw] mx-auto transition duration-200"
+                    className="bg-confirmation-1 font-bold md:font-normal hover:bg-confirmation-2 hover:scale-95 text-text-primary p-2 rounded-lg md:w-[30vw] mx-auto transition duration-200"
                     onClick={handleGenerateRecipe}
                 >
                     Générer une recette

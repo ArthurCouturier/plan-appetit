@@ -48,7 +48,7 @@ export default function RecipeDetail() {
     return recipe ? (
         <div className="md:w-full md:bg-bg-color md:p-6">
             {isMobile ? null : <RecipeHeader />}
-            <div className="bg-primary shadow-sm rounded-lg py-4 w-full mt-4 md:shadow-sm md:p-4 md:w-full">
+            <div className="bg-primary shadow-sm rounded-lg py-4 w-full mt-4 md:p-4">
                 <div className={`mb-2 text-text-primary text-lg font-bold flex items-center justify-center md:ml-0 ${editMode ? "flex-col" : null}`}>
                     {editMode && !isMobile && (
                         <button

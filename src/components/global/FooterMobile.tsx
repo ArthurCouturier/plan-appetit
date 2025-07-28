@@ -37,7 +37,7 @@ export default function FooterMobile() {
   const goToMyRecipes = () => navigateTo("/mesrecettes");
 
   return (
-    <footer className="fixed flex justify-center inset-x-0 bottom-4 z-40">
+    <footer className={`fixed flex justify-center inset-x-0 bottom-4 z-40 ${showFooter ? null : "pointer-events-none"}`}>
       <div
         className={`w-min h-14 mx-6 flex items-center justify-between bg-cout-purple rounded-3xl px-6 py-3 transition-all duration-500 shadow-md
         ${showFooter ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0"}`}

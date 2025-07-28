@@ -63,7 +63,9 @@ function RecipeCardMobile({
                 <div className="flex justify-center">
                     <Button
                         onClick={() => navigateTo(`/recettes/${recipe.uuid}`)}
-                        className="text-text-primary first-letter:uppercase lowercase bg-thirdary px-3" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>Voir la recette </Button>
+                        className="text-text-primary first-letter:uppercase lowercase bg-thirdary px-3" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                        Voir la recette
+                    </Button>
                 </div>
                 : null
             }

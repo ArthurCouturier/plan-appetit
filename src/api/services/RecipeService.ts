@@ -82,7 +82,7 @@ export default class RecipeService {
 
     static async changeRecipeName(recipeUuid: UUIDTypes) {
         const recipe = this.getRecipe(recipeUuid);
-        const newRecipeName = prompt("Nouveau nom de la recette", recipe?.name);
+        const newRecipeName = prompt("Nouveau nom de la recette", recipe?.name)?.slice(0, 70);
         const recipes = await RecipeService.fetchRecipesRemotly();
         const newRecipe = recipes.find((r) => r.uuid === recipeUuid);
         if (newRecipeName && newRecipe) {

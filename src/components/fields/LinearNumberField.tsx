@@ -17,28 +17,30 @@ export default function LinearNumberField({
     className?: string,
 }) {
     return (
-        <LabeledField label={label} className={`text-text-secondary mx-auto ${className}`} htmlFor={htmlFor}>
-            <div className="flex items-center justify-center">
-                <Button
-                    onChange={() => onChange({ target: { value: value - 10 > 0 ? value - 10 : 0 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
-                >
-                    -10€
-                </Button>
-                <Button
-                    onChange={() => onChange({ target: { value: value - 1 > 0 ? value - 1 : 0 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
-                >
-                    -1€
-                </Button>
-                <Button
-                    onChange={() => onChange({ target: { value: value - 0.1 > 0 ? value - 0.1 : 0 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
-                >
-                    -0.1€
-                </Button>
-                <Button
-                    onChange={() => onChange({ target: { value: value - 0.01 > 0 ? value - 0.01 : 0 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
-                >
-                    -0.01€
-                </Button>
+        <LabeledField label={label} className={`flex items-center text-text-secondary w-full mx-auto ${className}`} htmlFor={htmlFor}>
+            <div className="flex flex-col md:flex-row items-center justify-center">
+                <div className="md:flex">
+                    <Button
+                        onChange={() => onChange({ target: { value: value - 10 > 0 ? value - 10 : 0 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
+                    >
+                        -10€
+                    </Button>
+                    <Button
+                        onChange={() => onChange({ target: { value: value - 1 > 0 ? value - 1 : 0 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
+                    >
+                        -1€
+                    </Button>
+                    <Button
+                        onChange={() => onChange({ target: { value: value - 0.1 > 0 ? value - 0.1 : 0 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
+                    >
+                        -0.1€
+                    </Button>
+                    <Button
+                        onChange={() => onChange({ target: { value: value - 0.01 > 0 ? value - 0.01 : 0 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
+                    >
+                        -0.01€
+                    </Button>
+                </div>
                 <div className="bg-bg-color rounded-lg w-20 px-2 py-1 mx-6">
                     <NumberFlow
                         value={value}
@@ -46,28 +48,30 @@ export default function LinearNumberField({
                         suffix="€"
                     />
                 </div>
-                <Button
-                    onChange={() => onChange({ target: { value: value + 0.01 < 1000 ? value + 0.01 : 999.99 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
-                >
-                    +0.01€
-                </Button>
-                <Button
-                    onChange={() => onChange({ target: { value: value + 0.1 < 1000 ? value + 0.1 : 999.99 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
-                >
-                    +0.1€
-                </Button>
-                <Button
-                    onChange={() => onChange({ target: { value: value + 1 < 1000 ? value + 1 : 999.99 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
-                >
-                    +1€
-                </Button>
-                <Button
-                    onChange={() => onChange({ target: { value: value + 10 < 1000 ? value + 10 : 999.99 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
-                >
-                    +10€
-                </Button>
+                <div className="md:flex">
+                    <Button
+                        onChange={() => onChange({ target: { value: value + 0.01 < 1000 ? value + 0.01 : 999.99 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
+                    >
+                        +0.01€
+                    </Button>
+                    <Button
+                        onChange={() => onChange({ target: { value: value + 0.1 < 1000 ? value + 0.1 : 999.99 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
+                    >
+                        +0.1€
+                    </Button>
+                    <Button
+                        onChange={() => onChange({ target: { value: value + 1 < 1000 ? value + 1 : 999.99 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
+                    >
+                        +1€
+                    </Button>
+                    <Button
+                        onChange={() => onChange({ target: { value: value + 10 < 1000 ? value + 10 : 999.99 } } as unknown as React.ChangeEvent<HTMLInputElement>)}
+                    >
+                        +10€
+                    </Button>
+                </div>
             </div>
-            <div className="flex items-center justify-between w-[45vw] mx-auto">
+            <div className="flex max-w-full items-center justify-between md:w-[45vw] md:mx-auto">
                 0€
                 <Slider
                     onPointerEnterCapture={undefined}

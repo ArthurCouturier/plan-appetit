@@ -26,7 +26,7 @@ export default function MyRecipesMobile({
       await RecipeService.addEmptyRecipe();
       const newRecipes = RecipeService.fetchRecipesLocally();
       setRecipes(newRecipes);
-      // navigateTo(`/recettes/${newRecipes[newRecipes.length - 1].uuid}`) 
+      navigateTo(`/recettes/${newRecipes[newRecipes.length - 1].uuid}`)
     } catch (err) {
       console.error(err);
       navigateTo('/login');

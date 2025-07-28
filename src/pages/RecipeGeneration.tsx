@@ -7,6 +7,7 @@ import { generateRecipe } from "../api/recipes/OpenAIRecipeGenerator";
 import RecipeGenerationParametersInterface from "../api/interfaces/recipes/RecipeGenerationParametersInterface";
 import LinearNumberField from "../components/fields/LinearNumberField";
 import Header from "../components/global/Header";
+import { useNavigate } from "react-router-dom";
 
 export default function RecipeGeneration() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -19,6 +20,8 @@ export default function RecipeGeneration() {
     const [allergens, setAllergens] = useState<string>("");
     const [buyingPrice, setBuyingPrice] = useState<number>(10);
     const [sellingPrice, setSellingPrice] = useState<number>(20);
+
+    const navigate = useNavigate();
 
     const handleGenerateRecipe = async () => {
         const generationInterface: RecipeGenerationParametersInterface = {
@@ -37,9 +40,12 @@ export default function RecipeGeneration() {
         try {
             const email = localStorage.getItem("email") || "";
             const token = localStorage.getItem("firebaseIdToken") || "";
-            await generateRecipe(generationInterface, email, token);
+            const newRecipe = await generateRecipe(generationInterface, email, token);
+            newRecipe && navigate(`/recettes/${newRecipe.uuid}`);
         } catch (error) {
             console.error(error);
+            alert("une erreur est surevenue")
+            navigate('/mesrecettes');
 
         } finally {
             setIsLoading(false);

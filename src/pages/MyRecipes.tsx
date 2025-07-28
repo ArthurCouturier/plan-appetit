@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import MyRecipesMobile from "./mobile/MyRecipesMobile";
+import { useNavigate } from "react-router-dom";
 
 export default function MesRecettes(
 ) {
 
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -17,10 +21,14 @@ export default function MesRecettes(
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+
+  useEffect(() => {
+    if (!isMobile) {
+      navigate("/recettes");
+    }
+  }, [isMobile, navigate]);
+
   return (
-    isMobile ? <MyRecipesMobile isMobile={isMobile} /> :
-      <div>
-        salut
-      </div>
+    isMobile && <MyRecipesMobile isMobile={isMobile} />
   )
 }

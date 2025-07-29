@@ -210,7 +210,7 @@ function EditMode({
     isMobile: boolean;
 }) {
     return (
-        <div className={`flex my-1 text-gray-800 ${isMobile ? "flex-col gap-6 items-center" : "bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"}`}>
+        <div className={`flex my-1 text-gray-800 ${isMobile ? "flex-col gap-6 items-center" : "text-text-primary p-2 rounded-md m-2"}`}>
             <SeasonSelector initialSeason={ingredient.season} onChange={setSeason} />
             <input maxLength={70} className="mx-2 rounded-md bg-secondary border-2 border-border-color opacity-80 text-opacity-100 text-text-primary px-1" type="text" value={ingredient.name} onChange={setName} />
             {/* <input type="number" value={ingredient.category} onChange={setCategory} /> */}

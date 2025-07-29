@@ -1,20 +1,6 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-function LinkButton({
-    link,
-    children
-}: {
-    link: string;
-    children?: React.ReactNode
-}) {
-    return (
-        <Link to={link}>
-            {children}
-        </Link>
-    );
-}
-
-function Button({
+export function Button({
     onClick,
     children
 }: {
@@ -31,35 +17,20 @@ function Button({
     );
 }
 
-export default function MenuButton({
-    link,
-    children,
-    onClick
-}: {
-    link?: string;
-    children?: React.ReactNode;
-    onClick?: () => void;
-}) {
-    return link ? (
-        <LinkButton link={link}>
-            <Button onClick={onClick}>{children}</Button>
-        </LinkButton>
-    ) : (
-        <Button onClick={onClick}>{children}</Button>
-    );
-}
-
 export function HomeButton() {
+
+    const navigate = useNavigate();
+
     return (
-        <MenuButton link={"/"}>Accueil</MenuButton>
+        <Button onClick={() => navigate("/")}>Accueil</Button>
     );
 }
 
 export function BackButton() {
     return (
-        <MenuButton
+        <Button
             onClick={() => window.history.back()}
         >Retour
-        </MenuButton>
+        </Button>
     );
 }

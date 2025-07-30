@@ -70,7 +70,8 @@ export default class RecipeService {
     static async updateRecipe(recipe: RecipeInterface) {
         const email: string = localStorage.getItem('email') as string;
         const token: string = localStorage.getItem('firebaseIdToken') as string;
-        await BackendService.updateRecipe(email, token, recipe);
+        const updateRecipe = await BackendService.updateRecipe(email, token, recipe);
+        return updateRecipe;
     }
 
     static async deleteRecipe(recipeUuid: UUIDTypes) {

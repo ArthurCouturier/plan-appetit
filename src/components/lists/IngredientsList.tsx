@@ -3,11 +3,12 @@ import IngredientInterface from "../../api/interfaces/recipes/IngredientInterfac
 import { SeasonEnum } from "../../api/enums/SeasonEnum";
 import { UnitEnum } from "../../api/enums/UnitEnum";
 import { IngredientCategoryEnum } from "../../api/enums/IngredientCategoryEnum";
-import { v4 as uuidv4 } from "uuid";
 import NumberField from "../fields/NumberField";
 import UnitSelector from "../selectors/UnitSelector";
 import SeasonSelector from "../selectors/SeasonSelector";
 import SeasonDisplayer, { SeasonDisplayerExplaination } from "../displayers/SeasonDisplayer";
+// import { IngredientCategoryLabels } from "../../api/constants/IngredientCategoryLabels";
+import { UnitLabels } from "../../api/constants/UnitLabels";
 
 export default function IngredientsList({
     ingredients,
@@ -32,7 +33,6 @@ export default function IngredientsList({
 
     const handleAddIngredient = () => {
         onChange?.([...ingredients, {
-            uuid: uuidv4(),
             name: "Ingrédient" + String(ingredients.length + 1),
             category: IngredientCategoryEnum.CEREAL,
             season: [SeasonEnum.FALL],
@@ -161,10 +161,10 @@ function DefaultMode({
             <ul className="p-1 w-max max-w-50 text-left">{ingredient.name}:</ul>
             <ul className="p-1">{ingredient.quantity.value}</ul>
             <ul className="p-1">
-                {!(ingredient.quantity.unit == UnitEnum.NONE) ? ingredient.quantity.unit : ""}
+                {!(ingredient.quantity.unit == UnitEnum.NONE) ? UnitLabels[ingredient.quantity.unit] : ""}
                 {ingredient.quantity.value > 1 ? "s" : ""}
             </ul>
-            {/* <p className="p-1">{ingredient.category}</p> */}
+            {/* <p className="p-1">{IngredientCategoryLabels[ingredient.category]}</p> */}
         </li>
     );
 }
@@ -182,7 +182,7 @@ function DefaultModeMobile({
             <p className="p-1 w-max max-w-50 text-left ">
                 <span className="font-bold">{ingredient.name} : </span>
                 {ingredient.quantity.value} {" "}
-                <span className="lowercase">{!(ingredient.quantity.unit == UnitEnum.NONE) ? ingredient.quantity.unit : ""}</span>
+                <span className="lowercase">{!(ingredient.quantity.unit == UnitEnum.NONE) ? UnitLabels[ingredient.quantity.unit] : ""}</span>
                 {ingredient.quantity.value > 1 ? "s" : ""}
             </p>
             {/* <p className="p-1">{ingredient.category}</p> */}

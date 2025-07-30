@@ -24,10 +24,10 @@ export default function RecipeDetail() {
     }
 
     const handleSaveRecipe = async (recipe: RecipeInterface) => {
-        console.log("recipe before save");
-        await RecipeService.updateRecipe(recipe);
-        await RecipeService.fetchRecipesRemotly();
-        setRecipes(RecipeService.fetchRecipesLocally());
+        const updateRecipe = await RecipeService.updateRecipe(recipe);
+        setRecipe(updateRecipe);
+        const updateRecipes = await RecipeService.fetchRecipesRemotly();
+        setRecipes(updateRecipes);
     }
 
     const { setRecipes } = useRecipeContext();

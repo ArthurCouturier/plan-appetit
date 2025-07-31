@@ -29,7 +29,7 @@ export default function AnnualStatistics({
         <ModuleCard moduleName="Statistiques annuelles">
             <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-2 w-fit text-black bg-bg-color mx-auto px-4 py-2 my-2 rounded-lg">
                 <p className="text-sm text-text-secondary text-right">Semaines travaillées</p>
-                <NumberField label="" value={workedWeeks} onChange={handleChangeWorkedWeeks} min={0} max={9999} />
+                <NumberField label="" value={workedWeeks} onChange={handleChangeWorkedWeeks} min={0} max={9999} isMobile={false} />
             </div>
             <SubPart title="Jours travaillés">
                 {workedWeeks * workedDaysPerWeek(config.week)} / 365

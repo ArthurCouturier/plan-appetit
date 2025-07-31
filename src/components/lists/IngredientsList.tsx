@@ -128,8 +128,11 @@ export function Ingredient({
     return (
         <div className="">
             {!editMode ? (
-                isMobile ? <DefaultModeMobile ingredient={ingredient} /> :
-                    <DefaultMode
+                isMobile ?
+                    <DefaultModeMobile
+                        ingredient={ingredient}
+                    /> :
+                    <DefaultModeDesktop
                         ingredient={ingredient}
                     />
             ) : (
@@ -148,7 +151,7 @@ export function Ingredient({
     );
 }
 
-function DefaultMode({
+function DefaultModeDesktop({
     ingredient,
 }: {
     ingredient: IngredientInterface;
@@ -210,19 +213,21 @@ function EditMode({
     isMobile: boolean;
 }) {
     return (
-        <div className={`flex my-1 text-gray-800 ${isMobile ? "flex-col gap-6 items-center" : "text-text-primary p-2 rounded-md m-2"}`}>
+        <div className="flex my-1 text-gray-800 flex-col gap-6 items-center md:flex-row md:text-text-primary md:p-2 md:rounded-md md:m-2">
             <SeasonSelector initialSeason={ingredient.season} onChange={setSeason} />
             <input maxLength={70} className="mx-2 rounded-md bg-secondary border-2 border-border-color opacity-80 text-opacity-100 text-text-primary px-1" type="text" value={ingredient.name} onChange={setName} />
             {/* <input type="number" value={ingredient.category} onChange={setCategory} /> */}
-            <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} />
-            {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
-            <UnitSelector actualUnit={ingredient.quantity.unit} onChange={setQuantityUnit} />
+            <div className="flex">
+                <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} isMobile={isMobile} />
+                {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
+                <UnitSelector actualUnit={ingredient.quantity.unit} onChange={setQuantityUnit} />
+            </div>
             <button
                 className="rounded-md py-1 px-2 text-text-primary font-bold w-min bg-cancel-1 md:hover:bg-cancel-2  md:p-1 md:m-2 md:transition md:duration-200"
                 onClick={onRemove}
             >
                 Supprimer
             </button>
-        </div>
+        </div >
     );
 }

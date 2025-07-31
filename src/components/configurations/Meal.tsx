@@ -119,15 +119,15 @@ function EditMode({
     return (
         <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-2 w-fit items-center">
             <p className="text-sm text-text-secondary text-right">Couverts</p>
-            <NumberField label="" value={covers} onChange={setCovers} min={0} max={9999} />
+            <NumberField label="" value={covers} onChange={setCovers} min={0} max={9999} isMobile={false} />
             <p className="text-sm text-text-secondary text-right">Entrée</p>
-            <NumberField label="" value={starterPrice} onChange={setStarterPrice} min={0} max={9999} />
+            <NumberField label="" value={starterPrice} onChange={setStarterPrice} min={0} max={9999} isMobile={false} />
             <p className="text-sm text-text-secondary text-right">Plat</p>
-            <NumberField label="" value={mainCoursePrice} onChange={setMainCoursePrice} min={0} max={9999} />
+            <NumberField label="" value={mainCoursePrice} onChange={setMainCoursePrice} min={0} max={9999} isMobile={false} />
             <p className="text-sm text-text-secondary text-right">Dessert</p>
-            <NumberField label="" value={dessertPrice} onChange={setDessertPrice} min={0} max={9999} />
+            <NumberField label="" value={dessertPrice} onChange={setDessertPrice} min={0} max={9999} isMobile={false} />
             <p className="text-sm text-text-secondary text-right">Boisson</p>
-            <NumberField label="" value={drinkPrice} onChange={setDrinkPrice} min={0} max={9999} />
+            <NumberField label="" value={drinkPrice} onChange={setDrinkPrice} min={0} max={9999} isMobile={false} />
         </div>
     );
 }

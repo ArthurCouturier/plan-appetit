@@ -118,11 +118,13 @@ export default function RecipeGeneration() {
                     label={"Prix d'achat par personne"}
                     value={buyingPrice}
                     onChange={(e) => setBuyingPrice(Number(e.target.value))}
+                    isMobile={isMobile}
                 />
                 <LinearNumberField
                     label={"Prix de vente par personne"}
                     value={sellingPrice}
                     onChange={(e) => setSellingPrice(Number(e.target.value))}
+                    isMobile={isMobile}
                 />
                 <button
                     className="bg-confirmation-1 font-bold md:font-normal hover:bg-confirmation-2 hover:scale-95 text-text-primary p-2 rounded-lg md:w-[30vw] mx-auto transition duration-200"

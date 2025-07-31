@@ -31,6 +31,12 @@ export default function FooterMobile() {
         setShowFooter(false)
       }
 
+      const isAtTop = currentScrollY <= 0;
+
+      if (isAtTop) {
+        setShowFooter(true)
+      }
+
       setLastScrollY(currentScrollY);
     };
 

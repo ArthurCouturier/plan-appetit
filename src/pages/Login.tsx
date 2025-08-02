@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -116,9 +116,22 @@ export default function LoginPage() {
         setLoading(false);
     };
 
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
-        <div className='flex flex-col bg-bg-color p-6 rounded-md'>
-            <LoginHeader />
+        <div className='mt-4 md:mt-0 flex flex-col bg-bg-color p-6 rounded-md'>
+            {isMobile ? null : <LoginHeader />}
             <div className="flex items-center justify-center">
                 <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                     <CardBody className="flex flex-col gap-4" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>

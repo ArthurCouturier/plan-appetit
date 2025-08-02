@@ -2,8 +2,13 @@ import { Button } from "@material-tailwind/react";
 import { UserCircleIcon, BookOpenIcon, LightBulbIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Avatar } from "@material-tailwind/react";
+
 
 export default function FooterMobile() {
+
+  const [profilePhoto] = useState<string>(localStorage.getItem("profilePhoto") || "");
+
   const navigateTo = useNavigate();
 
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -26,6 +31,12 @@ export default function FooterMobile() {
         setShowFooter(false)
       }
 
+      const isAtTop = currentScrollY <= 0;
+
+      if (isAtTop) {
+        setShowFooter(true)
+      }
+
       setLastScrollY(currentScrollY);
     };
 
@@ -37,9 +48,9 @@ export default function FooterMobile() {
   const goToMyRecipes = () => navigateTo("/mesrecettes");
 
   return (
-    <footer className="fixed flex justify-center inset-x-0 bottom-4 z-40">
+    <footer className={`fixed flex justify-center inset-x-0 bottom-4 z-40 ${showFooter ? null : "pointer-events-none"}`}>
       <div
-        className={`w-min h-14 mx-6 flex items-center justify-between bg-cout-purple rounded-3xl px-6 py-3 transition-all duration-500 shadow-md
+        className={`w-auto h-14 mx-6 flex items-center justify-between bg-cout-purple rounded-3xl px-4 py-3 transition-all duration-500 shadow-md
         ${showFooter ? "translate-y-0 opacity-100" : "translate-y-24 opacity-0"}`}
       >
         <Button
@@ -53,9 +64,20 @@ export default function FooterMobile() {
           <BookOpenIcon className="w-6 h-6 text-white" />
         </Button>
         <Button
-          className="bg-cout-purple shadow-none rounded-full"
-          onClick={() => navigateTo("/login")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}        >
-          <UserCircleIcon className="w-6 h-6 text-white" />
+          className="bg-bg-cout-purple shadow-none rounded-full"
+          onClick={() => navigateTo("/profile")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+          {profilePhoto.length === 0 ?
+            <UserCircleIcon className="w-7 h-7 text-white" />
+            :
+            <Avatar
+              placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}
+              color="blue"
+              size="sm"
+              withBorder={true}
+              src={profilePhoto}
+              className="border-2 hover:scale-105 transition duration-200"
+            />
+          }
         </Button>
       </div>
     </footer>

@@ -46,7 +46,7 @@ export default function HomeMobile() {
         </Button>
         <Button
           className="bg-primary text-text-primary w-full flex text-xl items-center justify-center gap-2"
-          onClick={() => navigateTo("/login")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+          onClick={() => navigateTo("/profile")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
           <UserCircleIcon className="w-6 h-6 font-bold" />
           <span className="lowercase first-letter:uppercase">Mon compte</span>
         </Button>

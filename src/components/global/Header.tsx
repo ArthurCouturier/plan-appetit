@@ -1,6 +1,6 @@
 import { Avatar } from "@material-tailwind/react";
 import { BackButton, HomeButton } from "../buttons/BackAndHomeButton";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 export default function Header({
@@ -19,6 +19,8 @@ export default function Header({
     children?: React.ReactNode;
 }) {
     const [profilePhoto] = useState<string>(localStorage.getItem("profilePhoto") || "/no-pp.jpg");
+
+    const navigate = useNavigate();
 
     return (
         <div className="flex items-center justify-between w-full">
@@ -39,7 +41,7 @@ export default function Header({
             {children && children}
 
             {profile && (
-                <Link to="/profile">
+                <button onClick={() => navigate("/profile")}>
                     <Avatar
                         placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}
                         color="blue"
@@ -48,7 +50,7 @@ export default function Header({
                         src={profilePhoto}
                         className="border-2 hover:scale-105 transition duration-200"
                     />
-                </Link>
+                </button>
             )}
         </div>
     );

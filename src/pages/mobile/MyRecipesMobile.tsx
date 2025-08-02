@@ -1,6 +1,6 @@
 import { Button } from "@material-tailwind/react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
-import RecipeCard from "../cards/RecipeCard";
+import RecipeCard from "../../components/cards/RecipeCard";
 import { useRecipeContext } from "../../contexts/RecipeContext";
 import RecipeService from "../../api/services/RecipeService";
 import { useNavigate } from "react-router-dom";
@@ -26,7 +26,7 @@ export default function MyRecipesMobile({
       await RecipeService.addEmptyRecipe();
       const newRecipes = RecipeService.fetchRecipesLocally();
       setRecipes(newRecipes);
-      // navigateTo(`/recettes/${newRecipes[newRecipes.length - 1].uuid}`) 
+      navigateTo(`/recettes/${newRecipes[newRecipes.length - 1].uuid}`)
     } catch (err) {
       console.error(err);
       navigateTo('/login');

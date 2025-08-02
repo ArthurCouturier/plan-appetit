@@ -3,11 +3,12 @@ import IngredientInterface from "../../api/interfaces/recipes/IngredientInterfac
 import { SeasonEnum } from "../../api/enums/SeasonEnum";
 import { UnitEnum } from "../../api/enums/UnitEnum";
 import { IngredientCategoryEnum } from "../../api/enums/IngredientCategoryEnum";
-import { v4 as uuidv4 } from "uuid";
 import NumberField from "../fields/NumberField";
 import UnitSelector from "../selectors/UnitSelector";
 import SeasonSelector from "../selectors/SeasonSelector";
 import SeasonDisplayer, { SeasonDisplayerExplaination } from "../displayers/SeasonDisplayer";
+// import { IngredientCategoryLabels } from "../../api/constants/IngredientCategoryLabels";
+import { UnitLabels } from "../../api/constants/UnitLabels";
 
 export default function IngredientsList({
     ingredients,
@@ -32,7 +33,6 @@ export default function IngredientsList({
 
     const handleAddIngredient = () => {
         onChange?.([...ingredients, {
-            uuid: uuidv4(),
             name: "Ingrédient" + String(ingredients.length + 1),
             category: IngredientCategoryEnum.CEREAL,
             season: [SeasonEnum.FALL],
@@ -50,7 +50,7 @@ export default function IngredientsList({
     };
 
     return (
-        <div className={`"md:border-2 border-text-primary p-2 w-full rounded-md mb-4 text-text-primary" ${recipeEditMode ? "border border-dashed" : null}`}>
+        <div className={`md:border-2 border-text-primary p-2 w-full rounded-md mb-4 text-text-primary ${recipeEditMode ? "border border-dashed" : null}`}>
             <SeasonDisplayerExplaination isMobile={isMobile} />
             <div className="flex justify-center items-center gap-2 md:gap-0">
                 <h2 className="font-bold text-lg underline text-text-primary ">Ingredients</h2>
@@ -128,8 +128,11 @@ export function Ingredient({
     return (
         <div className="">
             {!editMode ? (
-                isMobile ? <DefaultModeMobile ingredient={ingredient} /> :
-                    <DefaultMode
+                isMobile ?
+                    <DefaultModeMobile
+                        ingredient={ingredient}
+                    /> :
+                    <DefaultModeDesktop
                         ingredient={ingredient}
                     />
             ) : (
@@ -148,7 +151,7 @@ export function Ingredient({
     );
 }
 
-function DefaultMode({
+function DefaultModeDesktop({
     ingredient,
 }: {
     ingredient: IngredientInterface;
@@ -161,10 +164,10 @@ function DefaultMode({
             <ul className="p-1 w-max max-w-50 text-left">{ingredient.name}:</ul>
             <ul className="p-1">{ingredient.quantity.value}</ul>
             <ul className="p-1">
-                {!(ingredient.quantity.unit == UnitEnum.NONE) ? ingredient.quantity.unit : ""}
+                {!(ingredient.quantity.unit == UnitEnum.NONE) ? UnitLabels[ingredient.quantity.unit] : ""}
                 {ingredient.quantity.value > 1 ? "s" : ""}
             </ul>
-            {/* <p className="p-1">{ingredient.category}</p> */}
+            {/* <p className="p-1">{IngredientCategoryLabels[ingredient.category]}</p> */}
         </li>
     );
 }
@@ -182,7 +185,7 @@ function DefaultModeMobile({
             <p className="p-1 w-max max-w-50 text-left ">
                 <span className="font-bold">{ingredient.name} : </span>
                 {ingredient.quantity.value} {" "}
-                <span className="lowercase">{!(ingredient.quantity.unit == UnitEnum.NONE) ? ingredient.quantity.unit : ""}</span>
+                <span className="lowercase">{!(ingredient.quantity.unit == UnitEnum.NONE) ? UnitLabels[ingredient.quantity.unit] : ""}</span>
                 {ingredient.quantity.value > 1 ? "s" : ""}
             </p>
             {/* <p className="p-1">{ingredient.category}</p> */}
@@ -210,19 +213,21 @@ function EditMode({
     isMobile: boolean;
 }) {
     return (
-        <div className={`flex my-1 text-gray-800 ${isMobile ? "flex-col gap-6 items-center" : "bg-confirmation-1 hover:bg-confirmation-2 text-text-primary p-2 rounded-md m-2 transition duration-200"}`}>
+        <div className="flex my-1 text-gray-800 flex-col gap-6 items-center md:flex-row md:text-text-primary md:p-2 md:rounded-md md:m-2">
             <SeasonSelector initialSeason={ingredient.season} onChange={setSeason} />
-            <input className="mx-2 rounded-md bg-secondary border-2 border-border-color opacity-80 text-opacity-100 text-text-primary px-1" type="text" value={ingredient.name} onChange={setName} />
+            <input maxLength={70} className="mx-2 rounded-md bg-secondary border-2 border-border-color opacity-80 text-opacity-100 text-text-primary px-1" type="text" value={ingredient.name} onChange={setName} />
             {/* <input type="number" value={ingredient.category} onChange={setCategory} /> */}
-            <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} />
-            {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
-            <UnitSelector actualUnit={ingredient.quantity.unit} onChange={setQuantityUnit} />
+            <div className="flex">
+                <NumberField label="Quantité" value={ingredient.quantity.value} onChange={setQuantityValue} min={0} max={10000} isMobile={isMobile} />
+                {/* <input type="number" value={ingredient.quantity.unit} onChange={setQuantityUnit} /> */}
+                <UnitSelector actualUnit={ingredient.quantity.unit} onChange={setQuantityUnit} />
+            </div>
             <button
                 className="rounded-md py-1 px-2 text-text-primary font-bold w-min bg-cancel-1 md:hover:bg-cancel-2  md:p-1 md:m-2 md:transition md:duration-200"
                 onClick={onRemove}
             >
                 Supprimer
             </button>
-        </div>
+        </div >
     );
 }

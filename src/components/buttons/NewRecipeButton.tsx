@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeService from "../../api/services/RecipeService";
 import PremiumFeatureDisplayer from "../displayers/PremiumFeatureDisplayer";
@@ -54,20 +54,20 @@ export function GenerateAIRecipeButton({
 }: {
     disabled: boolean;
 }) {
+
+    const navigate = useNavigate();
+
     return (
-        <Link to="/recettes/generer"
+        <button
+            onClick={() => navigate("generer")}
             className={`relative bg-amber-300 hover:bg-amber-400 border-6 border-amber-700 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200 flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed" : ""
                 }`}
         >
-            <button
-                disabled={disabled}
-            >
-                <div className="absolute -top-3 -left-3">
-                    <PremiumFeatureDisplayer />
-                </div>
+            <div className="absolute -top-3 -left-3">
+                <PremiumFeatureDisplayer />
+            </div>
 
-                Générer une recette
-            </button>
-        </Link>
+            Générer une recette
+        </button>
     );
 }

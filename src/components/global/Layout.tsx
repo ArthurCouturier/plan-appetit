@@ -25,7 +25,7 @@ export default function Layout() {
     setTheme(prev => (prev === 'theme1' ? 'theme2' : 'theme1'));
   };
 
-  const hideFooterRoutes = ["/login"];
+  const hideFooterRoutes: string[] = [];
   const shouldShowFooter = isMobile && !hideFooterRoutes.includes(location.pathname);
 
   return (

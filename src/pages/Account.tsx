@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import Header from '../components/global/Header';
+import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 
 export default function Account() {
     const { user, logout } = useAuth();
@@ -51,6 +52,21 @@ export default function Account() {
 
     const [isMobile, setIsMobile] = useState(false);
 
+    const [enabled, setEnabled] = useState(false);
+
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
+
+    const changeTheme = () => {
+        setEnabled(!enabled);
+        setTheme(prev => (prev === 'theme1' ? 'theme2' : 'theme1'));
+    };
+
+    useEffect(() => {
+        document.documentElement.classList.remove('theme1', 'theme2');
+        document.documentElement.classList.add(theme);
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
     useEffect(() => {
         const handleResize = () => {
             setIsMobile(window.innerWidth <= 768);
@@ -63,7 +79,7 @@ export default function Account() {
     }, []);
 
     return (
-        <div className='flex flex-col mt-6 rounded-lg bg-bg-color p-6 md:mt-0 md:rounded-md md:h-[92vh]'>
+        <div className='flex flex-col mt-6 rounded-lg bg-bg-color p-6 md:mt-0 md:rounded-md md:h-[92vh] gap-6'>
             {isMobile ? null : <AccountHeader />}
             <div className="flex justify-center items-center size-full rounded-md">
                 <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
@@ -101,6 +117,30 @@ export default function Account() {
                     </CardFooter>
                 </Card>
             </div>
+            {isMobile && <div className="flex justify-center items-center size-full rounded-md">
+                <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                    <CardBody className="flex flex-col gap-4" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                        <div className="flex items-center space-x-4">
+                            <span className="text-base font-bold">Apparence :</span>
+                            <div className="flex items-center space-x-2">
+                                <MoonIcon className="w-5 h-5 text-cout-purple" />
+                                <button
+                                    onClick={changeTheme}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${theme == "theme1" ? "bg-cout-yellow" : "bg-cout-purple"
+                                        }`}
+
+                                >
+                                    <span
+                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${theme == "theme1" ? "translate-x-5" : "translate-x-1"
+                                            }`}
+                                    />
+                                </button>
+                                <SunIcon className="w-5 h-5 text-cout-yellow" />
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            </div>}
         </div>
     );
 };

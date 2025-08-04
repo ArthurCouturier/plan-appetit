@@ -59,7 +59,7 @@ export function GenerateAIRecipeButton({
 
     return (
         <button
-            onClick={() => navigate("generer")}
+            onClick={() => navigate("/generer")}
             className={`relative bg-amber-300 hover:bg-amber-400 border-6 border-amber-700 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200 flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed" : ""
                 }`}
         >

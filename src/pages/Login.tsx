@@ -81,8 +81,13 @@ export default function LoginPage() {
                 );
             }
 
-            login(await convertFirebaseUser(userCredential.user));
-            await RecipeService.fetchRecipesRemotly();
+            const userData = await convertFirebaseUser(userCredential.user)
+            localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
+            localStorage.setItem('email', userData.email ? userData.email : "");
+            localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
+
+            login(userData);
+            await RecipeService.fetchRecipesRemotly(); // le message d'erreur viens de là : le mail et le token sont nuls. Pourquoi ? 
 
             navigate('/profile');
         } catch (err: unknown) {
@@ -205,7 +210,7 @@ export default function LoginPage() {
                     {registerMode && (
                         <CardFooter className="text-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                             <Typography variant="small" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                                Vous déjà un compte ?{' '}
+                                Vous avez déjà un compte ?{' '}
                                 <button
                                     className="text-blue-500 hover:underline"
                                     onClick={() => setRegisterMode(false)}

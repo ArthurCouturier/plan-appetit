@@ -7,21 +7,13 @@ import { useGLTF } from '@react-three/drei';
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
-const publicKey = import.meta.env.PUBLIC_KEY as string
-const stripe = await loadStripe(publicKey);
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
-
-const publicKey = import.meta.env.PUBLIC_KEY
-const stripe = await loadStripe(publicKey);
+const publicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY as string;
+const stripePromise = loadStripe(publicKey);
 
 function App() {
   return (
     <AuthProvider>
-      <Elements stripe={stripe}>
-        <RouterProvider router={router} />
-      </Elements>
-      <Elements stripe={stripe}>
+      <Elements stripe={stripePromise}>
         <RouterProvider router={router} />
       </Elements>
     </AuthProvider>

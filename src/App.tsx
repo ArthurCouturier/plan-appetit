@@ -9,10 +9,18 @@ import { Elements } from "@stripe/react-stripe-js";
 
 const publicKey = import.meta.env.PUBLIC_KEY as string
 const stripe = await loadStripe(publicKey);
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
+const publicKey = import.meta.env.PUBLIC_KEY
+const stripe = await loadStripe(publicKey);
 
 function App() {
   return (
     <AuthProvider>
+      <Elements stripe={stripe}>
+        <RouterProvider router={router} />
+      </Elements>
       <Elements stripe={stripe}>
         <RouterProvider router={router} />
       </Elements>

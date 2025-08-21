@@ -49,3 +49,7 @@ export default tseslint.config({
 })
 ```
 # boilerplate
+
+# Env var 
+
+PUBLI_KEY : clé publique stripe

@@ -4,11 +4,18 @@ import { RouterProvider } from 'react-router-dom';
 import router from './routes';
 import { AuthProvider } from './components/authentication/AuthProvider';
 import { useGLTF } from '@react-three/drei';
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
+const publicKey = import.meta.env.PUBLIC_KEY as string
+const stripe = await loadStripe(publicKey);
 
 function App() {
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
+      <Elements stripe={stripe}>
+        <RouterProvider router={router} />
+      </Elements>
     </AuthProvider>
   );
 }

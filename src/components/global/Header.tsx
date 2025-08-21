@@ -2,6 +2,7 @@ import { Avatar } from "@material-tailwind/react";
 import { BackButton, HomeButton } from "../buttons/BackAndHomeButton";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import useAuth from "../../api/hooks/useAuth";
 
 export default function Header({
     back = false,
@@ -18,6 +19,8 @@ export default function Header({
     pageName?: string;
     children?: React.ReactNode;
 }) {
+    const { user } = useAuth()
+
     const [profilePhoto] = useState<string>(localStorage.getItem("profilePhoto") || "/no-pp.jpg");
 
     const navigate = useNavigate();
@@ -48,7 +51,7 @@ export default function Header({
                         size="lg"
                         withBorder={true}
                         src={profilePhoto}
-                        className="border-2 hover:scale-105 transition duration-200"
+                        className={`border-2 hover:scale-105 transition duration-200 ${user?.isPremium ? "border-cout-yellow" : null}`}
                     />
                 </button>
             )}

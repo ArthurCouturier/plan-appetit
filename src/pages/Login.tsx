@@ -87,7 +87,7 @@ export default function LoginPage() {
             localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
 
             login(userData);
-            await RecipeService.fetchRecipesRemotly(); // le message d'erreur viens de là : le mail et le token sont nuls. Pourquoi ? 
+            await RecipeService.fetchRecipesRemotly();
 
             navigate('/profile');
         } catch (err: unknown) {

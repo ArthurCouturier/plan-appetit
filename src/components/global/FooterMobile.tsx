@@ -3,9 +3,13 @@ import { UserCircleIcon, BookOpenIcon, LightBulbIcon } from "@heroicons/react/24
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Avatar } from "@material-tailwind/react";
+import useAuth from "../../api/hooks/useAuth";
 
 
 export default function FooterMobile() {
+
+  const { user } = useAuth();
+
 
   const [profilePhoto] = useState<string>(localStorage.getItem("profilePhoto") || "");
 
@@ -75,7 +79,7 @@ export default function FooterMobile() {
               size="sm"
               withBorder={true}
               src={profilePhoto}
-              className="border-2 hover:scale-105 transition duration-200"
+              className={`border-2 hover:scale-105 transition duration-200 ${user?.isPremium ? "border-cout-yellow" : null}`}
             />
           }
         </Button>

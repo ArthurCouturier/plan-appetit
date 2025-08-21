@@ -79,9 +79,9 @@ export default function Account() {
     }, []);
 
     return (
-        <div className='flex flex-col mt-6 rounded-lg bg-bg-color p-6 md:mt-0 md:rounded-md md:h-[92vh] gap-6'>
+        <div className='flex items-center gap-6 flex-col mt-6 rounded-lg bg-bg-color p-6 md:mt-0 md:rounded-md md:h-[92vh]'>
             {isMobile ? null : <AccountHeader />}
-            <div className="flex justify-center items-center size-full rounded-md">
+            <div className="flex justify-center items-center size-full rounded-md h-max">
                 <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                     <CardBody className="flex flex-col gap-4" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                         <div className="flex flex-col items-center">
@@ -117,10 +117,10 @@ export default function Account() {
                     </CardFooter>
                 </Card>
             </div>
-            {isMobile && <div className="flex justify-center items-center size-full rounded-md">
+            <div className="h-max w-full flex justify-center items-center size-full rounded-md">
                 <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                    <CardBody className="flex flex-col gap-4" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                        <div className="flex items-center space-x-4">
+                    <CardBody className="flex flex-col gap-6 items-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                        {isMobile && <div className="flex items-center space-x-4">
                             <span className="text-base font-bold">Apparence :</span>
                             <div className="flex items-center space-x-2">
                                 <MoonIcon className="w-5 h-5 text-cout-purple" />
@@ -137,10 +137,17 @@ export default function Account() {
                                 </button>
                                 <SunIcon className="w-5 h-5 text-cout-yellow" />
                             </div>
-                        </div>
+                        </div>}
+                        {user && user.isPremium ?
+                            <Button onClick={() => navigate("/premium")} fullWidth placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                Résilier mon abonnement Premium
+                            </Button> :
+                            <Button onClick={() => navigate("/premium")} fullWidth placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                Passer Premium
+                            </Button>}
                     </CardBody>
                 </Card>
-            </div>}
+            </div>
         </div>
     );
 };

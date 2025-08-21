@@ -10,6 +10,9 @@ import ProtectedRoute from "./components/authentication/ProtectedRoute";
 import Account from "./pages/Account";
 import MyRecipes from "./pages/MyRecipes";
 import Layout from "./components/global/Layout";
+import Premium from "./pages/Premium";
+import Complete from "./pages/Complete";
+import Cancel from "./pages/Cancel";
 
 const router = createBrowserRouter([
     {
@@ -21,8 +24,20 @@ const router = createBrowserRouter([
                 element: <Home />,
             },
             {
+                path: "complete",
+                element: <Complete />,
+            },
+            {
+                path: "cancel",
+                element: <Cancel />,
+            },
+            {
                 path: "login",
                 element: <LoginPage />,
+            },
+            {
+                path: "premium",
+                element: <Premium />,
             },
             {
                 path: "planning",

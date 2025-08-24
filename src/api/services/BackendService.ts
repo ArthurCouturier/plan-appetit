@@ -287,6 +287,24 @@ export default class BackendService {
     return response;
   }
 
+  public static async downgradeUser(token: string | null) {
+    const response = await fetch(
+      `${this.baseUrl}:${this.port}/api/v1/stripe/downgradeUser`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceId: "price_1RvDoULO5WTDaXvxI6UAGW6g",
+          token: token,
+        }),
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Erreur lors de la suppression du compte premium");
+    }
+    return response;
+  }
+
   public static async isPremium(token: string, email: string) {
     const response = await fetch(
       `${this.baseUrl}:${this.port}/api/v1/users/isPremium`,

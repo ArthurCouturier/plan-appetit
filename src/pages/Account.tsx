@@ -6,6 +6,7 @@ import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import Header from '../components/global/Header';
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import BackendService from '../api/services/BackendService';
 
 export default function Account() {
     const { user, logout } = useAuth();
@@ -78,6 +79,12 @@ export default function Account() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    const token = localStorage.getItem("firebaseIdToken")
+
+    const handleClick = async () => {
+        const response = await BackendService.downgradeUser(token)
+    }
+
     return (
         <div className='flex items-center gap-6 flex-col mt-6 rounded-lg bg-bg-color p-6 md:mt-0 md:rounded-md md:h-[92vh]'>
             {isMobile ? null : <AccountHeader />}
@@ -139,7 +146,13 @@ export default function Account() {
                             </div>
                         </div>}
                         {user && user.isPremium ?
-                            <Button onClick={() => navigate("/premium")} fullWidth placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                            <Button onClick={() => {
+                                const confirmed = window.confirm("Êtes-vous sûr ?");
+                                if (confirmed) {
+                                    handleClick();
+                                }
+                            }}
+                                fullWidth placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                                 Résilier mon abonnement Premium
                             </Button> :
                             <Button onClick={() => navigate("/premium")} fullWidth placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
@@ -148,7 +161,7 @@ export default function Account() {
                     </CardBody>
                 </Card>
             </div>
-        </div>
+        </div >
     );
 };
 

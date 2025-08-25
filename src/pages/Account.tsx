@@ -83,6 +83,11 @@ export default function Account() {
 
     const handleClick = async () => {
         const response = await BackendService.downgradeUser(token)
+        if (response.ok) {
+            alert("Vous avez résilier votre compte, vous perdrez vos avantages premium à la fin du mois")
+        } else {
+            alert("Une erreur s'est produite, veuillez réessayer")
+        }
     }
 
     return (

@@ -299,9 +299,6 @@ export default class BackendService {
         }),
       }
     );
-    if (!response.ok) {
-      throw new Error("Erreur lors de la suppression du compte premium");
-    }
     return response;
   }
 

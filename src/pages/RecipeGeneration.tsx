@@ -8,6 +8,7 @@ import RecipeGenerationParametersInterface from "../api/interfaces/recipes/Recip
 import LinearNumberField from "../components/fields/LinearNumberField";
 import Header from "../components/global/Header";
 import { useNavigate } from "react-router-dom";
+import BackendService from "../api/services/BackendService";
 
 export default function RecipeGeneration() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -64,6 +65,24 @@ export default function RecipeGeneration() {
 
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    const token = localStorage.getItem('firebaseIdToken');
+    const email = localStorage.getItem("email")
+    const [remaining, setRemaining] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchRemaining = async () => {
+            if (token != null && email != null) {
+                const response = await BackendService.remainingRecipes(token, email);
+                const remainingRecipes = await response.json();
+                setRemaining(remainingRecipes);
+            } else {
+                setRemaining(-1);
+            }
+        };
+
+        fetchRemaining();
+    }, [token, email]);
 
     return (
         <div className="relative bg-primary shadow-sm rounded-lg py-4 w-full mt-4 md:bg-bg-color md:p-6 md:w-full">
@@ -130,7 +149,9 @@ export default function RecipeGeneration() {
                     className="bg-confirmation-1 font-bold md:font-normal hover:bg-confirmation-2 hover:scale-95 text-text-primary p-2 rounded-lg md:w-[30vw] mx-auto transition duration-200"
                     onClick={handleGenerateRecipe}
                 >
-                    Générer une recette
+                    {remaining !== null && remaining >= 0
+                        ? `Générer une recette (${remaining} restantes)`
+                        : "Générer une recette"}
                 </button>
             </div>
         </div>

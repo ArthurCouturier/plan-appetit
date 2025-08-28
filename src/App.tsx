@@ -8,7 +8,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 
 const publicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY as string;
-const stripePromise = loadStripe("pk_test_51Rt9TILO5WTDaXvxYuAPwcvI4CWPYec7HwwGCpGElx05tVOKCt9AflSr06gP4hbh4B1C7gB7Nzt4DCCoPBweVqJO007xvnmpwk");
+const stripePromise = loadStripe(publicKey);
 
 function App() {
   return (

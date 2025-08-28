@@ -182,8 +182,17 @@ export default class BackendService {
     );
 
     if (response.status == 403) {
-      console.log("mince");
-      redirect("/premium");
+      const premium = await BackendService.isPremium(token, email);
+      if (premium) {
+        alert(
+          "Votre quota de recettes générées est épuisé. Patientez jusqu’au mois prochain pour générer à nouveau 1000 recettes !"
+        );
+      } else {
+        alert(
+          "Vous ne pouvez plus générer de recettes. Passez premium pour pouvoir en générer de nouveau !"
+        );
+        redirect("/premium");
+      }
       return null;
     }
 
@@ -320,5 +329,20 @@ export default class BackendService {
 
     const isPremium: boolean = await response.json();
     return isPremium;
+  }
+
+  public static async remainingRecipes(token: String, email: string) {
+    const response = await fetch(
+      `${this.baseUrl}:${this.port}/api/v1/recipes/remainingRecipes`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Email: email,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response;
   }
 }

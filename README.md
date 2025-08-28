@@ -52,7 +52,7 @@ export default tseslint.config({
 
 # Env var 
 
-VITE_OPENAI_API_KEY : clé secrète? pour interagir avec l'API d'OpenAI
+VITE_OPENAI_API_KEY : clé secrète? pour interagir avec l'API d'OpenAI \n
 VITE_FIREBASE_API_KEY : clé publique pour interagir avec l'API Firebase
 VITE_FIREBASE_AUTH_DOMAIN : domaine sur lequel Firebase gère les flux d’authentification
 VITE_FIREBASE_PROJECT_ID : identifiant unique du projet Firebase dans Google Cloud

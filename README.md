@@ -52,14 +52,14 @@ export default tseslint.config({
 
 # Env var 
 
-VITE_OPENAI_API_KEY : clé secrète? pour interagir avec l'API d'OpenAI
-VITE_FIREBASE_API_KEY : clé publique pour interagir avec l'API Firebase
-VITE_FIREBASE_AUTH_DOMAIN : domaine sur lequel Firebase gère les flux d’authentification
-VITE_FIREBASE_PROJECT_ID : identifiant unique du projet Firebase dans Google Cloud
-VITE_FIREBASE_STORAGE_BUCKET : identifiant du bucket de stockage Firebase (où sont conservés les  fichiers comme images, PDF, etc)
-VITE_FIREBASE_MESSAGING_SENDER_ID : identifiant de l’expéditeur pour Firebase Cloud Messaging
-VITE_FIREBASE_APP_ID : identifiant unique de l’application dans Firebase, lié au projet
-VITE_FIREBASE_MEASUREMENT_ID : identifiant utilisé par Google Analytics pour suivre l’usage de l’app
-VITE_API_URL : url du backend
-VITE_API_PORT : port du backend
-PUBLIC_KEY : clé publique stripe permettant d'authentifier son compte et d'utiliser l'API Stripe
+- VITE_OPENAI_API_KEY : clé secrète? pour interagir avec l'API d'OpenAI
+- VITE_FIREBASE_API_KEY : clé publique pour interagir avec l'API Firebase
+- VITE_FIREBASE_AUTH_DOMAIN : domaine sur lequel Firebase gère les flux d’authentification
+- VITE_FIREBASE_PROJECT_ID : identifiant unique du projet Firebase dans Google Cloud
+- VITE_FIREBASE_STORAGE_BUCKET : identifiant du bucket de stockage Firebase (où sont conservés les  fichiers comme images, PDF, etc)
+- VITE_FIREBASE_MESSAGING_SENDER_ID : identifiant de l’expéditeur pour Firebase Cloud Messaging
+- VITE_FIREBASE_APP_ID : identifiant unique de l’application dans Firebase, lié au projet
+- VITE_FIREBASE_MEASUREMENT_ID : identifiant utilisé par Google Analytics pour suivre l’usage de l’app
+- VITE_API_URL : url du backend
+- VITE_API_PORT : port du backend
+- PUBLIC_KEY : clé publique stripe permettant d'authentifier son compte et d'utiliser l'API Stripe

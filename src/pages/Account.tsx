@@ -110,9 +110,12 @@ export default function Account() {
                             </Button>
                         </form>
                     </CardBody>
-                    <CardFooter className="flex justify-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                    <CardFooter className="flex flex-col justify-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                         <Button variant="outlined" color="red" onClick={handleLogout} fullWidth placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                             Se déconnecter
+                        </Button>
+                        <Button className='mt-4' variant="outlined" color="yellow" onClick={() => { navigate("/premium") }} fullWidth placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                            Devenir Premium
                         </Button>
                     </CardFooter>
                 </Card>

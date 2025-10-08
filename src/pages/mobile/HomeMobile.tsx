@@ -11,7 +11,7 @@ export default function HomeMobile() {
   // @ts-ignore
   const { recipes, setRecipes } = useRecipeContext();
 
-  const goToMyRecipes = () => navigateTo("/mesrecettes")
+  const goToMyRecipes = () => navigateTo("/myrecipes")
 
   const handleClick = async () => {
     try {

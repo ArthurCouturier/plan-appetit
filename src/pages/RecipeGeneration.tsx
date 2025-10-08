@@ -45,7 +45,7 @@ export default function RecipeGeneration() {
         } catch (error) {
             console.error(error);
             alert("une erreur est surevenue")
-            navigate('/mesrecettes');
+            navigate('/myrecipes');
 
         } finally {
             setIsLoading(false);

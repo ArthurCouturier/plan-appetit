@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import MyRecipesMobile from "./mobile/MyRecipesMobile";
 import { useNavigate } from "react-router-dom";
 
-export default function MesRecettes(
+export default function MyRecipes(
 ) {
 
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);

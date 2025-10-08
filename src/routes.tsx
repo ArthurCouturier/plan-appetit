@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/authentication/ProtectedRoute";
 import Account from "./pages/Account";
 import MyRecipes from "./pages/MyRecipes";
 import Layout from "./components/global/Layout";
+import BecomePremium from "./pages/BecomePremium";
 
 const router = createBrowserRouter([
     {
@@ -48,9 +49,13 @@ const router = createBrowserRouter([
                         element: <RecipeGeneration />,
                     },
                     {
-                        path: "mesrecettes",
+                        path: "myrecipes",
                         element: <MyRecipes />,
                     },
+                    {
+                        path: "premium",
+                        element: <BecomePremium />
+                    }
                 ],
             },
         ],

@@ -45,7 +45,7 @@ export default function FooterMobile() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  const goToMyRecipes = () => navigateTo("/mesrecettes");
+  const goToMyRecipes = () => navigateTo("/myrecipes");
 
   return (
     <footer className={`fixed flex justify-center inset-x-0 bottom-4 z-40 ${showFooter ? null : "pointer-events-none"}`}>

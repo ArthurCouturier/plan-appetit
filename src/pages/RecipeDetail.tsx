@@ -55,7 +55,8 @@ export default function RecipeDetail() {
                             className="p-2 rounded-lg bg-cancel-1 absolute left-20 -translate-y-3 hover:bg-cancel-2 text-text-primary transition duration-200"
                             onClick={async () => {
                                 await RecipeService.deleteRecipe(recipe.uuid)
-                                setRecipes(RecipeService.fetchRecipesLocally())
+                                const updatedRecipes = await RecipeService.fetchRecipesRemotly()
+                                setRecipes(updatedRecipes)
                                 navigate('/recettes')
                             }}
                         >

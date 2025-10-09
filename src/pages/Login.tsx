@@ -49,7 +49,7 @@ export default function LoginPage() {
 
             await RecipeService.fetchRecipesRemotly();
 
-            navigate('/profile');
+            navigate('/recettes');
 
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
@@ -89,7 +89,7 @@ export default function LoginPage() {
             login(userData);
             await RecipeService.fetchRecipesRemotly(); // le message d'erreur viens de là : le mail et le token sont nuls. Pourquoi ? 
 
-            navigate('/profile');
+            navigate('/recettes');
         } catch (err: unknown) {
 
             setError(err instanceof Error ? err.message : 'An error happened');
@@ -114,7 +114,7 @@ export default function LoginPage() {
 
             await RecipeService.fetchRecipesRemotly();
 
-            navigate('/profile');
+            navigate('/recettes');
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
         }

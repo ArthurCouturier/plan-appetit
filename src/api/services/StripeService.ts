@@ -22,7 +22,7 @@ export default class StripeService {
       credentials: 'include',
       body: JSON.stringify({
         items: cart,
-        successUrl: window.location.origin + '/profile',
+        successUrl: window.location.origin + '/recettes',
         cancelUrl: window.location.origin + '/cancel'
       })
     });

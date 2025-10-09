@@ -8,9 +8,12 @@ import RecipeGenerationParametersInterface from "../api/interfaces/recipes/Recip
 import LinearNumberField from "../components/fields/LinearNumberField";
 import Header from "../components/global/Header";
 import { useNavigate } from "react-router-dom";
+import { useRecipeContext } from "../contexts/RecipeContext";
+import RecipeService from "../api/services/RecipeService";
 
 export default function RecipeGeneration() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const { setRecipes } = useRecipeContext();
 
     const [localisation, setLocalisation] = useState<string>("");
     const [seasons, setSeasons] = useState<SeasonEnum[]>([]);
@@ -41,7 +44,13 @@ export default function RecipeGeneration() {
             const email = localStorage.getItem("email") || "";
             const token = localStorage.getItem("firebaseIdToken") || "";
             const newRecipe = await generateRecipe(generationInterface, email, token);
-            newRecipe && navigate(`/recettes/${newRecipe.uuid}`);
+            
+            // Mettre à jour le contexte avec les recettes actualisées
+            if (newRecipe) {
+                const updatedRecipes = await RecipeService.fetchRecipesRemotly();
+                setRecipes(updatedRecipes);
+                navigate(`/recettes/${newRecipe.uuid}`);
+            }
         } catch (error) {
             console.error(error);
             alert("une erreur est surevenue")

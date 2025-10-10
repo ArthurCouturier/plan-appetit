@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom";
+import { HomeIcon } from "@heroicons/react/24/solid";
 import StripeService from "../api/services/StripeService";
 import { Product } from "../api/interfaces/stripe/Product";
 import { CartItem } from "../api/interfaces/stripe/CartItem";
 
 export default function BecomePremium() {
+  const navigate = useNavigate();
   const [premiumProduct, setPremiumProduct] = useState<Product | null>(null);
   const [credit20Product, setCredit20Product] = useState<Product | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
@@ -95,6 +98,15 @@ export default function BecomePremium() {
 
   return (
     <div className="min-h-screen bg-bg-color overflow-x-hidden">
+      {/* Home Button */}
+      <button
+        onClick={() => navigate("/")}
+        className="fixed top-6 left-6 z-50 p-3 bg-primary hover:bg-cout-purple/20 text-cout-base rounded-lg shadow-lg border border-border-color transition-all duration-200 hover:scale-105"
+        title="Retour à l'accueil"
+      >
+        <HomeIcon className="w-6 h-6" />
+      </button>
+
       {/* HERO SECTION */}
       <section className="relative overflow-hidden bg-gradient-to-br from-cout-base via-cout-purple to-cout-purple py-20 px-4 md:py-32">
         <div className="absolute inset-0 opacity-10">

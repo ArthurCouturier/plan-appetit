@@ -60,62 +60,67 @@ export default function LinearNumberField({
     };
 
     return (
-        <LabeledField label={label} className={`flex items-center text-text-secondary w-full mx-auto ${className}`} htmlFor={htmlFor}>
-            <div className="flex flex-col md:flex-row items-center justify-center">
-                {!isMobile &&
-                    <div className="md:flex">
-                        <Button onChange={() => onChange({ target: { value: Math.max(value - 10, 0) } } as any)}>-10€</Button>
-                        <Button onChange={() => onChange({ target: { value: Math.max(value - 1, 0) } } as any)}>-1€</Button>
-                        <Button onChange={() => onChange({ target: { value: Math.max(value - 0.1, 0) } } as any)}>-0.1€</Button>
-                        <Button onChange={() => onChange({ target: { value: Math.max(value - 0.01, 0) } } as any)}>-0.01€</Button>
+        <LabeledField label={label} className={`${className}`} htmlFor={htmlFor}>
+            <div className="flex flex-col gap-4">
+                {/* Value Display and Edit */}
+                <div className="flex items-center justify-center gap-3">
+                    {!isMobile && (
+                        <div className="flex gap-1">
+                            <Button onChange={() => onChange({ target: { value: Math.max(value - 10, 0) } } as any)}>-10</Button>
+                            <Button onChange={() => onChange({ target: { value: Math.max(value - 1, 0) } } as any)}>-1</Button>
+                            <Button onChange={() => onChange({ target: { value: Math.max(value - 0.1, 0) } } as any)}>-0.1</Button>
+                        </div>
+                    )}
+                    
+                    <div className="bg-secondary border border-border-color rounded-lg px-4 py-2 min-w-[100px] text-center">
+                        {editing ? (
+                            <input
+                                ref={inputRef}
+                                type="number"
+                                inputMode="decimal"
+                                id="number"
+                                value={value}
+                                onChange={handleInputChange}
+                                onKeyDown={handleKeyDown}
+                                className="w-full bg-transparent text-center text-text-primary outline-none"
+                            />
+                        ) : (
+                            <div className="text-text-primary font-semibold cursor-pointer" onClick={() => setEditing(true)}>
+                                <NumberFlow
+                                    value={value}
+                                    format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}
+                                    suffix=" €"
+                                />
+                            </div>
+                        )}
                     </div>
-                }
-                <div className="bg-bg-color rounded-lg w-20 px-2 py-1 mx-6" >
-                    {editing ? (
-                        <input
-                            ref={inputRef}
-                            type="number"
-                            inputMode="decimal"
-                            id="number"
-                            value={value}
-                            onChange={handleInputChange}
-                            onKeyDown={handleKeyDown}
-
-                            className="rounded-sm p-1 text-center text-text-secondary w-16"
-                        />
-                    ) : (
-                        <NumberFlow
-                            value={value}
-                            format={{ minimumFractionDigits: 2, maximumFractionDigits: 2 }}
-                            suffix=" €"
-                            onClick={() => setEditing(true)}
-                        />
+                    
+                    {!isMobile && (
+                        <div className="flex gap-1">
+                            <Button onChange={() => onChange({ target: { value: Math.min(value + 0.1, 999.99) } } as any)}>+0.1</Button>
+                            <Button onChange={() => onChange({ target: { value: Math.min(value + 1, 999.99) } } as any)}>+1</Button>
+                            <Button onChange={() => onChange({ target: { value: Math.min(value + 10, 999.99) } } as any)}>+10</Button>
+                        </div>
                     )}
                 </div>
-                {!isMobile &&
-                    <div className="md:flex">
-                        <Button onChange={() => onChange({ target: { value: Math.min(value + 0.01, 999.99) } } as any)}>+0.01€</Button>
-                        <Button onChange={() => onChange({ target: { value: Math.min(value + 0.1, 999.99) } } as any)}>+0.1€</Button>
-                        <Button onChange={() => onChange({ target: { value: Math.min(value + 1, 999.99) } } as any)}>+1€</Button>
-                        <Button onChange={() => onChange({ target: { value: Math.min(value + 10, 999.99) } } as any)}>+10€</Button>
-                    </div>
-                }
-            </div>
-            <div className="flex max-w-full items-center justify-between md:w-[45vw] md:mx-auto">
-                0€
-                <Slider
-                    onPointerEnterCapture={undefined}
-                    onPointerLeaveCapture={undefined}
-                    placeholder={undefined}
-                    value={Math.min(Math.max(value, 0.01), 100)}
-                    onChange={onChange}
-                    color="blue"
-                    defaultValue={10}
-                    step={0.01}
-                    id={htmlFor}
-                    className="mx-4 bg-secondary rounded-2xl"
-                />
-                100€
+
+                {/* Slider */}
+                <div className="flex items-center gap-3 w-full">
+                    <span className="text-text-secondary text-sm">0€</span>
+                    <Slider
+                        onPointerEnterCapture={undefined}
+                        onPointerLeaveCapture={undefined}
+                        placeholder={undefined}
+                        value={Math.min(Math.max(value, 0.01), 100)}
+                        onChange={onChange}
+                        color="blue"
+                        defaultValue={10}
+                        step={0.01}
+                        id={htmlFor}
+                        className="flex-1"
+                    />
+                    <span className="text-text-secondary text-sm">100€</span>
+                </div>
             </div>
         </LabeledField>
     );
@@ -133,7 +138,7 @@ function Button({
     return (
         <button
             onClick={onChange}
-            className={`bg-secondary text-text-secondary rounded-lg px-1 py-0.5 w-fit m-1 hover:scale-95 hover:opacity-85 active:scale-100 active:opacity-95 ${className}`}
+            className={`bg-secondary text-text-primary text-xs rounded-md px-2 py-1 hover:bg-cout-purple/20 transition-colors duration-200 ${className}`}
         >
             {children}
         </button>

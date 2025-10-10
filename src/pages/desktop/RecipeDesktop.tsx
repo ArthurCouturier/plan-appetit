@@ -10,17 +10,25 @@ export default function RecipeDesktop() {
   const { recipes, setRecipes } = useRecipeContext();
 
   return (
-    <div className="w-full bg-bg-color p-6 relative">
-
+    <div className="min-h-screen bg-bg-color p-6">
       <RecipesHeader />
 
-      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 3xl:grid-cols-7 bg-primary p-4 rounded-lg">
-        <AddRecipeButton setRecipes={setRecipes} disabled={false} />
-        <ImportRecipeButton setRecipes={setRecipes} disabled={false} />
-        <GenerateAIRecipeButton disabled={false} />
-        {recipes.map((recipe: RecipeInterface, index: number) => (
-          <RecipeCard key={index} recipe={recipe} />
-        ))}
+      <div className="mt-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-text-primary">Mes Recettes</h2>
+            <p className="text-text-secondary text-sm mt-1">{recipes.length} recette{recipes.length > 1 ? 's' : ''} dans votre livre</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+          <AddRecipeButton setRecipes={setRecipes} disabled={false} />
+          <ImportRecipeButton setRecipes={setRecipes} disabled={false} />
+          <GenerateAIRecipeButton disabled={false} />
+          {recipes.map((recipe: RecipeInterface, index: number) => (
+            <RecipeCard key={index} recipe={recipe} />
+          ))}
+        </div>
       </div>
     </div>
   )

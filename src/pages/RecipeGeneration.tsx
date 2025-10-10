@@ -75,18 +75,35 @@ export default function RecipeGeneration() {
     }, []);
 
     return (
-        <div className="relative bg-primary shadow-sm rounded-lg py-4 w-full mt-4 md:bg-bg-color md:p-6 md:w-full">
+        <div className="relative bg-bg-color min-h-screen md:p-6">
             {isLoading && (
-                <div className="md:absolute fixed inset-0 bg-black md:size-screen bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-                        <p className="text-lg font-semibold">Génération de la recette en cours...</p>
+                <div className="fixed inset-0 bg-cout-purple/95 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="text-center">
+                        <div className="relative w-32 h-32 mx-auto mb-6">
+                            {/* Spinning circles */}
+                            <div className="absolute inset-0 border-4 border-cout-yellow/30 rounded-full"></div>
+                            <div className="absolute inset-0 border-4 border-transparent border-t-cout-yellow rounded-full animate-spin"></div>
+                            <div className="absolute inset-2 border-4 border-transparent border-t-white rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
+                            
+                            {/* Center icon */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-4xl animate-pulse">🍳</span>
+                            </div>
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-2">Création en cours...</h3>
+                        <p className="text-cout-yellow/90 text-lg">L'IA cuisine votre recette parfaite</p>
+                        <div className="flex justify-center gap-1 mt-4">
+                            <span className="w-2 h-2 bg-cout-yellow rounded-full animate-bounce" style={{ animationDelay: '0s' }}></span>
+                            <span className="w-2 h-2 bg-cout-yellow rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                            <span className="w-2 h-2 bg-cout-yellow rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                        </div>
                     </div>
                 </div>
             )}
 
             {isMobile ? null : <RecipeGenerationHeader />}
 
-            <div className="flex px-4 flex-col md:bg-primary md:py-4 md:rounded-lg">
+            <div className="max-w-3xl mx-auto bg-primary shadow-lg rounded-xl p-6 md:p-8 mt-4">
                 <TextualField
                     label={"Localité de la recette"}
                     placeholder={"La région Toulousaine"}
@@ -136,10 +153,11 @@ export default function RecipeGeneration() {
                     isMobile={isMobile}
                 />
                 <button
-                    className="bg-confirmation-1 font-bold md:font-normal hover:bg-confirmation-2 hover:scale-95 text-text-primary p-2 rounded-lg md:w-[30vw] mx-auto transition duration-200"
+                    className="w-full md:w-auto px-8 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl text-lg hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300 shadow-lg mx-auto block mt-2"
                     onClick={handleGenerateRecipe}
+                    disabled={isLoading}
                 >
-                    Générer une recette
+                    ✨ Générer ma recette
                 </button>
             </div>
         </div>

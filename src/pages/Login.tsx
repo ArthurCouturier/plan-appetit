@@ -21,10 +21,12 @@ import { convertFirebaseUser } from '../api/authentication/convertFirebaseUser';
 import Header from '../components/global/Header';
 import RecipeService from '../api/services/RecipeService';
 import BackendService from '../api/services/BackendService';
+import { useRecipeContext } from '../contexts/RecipeContext';
 
 export default function LoginPage() {
     const navigate = useNavigate();
     const { login } = useAuth();
+    const { setRecipes } = useRecipeContext();
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -47,7 +49,8 @@ export default function LoginPage() {
 
             login(userData);
 
-            await RecipeService.fetchRecipesRemotly();
+            const recipes = await RecipeService.fetchRecipesRemotly();
+            setRecipes(recipes);
 
             navigate('/recettes');
 
@@ -87,7 +90,8 @@ export default function LoginPage() {
             localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
 
             login(userData);
-            await RecipeService.fetchRecipesRemotly(); // le message d'erreur viens de là : le mail et le token sont nuls. Pourquoi ? 
+            const recipes = await RecipeService.fetchRecipesRemotly();
+            setRecipes(recipes);
 
             navigate('/recettes');
         } catch (err: unknown) {
@@ -112,7 +116,8 @@ export default function LoginPage() {
 
             login(userData);
 
-            await RecipeService.fetchRecipesRemotly();
+            const recipes = await RecipeService.fetchRecipesRemotly();
+            setRecipes(recipes);
 
             navigate('/recettes');
         } catch (err: unknown) {

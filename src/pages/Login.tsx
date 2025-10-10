@@ -142,7 +142,7 @@ export default function LoginPage() {
     return (
         <div className='mt-4 md:mt-0 flex flex-col bg-bg-color p-6 rounded-md'>
             {isMobile ? null : <LoginHeader />}
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center mt-4">
                 <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                     <CardBody className="flex flex-col gap-4" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                         <Typography variant="h4" className="text-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>

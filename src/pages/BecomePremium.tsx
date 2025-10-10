@@ -113,31 +113,31 @@ export default function BecomePremium() {
           <div className="absolute top-20 left-10 w-72 h-72 bg-cout-yellow rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse delay-700"></div>
         </div>
-        
+
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <div className="inline-block mb-6 px-4 py-2 bg-cout-yellow/20 backdrop-blur-sm rounded-full border border-cout-yellow/30">
             <span className="text-white font-medium text-sm md:text-base">✨ Bientôt : Import direct depuis Instagram</span>
           </div>
-          
+
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
             Libérez votre créativité
             <br />
             <span className="text-cout-yellow">culinaire sans limites</span>
           </h1>
-          
+
           <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Passez Premium et générez des recettes illimitées, personnalisées selon vos contraintes. 
+            Passez Premium et générez des recettes illimitées, personnalisées selon vos contraintes.
             Bientôt, importez vos recettes Instagram préférées en un seul clic.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button 
+            <button
               onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-8 py-4 bg-cout-yellow text-cout-purple font-bold rounded-lg text-lg shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300 hover:shadow-cout-yellow/50"
             >
               Devenir Premium
             </button>
-            <button 
+            <button
               onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-lg text-lg border-2 border-white/30 hover:bg-white/20 transition-all duration-300"
             >
@@ -176,7 +176,7 @@ export default function BecomePremium() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
-              <div 
+              <div
                 key={index}
                 className="group bg-secondary p-8 rounded-2xl border border-border-color hover:border-cout-base transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                 style={{ animationDelay: `${index * 100}ms` }}
@@ -256,11 +256,11 @@ export default function BecomePremium() {
               <div className="text-white">
                 <h3 className="text-2xl font-bold mb-2">Premium</h3>
                 <div className="text-4xl font-bold mb-4">
-                  {premiumProduct ? `${(premiumProduct.prices[0].unitAmount / 100).toFixed(2)}€` : '...'}
+                  {premiumProduct ? `${(premiumProduct.prices[0].unitAmount).toFixed(2)}€` : '...'}
                   <span className="text-lg font-normal">/mois</span>
                 </div>
                 <p className="text-white/90 mb-6">Accès illimité à toutes les fonctionnalités</p>
-                
+
                 <ul className="space-y-3 mb-8">
                   {[
                     "Générations illimitées",
@@ -276,7 +276,7 @@ export default function BecomePremium() {
                     </li>
                   ))}
                 </ul>
-                
+
                 <button
                   onClick={() => handleSubscribe()}
                   className="w-full py-4 bg-cout-yellow text-cout-purple font-bold rounded-lg text-lg hover:bg-yellow-400 transition-all duration-300 shadow-xl"
@@ -291,10 +291,10 @@ export default function BecomePremium() {
             <div className="bg-secondary p-8 rounded-2xl border-2 border-border-color shadow-lg hover:shadow-xl transition-all duration-300">
               <h3 className="text-2xl font-bold text-text-primary mb-2">Pack Crédits</h3>
               <div className="text-4xl font-bold text-text-primary mb-4">
-                {credit20Product ? `${(credit20Product.prices[0].unitAmount / 100).toFixed(2)}€` : '...'}
+                {credit20Product ? `${(credit20Product.prices[0].unitAmount).toFixed(2)}€` : '...'}
               </div>
               <p className="text-text-secondary mb-6">20 générations de recettes</p>
-              
+
               <ul className="space-y-3 mb-8">
                 {[
                   "20 crédits de génération",
@@ -309,7 +309,7 @@ export default function BecomePremium() {
                   </li>
                 ))}
               </ul>
-              
+
               <button
                 onClick={handleBuyCredits}
                 className="w-full py-4 bg-cout-base text-white font-bold rounded-lg text-lg hover:bg-indigo-500 transition-all duration-300"
@@ -375,7 +375,7 @@ export default function BecomePremium() {
 
           <div className="space-y-4">
             {faqs.map((faq, index) => (
-              <div 
+              <div
                 key={index}
                 className="bg-secondary rounded-xl border border-border-color overflow-hidden transition-all duration-300 hover:shadow-md"
               >
@@ -409,14 +409,14 @@ export default function BecomePremium() {
             Rejoignez Plan'Appétit Premium aujourd'hui et transformez votre façon de créer des recettes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
+            <button
               onClick={() => handleSubscribe()}
               className="px-10 py-5 bg-cout-yellow text-cout-purple font-bold rounded-lg text-xl shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300"
               disabled={!premiumProduct}
             >
               Devenir Premium maintenant
             </button>
-            <button 
+            <button
               onClick={handleBuyCredits}
               className="px-10 py-5 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-lg text-xl border-2 border-white/30 hover:bg-white/20 transition-all duration-300"
               disabled={!credit20Product}

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
-import { 
-  SparklesIcon, 
-  ClockIcon, 
+import {
+  SparklesIcon,
+  ClockIcon,
   PhotoIcon,
   AdjustmentsHorizontalIcon,
   HeartIcon,
@@ -29,7 +29,7 @@ export default function Home() {
     },
     {
       question: "L'import Instagram est-il déjà disponible ?",
-      answer: "Cette fonctionnalité révolutionnaire arrive très bientôt ! Les abonnés Premium y auront accès en priorité."
+      answer: "On est en train de vous cook ça ! Cette fonctionnalité inédite arrive très bientôt ! Les abonnés Premium y auront accès en priorité."
     },
     {
       question: "Quelle est la différence avec la version Premium ?",
@@ -46,11 +46,11 @@ export default function Home() {
     {
       icon: <AdjustmentsHorizontalIcon className="w-12 h-12" />,
       title: "Personnalisation Totale",
-      description: "Régimes alimentaires, allergies, ingrédients disponibles, nombre de personnes : tout est configurable."
+      description: "Régimes alimentaires, allergies, ingrédients disponibles, nombre de personnes, prix d'achat par personne : tout est configurable."
     },
     {
       icon: <PhotoIcon className="w-12 h-12" />,
-      title: "Import Instagram (Bientôt)",
+      title: "Import Instagram (bientôt dispo)",
       description: "Importez vos recettes Instagram favorites directement dans votre bibliothèque en un seul clic."
     },
     {
@@ -91,7 +91,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-bg-color">
-      
+
       {/* HERO SECTION */}
       <section className="relative overflow-hidden bg-cout-purple pt-20 pb-24 px-4">
         {/* Animated background elements */}
@@ -105,7 +105,7 @@ export default function Home() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-cout-yellow/20 backdrop-blur-sm rounded-full border border-cout-yellow/30 mb-8">
               <PhotoIcon className="w-5 h-5 text-white" />
-              <span className="text-sm font-medium text-white">Bientôt : Import Instagram ✨</span>
+              <span className="text-sm font-medium text-white">Bientôt disponible : Import Instagram ✨</span>
             </div>
 
             {/* Main Title */}
@@ -215,13 +215,13 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-cout-base p-8 md:p-10 rounded-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-48 h-48 bg-cout-yellow/10 rounded-full blur-3xl"></div>
-            
+
             <div className="relative z-10">
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
                 Passez Premium pour plus
               </h2>
-              <p className="text-base text-white/90 mb-6 max-w-xl">
-                Générations illimitées, import Instagram (bientôt), et accès prioritaire.
+              <p className="text-base text-white/90 mb-6 max-w-xl mx-auto">
+                Générations illimitées, import Instagram (bientôt disponible), et accès prioritaire aux nouvelles fonctionnalités.
               </p>
 
               <button
@@ -255,16 +255,14 @@ export default function Home() {
                   className="w-full px-5 py-4 text-left flex justify-between items-center gap-4 hover:bg-secondary transition-colors"
                 >
                   <span className="font-semibold text-text-primary text-base">{faq.question}</span>
-                  <ChevronDownIcon 
-                    className={`w-5 h-5 text-cout-base transition-transform duration-300 flex-shrink-0 ${
-                      openFaqIndex === index ? 'rotate-180' : ''
-                    }`}
+                  <ChevronDownIcon
+                    className={`w-5 h-5 text-cout-base transition-transform duration-300 flex-shrink-0 ${openFaqIndex === index ? 'rotate-180' : ''
+                      }`}
                   />
                 </button>
                 <div
-                  className={`overflow-hidden transition-all duration-300 ${
-                    openFaqIndex === index ? 'max-h-96' : 'max-h-0'
-                  }`}
+                  className={`overflow-hidden transition-all duration-300 ${openFaqIndex === index ? 'max-h-96' : 'max-h-0'
+                    }`}
                 >
                   <p className="px-5 pb-4 text-text-secondary text-sm leading-relaxed">
                     {faq.answer}

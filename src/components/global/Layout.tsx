@@ -21,6 +21,11 @@ export default function Layout() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   const changeTheme = () => {
     setTheme(prev => (prev === 'theme1' ? 'theme2' : 'theme1'));
   };

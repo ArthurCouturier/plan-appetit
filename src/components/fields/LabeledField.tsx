@@ -13,13 +13,13 @@ export default function LabeledField({
 }) {
     return (
         <div
-            className={`flex flex-col my-4 w-[60vw] mx-auto ${className}`}
+            className={`flex flex-col my-4 w-full ${className}`}
             onClick={onClick}
         >
             <label
                 key={label}
                 htmlFor={htmlFor}
-                className="text-text-primary text-lg font-bold mb-2"
+                className="text-text-primary text-base font-semibold mb-2"
             >
                 {label}
             </label>

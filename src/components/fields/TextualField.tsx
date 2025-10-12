@@ -23,7 +23,7 @@ export default function TextualField({
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
-                className="bg-secondary text-text-secondary p-2 rounded-lg"
+                className="w-full bg-secondary text-text-primary placeholder-text-secondary px-4 py-3 rounded-lg border border-border-color focus:outline-none focus:ring-2 focus:ring-cout-base"
             />
         </LabeledField>
     );

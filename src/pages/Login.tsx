@@ -21,10 +21,12 @@ import { convertFirebaseUser } from '../api/authentication/convertFirebaseUser';
 import Header from '../components/global/Header';
 import RecipeService from '../api/services/RecipeService';
 import BackendService from '../api/services/BackendService';
+import { useRecipeContext } from '../contexts/RecipeContext';
 
 export default function LoginPage() {
     const navigate = useNavigate();
     const { login } = useAuth();
+    const { setRecipes } = useRecipeContext();
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -47,9 +49,10 @@ export default function LoginPage() {
 
             login(userData);
 
-            await RecipeService.fetchRecipesRemotly();
+            const recipes = await RecipeService.fetchRecipesRemotly();
+            setRecipes(recipes);
 
-            navigate('/profile');
+            navigate('/recettes');
 
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
@@ -81,10 +84,16 @@ export default function LoginPage() {
                 );
             }
 
-            login(await convertFirebaseUser(userCredential.user));
-            await RecipeService.fetchRecipesRemotly();
+            const userData = await convertFirebaseUser(userCredential.user)
+            localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
+            localStorage.setItem('email', userData.email ? userData.email : "");
+            localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
 
-            navigate('/profile');
+            login(userData);
+            const recipes = await RecipeService.fetchRecipesRemotly();
+            setRecipes(recipes);
+
+            navigate('/recettes');
         } catch (err: unknown) {
 
             setError(err instanceof Error ? err.message : 'An error happened');
@@ -107,9 +116,10 @@ export default function LoginPage() {
 
             login(userData);
 
-            await RecipeService.fetchRecipesRemotly();
+            const recipes = await RecipeService.fetchRecipesRemotly();
+            setRecipes(recipes);
 
-            navigate('/profile');
+            navigate('/recettes');
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
         }
@@ -132,7 +142,7 @@ export default function LoginPage() {
     return (
         <div className='mt-4 md:mt-0 flex flex-col bg-bg-color p-6 rounded-md'>
             {isMobile ? null : <LoginHeader />}
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center mt-4">
                 <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                     <CardBody className="flex flex-col gap-4" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                         <Typography variant="h4" className="text-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
@@ -205,7 +215,7 @@ export default function LoginPage() {
                     {registerMode && (
                         <CardFooter className="text-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                             <Typography variant="small" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-                                Vous déjà un compte ?{' '}
+                                Vous avez déjà un compte ?{' '}
                                 <button
                                     className="text-blue-500 hover:underline"
                                     onClick={() => setRegisterMode(false)}

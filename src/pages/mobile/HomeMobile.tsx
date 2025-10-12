@@ -11,12 +11,12 @@ export default function HomeMobile() {
   // @ts-ignore
   const { recipes, setRecipes } = useRecipeContext();
 
-  const goToMyRecipes = () => navigateTo("/mesrecettes")
+  const goToMyRecipes = () => navigateTo("/myrecipes")
 
   const handleClick = async () => {
     try {
       await RecipeService.addEmptyRecipe();
-      const newRecipes = RecipeService.fetchRecipesLocally();
+      const newRecipes = await RecipeService.fetchRecipesRemotly();
       setRecipes(newRecipes);
       navigateTo(`/recettes/${newRecipes[newRecipes.length - 1].uuid}`)
     } catch (err) {

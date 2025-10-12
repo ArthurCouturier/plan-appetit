@@ -149,13 +149,17 @@ export default class BackendService {
             body: JSON.stringify(generationParameters),
         });
 
-        if (response.status == 403) {
-            console.log('mince')
-            redirect('/premium');
-            return null;
-        }
-
         if (!response.ok) {
+            if (response.status == 403) {
+                redirect('/premium');
+                return null;
+            }
+
+            if (response.status === 402) {
+                const problem = await response.json().catch(() => ({}));
+                throw { type: "INSUFFICIENT_CREDITS", detail: problem };
+            }
+
             throw new Error('Erreur lors de la mise à jour');
         }
 

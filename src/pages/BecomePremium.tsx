@@ -4,12 +4,15 @@ import { HomeIcon } from "@heroicons/react/24/solid";
 import StripeService from "../api/services/StripeService";
 import { Product } from "../api/interfaces/stripe/Product";
 import { CartItem } from "../api/interfaces/stripe/CartItem";
+import useAuth from "../api/hooks/useAuth";
 
 export default function BecomePremium() {
   const navigate = useNavigate();
   const [premiumProduct, setPremiumProduct] = useState<Product | null>(null);
   const [credit20Product, setCredit20Product] = useState<Product | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
+  const user = useAuth().user;
 
   useEffect(() => {
     StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_MENSUAL)
@@ -24,7 +27,7 @@ export default function BecomePremium() {
       priceId: premiumProduct.prices[0].stripePriceId,
       quantity: 1
     }
-    StripeService.checkout([cart])
+    user && StripeService.checkout([cart], user)
   }
 
   const handleBuyCredits = () => {
@@ -33,7 +36,7 @@ export default function BecomePremium() {
       priceId: credit20Product.prices[0].stripePriceId,
       quantity: 1
     }
-    StripeService.checkout([cart])
+    user && StripeService.checkout([cart], user)
   }
 
   const faqs = [

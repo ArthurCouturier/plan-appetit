@@ -14,6 +14,7 @@ import StripeService from "../api/services/StripeService";
 import { Product } from "../api/interfaces/stripe/Product";
 import { CartItem } from "../api/interfaces/stripe/CartItem";
 import { XMarkIcon, SparklesIcon, CreditCardIcon } from "@heroicons/react/24/solid";
+import useAuth from "../api/hooks/useAuth";
 
 const DRAFT_STORAGE_KEY = "recipeGenerationDraft";
 
@@ -51,6 +52,9 @@ export default function RecipeGeneration() {
     const [premiumProduct, setPremiumProduct] = useState<Product | null>(null);
     const [credit20Product, setCredit20Product] = useState<Product | null>(null);
 
+    // User
+    const user = useAuth().user;
+
     // Save draft to localStorage whenever form changes
     useEffect(() => {
         const draftData = {
@@ -84,7 +88,7 @@ export default function RecipeGeneration() {
             priceId: premiumProduct.prices[0].stripePriceId,
             quantity: 1
         };
-        StripeService.checkout([cart]);
+        user && StripeService.checkout([cart], user);
     };
 
     const handleBuyCredits = () => {
@@ -93,7 +97,7 @@ export default function RecipeGeneration() {
             priceId: credit20Product.prices[0].stripePriceId,
             quantity: 1
         };
-        StripeService.checkout([cart]);
+        user && StripeService.checkout([cart], user);
     };
 
     const handleGenerateRecipe = async () => {

@@ -1,5 +1,6 @@
 import { CartItem } from '../interfaces/stripe/CartItem';
 import { Product } from '../interfaces/stripe/Product'
+import UserInterface from '../interfaces/users/UserInterface';
 
 export default class StripeService {
 
@@ -15,13 +16,15 @@ export default class StripeService {
     return await res.json(); // { code, name, description, prices: [{stripePriceId, currency, recurringInterval, unitAmount}] }
   }
 
-  static async checkout(cart: CartItem[]) {
+  static async checkout(cart: CartItem[], user: UserInterface) {
     const res = await fetch(`${import.meta.env.VITE_API_URL}:${import.meta.env.VITE_API_PORT}/api/checkout/session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({
         items: cart,
+        email: user.email,
+        token: user.token,
         successUrl: window.location.origin + '/recettes',
         cancelUrl: window.location.origin + '/cancel'
       })

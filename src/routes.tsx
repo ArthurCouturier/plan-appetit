@@ -1,7 +1,6 @@
 // routes.tsx
 import { createBrowserRouter } from "react-router-dom";
 import Home from "./pages/Home";
-import Planning from "./pages/Planning";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
 import RecipeGeneration from "./pages/RecipeGeneration";
@@ -24,10 +23,6 @@ const router = createBrowserRouter([
             {
                 path: "login",
                 element: <LoginPage />,
-            },
-            {
-                path: "planning",
-                element: <Planning />,
             },
             {
                 path: "recettes",

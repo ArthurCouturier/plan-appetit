@@ -4,6 +4,7 @@ import { useRecipeContext } from "../../contexts/RecipeContext";
 import { SparklesIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 import RecipeService from "../../api/services/RecipeService";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function MyRecipesMobile({
   isMobile
@@ -13,6 +14,7 @@ export default function MyRecipesMobile({
 
   const { recipes, setRecipes } = useRecipeContext();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const handleCreateRecipe = async () => {
     try {
@@ -30,11 +32,11 @@ export default function MyRecipesMobile({
     <div className="min-h-screen bg-bg-color p-4 pb-24">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-text-primary mb-2">Mes Recettes</h1>
+        <h1 className="text-3xl font-bold text-text-primary mb-2">{t('recipes.myRecipes')}</h1>
         <p className="text-text-secondary text-sm">
           {recipes.length > 0 
-            ? `${recipes.length} recette${recipes.length > 1 ? 's' : ''} dans votre livre` 
-            : "Votre livre de recettes est vide"}
+            ? t(recipes.length > 1 ? 'recipes.recipeCount_plural' : 'recipes.recipeCount', { count: recipes.length })
+            : t('recipes.emptyBook')}
         </p>
       </div>
 
@@ -57,7 +59,7 @@ export default function MyRecipesMobile({
             className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-secondary border-2 border-cout-base text-text-primary font-semibold rounded-xl hover:bg-cout-purple/10 active:scale-95 transition-all duration-200"
           >
             <PlusIcon className="w-5 h-5 text-cout-base" />
-            Créer une recette
+            {t('recipes.createRecipe')}
           </button>
         </>
       ) : (
@@ -66,17 +68,17 @@ export default function MyRecipesMobile({
             <SparklesIcon className="w-12 h-12 text-cout-base" />
           </div>
           <h3 className="text-xl font-bold text-text-primary mb-2 text-center">
-            Aucune recette pour le moment
+            {t('recipes.noRecipes')}
           </h3>
           <p className="text-text-secondary text-center mb-6 max-w-sm">
-            Commencez à créer votre bibliothèque de recettes en générant votre première recette avec l'IA !
+            {t('recipes.noRecipesDesc')}
           </p>
           <button
             onClick={() => navigate('/generate')}
             className="flex items-center gap-2 px-6 py-3 bg-cout-yellow text-cout-purple font-bold rounded-xl shadow-lg hover:bg-yellow-400 active:scale-95 transition-all duration-200"
           >
             <SparklesIcon className="w-5 h-5" />
-            Générer une recette
+            {t('recipes.generateRecipe')}
           </button>
         </div>
       )}

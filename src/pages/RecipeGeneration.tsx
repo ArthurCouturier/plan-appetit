@@ -45,7 +45,6 @@ export default function RecipeGeneration() {
     const [vegan, setVegan] = useState<boolean>(draft?.vegan || false);
     const [allergens, setAllergens] = useState<string>(draft?.allergens || "");
     const [buyingPrice, setBuyingPrice] = useState<number>(draft?.buyingPrice || 10);
-    const [sellingPrice, setSellingPrice] = useState<number>(draft?.sellingPrice || 20);
 
     // Modal state
     const [showCreditModal, setShowCreditModal] = useState<boolean>(false);
@@ -65,10 +64,9 @@ export default function RecipeGeneration() {
             vegan,
             allergens,
             buyingPrice,
-            sellingPrice,
         };
         localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draftData));
-    }, [localisation, seasons, ingredients, useBook, vegan, allergens, buyingPrice, sellingPrice]);
+    }, [localisation, seasons, ingredients, useBook, vegan, allergens, buyingPrice]);
 
     // Load products for modal
     useEffect(() => {
@@ -109,7 +107,7 @@ export default function RecipeGeneration() {
             vegan,
             allergens,
             buyPrice: buyingPrice,
-            sellingPrice,
+            sellingPrice: buyingPrice * 2, // Valeur par défaut : 2x le prix d'achat
         };
 
         setIsLoading(true);
@@ -331,15 +329,9 @@ export default function RecipeGeneration() {
                     onChange={(e) => setAllergens(e.target.value)}
                 />
                 <LinearNumberField
-                    label={"Prix d'achat par personne"}
+                    label={"Coût par personne"}
                     value={buyingPrice}
                     onChange={(e) => setBuyingPrice(Number(e.target.value))}
-                    isMobile={isMobile}
-                />
-                <LinearNumberField
-                    label={"Prix de vente par personne"}
-                    value={sellingPrice}
-                    onChange={(e) => setSellingPrice(Number(e.target.value))}
                     isMobile={isMobile}
                 />
                 <button

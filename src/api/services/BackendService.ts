@@ -2,6 +2,7 @@ import { redirect } from "react-router-dom";
 import RecipeGenerationParametersInterface from "../interfaces/recipes/RecipeGenerationParametersInterface";
 import RecipeInterface from "../interfaces/recipes/RecipeInterface";
 import UserInterface from "../interfaces/users/UserInterface";
+import { auth } from "../authentication/firebase";
 
 export default class BackendService {
     private baseUrl: string;
@@ -14,9 +15,62 @@ export default class BackendService {
         this.port = import.meta.env.VITE_API_PORT as string;
     }
 
+    /**
+     * Effectue une requête fetch avec gestion automatique du refresh du token Firebase
+     * en cas d'erreur 401 TOKEN_EXPIRED
+     */
+    private static async fetchWithTokenRefresh(
+        url: string,
+        options: RequestInit
+    ): Promise<Response> {
+        // Première tentative
+        let response = await fetch(url, options);
+
+        // Si erreur 401, vérifier si c'est TOKEN_EXPIRED
+        if (response.status === 401) {
+            try {
+                const errorData = await response.json();
+
+                if (errorData.error === 'TOKEN_EXPIRED') {
+                    console.log('Token expiré, rafraîchissement automatique...');
+
+                    // Récupérer l'utilisateur Firebase actuel
+                    const user = auth.currentUser;
+
+                    if (user) {
+                        // Forcer le refresh du token
+                        const newToken = await user.getIdToken(true);
+
+                        // Mettre à jour le token dans localStorage
+                        localStorage.setItem('firebaseIdToken', newToken);
+
+                        // Mettre à jour le header Authorization avec le nouveau token
+                        const newHeaders = new Headers(options.headers);
+                        newHeaders.set('Authorization', `Bearer ${newToken}`);
+
+                        // Retry la requête avec le nouveau token
+                        response = await fetch(url, {
+                            ...options,
+                            headers: newHeaders,
+                        });
+
+                        console.log('✅ Token rafraîchi et requête réessayée avec succès');
+                    } else {
+                        throw new Error('Utilisateur non authentifié');
+                    }
+                }
+            } catch (error) {
+                // Si l'erreur n'est pas du JSON ou autre problème, retourner la réponse originale
+                console.error('Erreur lors du refresh du token:', error);
+            }
+        }
+
+        return response;
+    }
+
     public static async registerNewUser(user: UserInterface, token: string): Promise<UserInterface> {
         console.log("token", token)
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/users/register`, {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -33,7 +87,7 @@ export default class BackendService {
     }
 
     public async updateSomething(data: unknown, email: string, token: string): Promise<unknown> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/something`, {
+        const response = await BackendService.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/something`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -62,7 +116,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface[]> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/all`, {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/all`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -82,7 +136,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/create`, {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -110,7 +164,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/import`, {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/import`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -139,7 +193,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface | null> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/generate`, {
+        const response = await BackendService.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -179,7 +233,7 @@ export default class BackendService {
         token: string,
         recipeUuid: string
     ): Promise<void> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/delete/${recipeUuid}`, {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/delete/${recipeUuid}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -202,7 +256,7 @@ export default class BackendService {
         token: string,
         recipe: RecipeInterface
     ): Promise<RecipeInterface> {
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/update`, {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/update`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',

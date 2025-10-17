@@ -302,4 +302,24 @@ export default class BackendService {
         return response.json();
     }
 
+    public static async connectUser(
+        email: string,
+        token: string
+    ): Promise<UserInterface> {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/connect`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la connexion utilisateur');
+        }
+
+        return response.json();
+    }
+
 }

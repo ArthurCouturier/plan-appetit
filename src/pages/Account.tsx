@@ -7,10 +7,15 @@ import Header from '../components/global/Header';
 import BackendService from '../api/services/BackendService';
 import CreditPaywallModal from '../components/popups/CreditPaywallModal';
 import { SunIcon, MoonIcon, UserCircleIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { isPremiumUser } from '../api/interfaces/users/UserInterface';
 
 export default function Account() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+
+    // Vérifier si l'utilisateur est premium
+    const isUserPremium = user && user.role ? isPremiumUser(user.role) : false;
+    const borderColor = isUserPremium ? "border-cout-yellow" : "border-cout-base";
 
     // All hooks must be at the top, before any conditional returns
     const [newPassword, setNewPassword] = useState('');
@@ -104,10 +109,10 @@ export default function Account() {
                             <img
                                 src={localStorage.getItem("profilePhoto") || ""}
                                 alt="Profile"
-                                className="w-20 h-20 rounded-full border-4 border-cout-base mb-4 object-cover"
+                                className={`w-20 h-20 rounded-full border-4 ${borderColor} mb-4 object-cover`}
                             />
                         ) : (
-                            <div className="w-20 h-20 rounded-full bg-cout-purple/20 flex items-center justify-center mb-4 border-4 border-cout-base">
+                            <div className={`w-20 h-20 rounded-full bg-cout-purple/20 flex items-center justify-center mb-4 border-4 ${borderColor}`}>
                                 <UserCircleIcon className="w-12 h-12 text-cout-base" />
                             </div>
                         )}
@@ -215,13 +220,16 @@ export default function Account() {
 
                 {/* Actions */}
                 <div className="space-y-3">
-                    <button
-                        onClick={() => navigate("/premium")}
-                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl shadow-lg hover:bg-yellow-400 transition-all duration-200"
-                    >
-                        <SparklesIcon className="w-5 h-5" />
-                        Devenir Premium
-                    </button>
+                    {/* Afficher le bouton "Devenir Premium" seulement si l'utilisateur n'est pas premium */}
+                    {!isUserPremium && (
+                        <button
+                            onClick={() => navigate("/premium")}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl shadow-lg hover:bg-yellow-400 transition-all duration-200"
+                        >
+                            <SparklesIcon className="w-5 h-5" />
+                            Devenir Premium
+                        </button>
+                    )}
 
                     <button
                         onClick={handleLogout}

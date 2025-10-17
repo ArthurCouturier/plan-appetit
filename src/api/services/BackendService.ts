@@ -282,4 +282,24 @@ export default class BackendService {
         return updatedRecipe;
     }
 
+    public static async getUserCredits(
+        email: string,
+        token: string
+    ): Promise<number> {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/credits`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des crédits');
+        }
+
+        return response.json();
+    }
+
 }

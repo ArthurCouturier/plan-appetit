@@ -4,12 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import Header from '../components/global/Header';
-import { SunIcon, MoonIcon, UserCircleIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon } from "@heroicons/react/24/solid";
+import BackendService from '../api/services/BackendService';
+import CreditPaywallModal from '../components/popups/CreditPaywallModal';
+import { SunIcon, MoonIcon, UserCircleIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { isPremiumUser } from '../api/interfaces/users/UserInterface';
 
 export default function Account() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    
+
+    // Vérifier si l'utilisateur est premium
+    const isUserPremium = user && user.role ? isPremiumUser(user.role) : false;
+    const borderColor = isUserPremium ? "border-cout-yellow" : "border-cout-base";
+
     // All hooks must be at the top, before any conditional returns
     const [newPassword, setNewPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -18,10 +25,22 @@ export default function Account() {
     const [isMobile, setIsMobile] = useState(false);
     const [enabled, setEnabled] = useState(false);
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
+    const [credits, setCredits] = useState<number | null>(null);
+    const [showCreditModal, setShowCreditModal] = useState(false);
 
     useEffect(() => {
         if (user === null) {
             navigate('/login');
+        } else if (user) {
+            const token = localStorage.getItem('firebaseIdToken');
+            const email = localStorage.getItem('email') as string
+            if (token && user.uid) {
+                BackendService.getUserCredits(email, token)
+                    .then(creditsCount => setCredits(creditsCount))
+                    .catch(error => {
+                        console.error('Erreur lors de la récupération des crédits:', error);
+                    });
+            }
         }
     }, [user, navigate]);
 
@@ -81,19 +100,19 @@ export default function Account() {
     return (
         <div className='min-h-screen bg-bg-color p-4 md:p-6'>
             {isMobile ? null : <AccountHeader />}
-            
+
             <div className="max-w-2xl mx-auto mt-4 space-y-4">
                 {/* User Info Card */}
                 <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">
-                    <div className="flex flex-col items-center text-center mb-6">
+                    <div className="flex flex-col items-center text-center mb-2">
                         {localStorage.getItem("profilePhoto") && localStorage.getItem("profilePhoto") !== "/no-pp.jpg" ? (
                             <img
                                 src={localStorage.getItem("profilePhoto") || ""}
                                 alt="Profile"
-                                className="w-20 h-20 rounded-full border-4 border-cout-base mb-4 object-cover"
+                                className={`w-20 h-20 rounded-full border-4 ${borderColor} mb-4 object-cover`}
                             />
                         ) : (
-                            <div className="w-20 h-20 rounded-full bg-cout-purple/20 flex items-center justify-center mb-4 border-4 border-cout-base">
+                            <div className={`w-20 h-20 rounded-full bg-cout-purple/20 flex items-center justify-center mb-4 border-4 ${borderColor}`}>
                                 <UserCircleIcon className="w-12 h-12 text-cout-base" />
                             </div>
                         )}
@@ -103,8 +122,39 @@ export default function Account() {
                         <p className="text-text-secondary text-sm mt-1">
                             {user && user.email}
                         </p>
+
+                        {/* Affichage des crédits */}
+                        <div className="mt-4 flex items-center justify-center gap-2 bg-secondary border border-border-color rounded-lg px-4 py-2">
+                            <svg
+                                className="w-5 h-5 text-cout-yellow"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z" />
+                            </svg>
+                            <span className="text-text-primary font-bold">
+                                {credits !== null ? credits : '...'}
+                            </span>
+                            <span className="text-text-secondary text-sm">
+                                crédit{credits !== 1 ? 's' : ''}
+                            </span>
+                            <button
+                                onClick={() => setShowCreditModal(true)}
+                                className="ml-2 p-1 bg-cout-yellow text-cout-purple rounded-full hover:bg-yellow-400 transition-colors"
+                                title="Recharger des crédits"
+                            >
+                                <PlusIcon className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                {/* Modal de rechargement des crédits */}
+                <CreditPaywallModal
+                    isOpen={showCreditModal}
+                    onClose={() => setShowCreditModal(false)}
+                />
 
                 {/* Change Password Card */}
                 <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">
@@ -112,7 +162,7 @@ export default function Account() {
                         <KeyIcon className="w-5 h-5 text-cout-base" />
                         <h3 className="text-lg font-bold text-text-primary">Changer le mot de passe</h3>
                     </div>
-                    
+
                     {error && (
                         <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
                             <p className="text-red-600 text-sm">{error}</p>
@@ -123,7 +173,7 @@ export default function Account() {
                             <p className="text-green-600 text-sm">{message}</p>
                         </div>
                     )}
-                    
+
                     <form onSubmit={handleChangePassword} className="space-y-4">
                         <div>
                             <input
@@ -154,14 +204,12 @@ export default function Account() {
                                 <MoonIcon className="w-5 h-5 text-cout-purple" />
                                 <button
                                     onClick={changeTheme}
-                                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ${
-                                        theme === "theme1" ? "bg-cout-yellow" : "bg-cout-purple"
-                                    }`}
+                                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ${theme === "theme1" ? "bg-cout-yellow" : "bg-cout-purple"
+                                        }`}
                                 >
                                     <span
-                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${
-                                            theme === "theme1" ? "translate-x-6" : "translate-x-1"
-                                        }`}
+                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${theme === "theme1" ? "translate-x-6" : "translate-x-1"
+                                            }`}
                                     />
                                 </button>
                                 <SunIcon className="w-5 h-5 text-cout-yellow" />
@@ -172,14 +220,17 @@ export default function Account() {
 
                 {/* Actions */}
                 <div className="space-y-3">
-                    <button
-                        onClick={() => navigate("/premium")}
-                        className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl shadow-lg hover:bg-yellow-400 transition-all duration-200"
-                    >
-                        <SparklesIcon className="w-5 h-5" />
-                        Devenir Premium
-                    </button>
-                    
+                    {/* Afficher le bouton "Devenir Premium" seulement si l'utilisateur n'est pas premium */}
+                    {!isUserPremium && (
+                        <button
+                            onClick={() => navigate("/premium")}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl shadow-lg hover:bg-yellow-400 transition-all duration-200"
+                        >
+                            <SparklesIcon className="w-5 h-5" />
+                            Devenir Premium
+                        </button>
+                    )}
+
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-red-500/50 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all duration-200"

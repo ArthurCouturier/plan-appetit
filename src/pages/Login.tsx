@@ -22,6 +22,7 @@ import Header from '../components/global/Header';
 import RecipeService from '../api/services/RecipeService';
 import BackendService from '../api/services/BackendService';
 import { useRecipeContext } from '../contexts/RecipeContext';
+import { UserRole } from '../api/interfaces/users/UserInterface';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -69,25 +70,27 @@ export default function LoginPage() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const token = await userCredential.user.getIdToken();
 
-            if (userCredential.user.email) {
-                await BackendService.registerNewUser(
-                    {
-                        email: userCredential.user.email,
-                        displayName: userCredential.user.displayName || "",
-                        profilePhoto: userCredential.user.photoURL || "",
-                        uid: uuidv4().toString(),
-                        provider: 'email',
-                        isPremium: false,
-                        createdAt: new Date(),
-                    },
-                    token
-                );
-            }
+            // Enregistrer l'utilisateur dans le backend et récupérer ses données complètes
+            const userData = await BackendService.registerNewUser(
+                {
+                    email: userCredential.user.email || "",
+                    displayName: userCredential.user.displayName || "",
+                    profilePhoto: userCredential.user.photoURL || "",
+                    uid: uuidv4().toString(),
+                    provider: 'email',
+                    role: UserRole.MEMBER,
+                    isPremium: false,
+                    createdAt: new Date(),
+                },
+                token
+            );
 
-            const userData = await convertFirebaseUser(userCredential.user)
-            localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
-            localStorage.setItem('email', userData.email ? userData.email : "");
-            localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
+            // Ajouter le token aux données utilisateur
+            userData.token = token;
+
+            localStorage.setItem('firebaseIdToken', token);
+            localStorage.setItem('email', userData.email || "");
+            localStorage.setItem('profilePhoto', userData.profilePhoto || "/no-pp.jpg");
 
             login(userData);
             const recipes = await RecipeService.fetchRecipesRemotly();

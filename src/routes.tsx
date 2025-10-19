@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 import Sandbox from "./pages/Sandbox";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
-import RecipeGeneration from "./pages/RecipeGeneration";
+import RecipeLocationGeneration from "./pages/RecipeLocationGeneration";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
 import Account from "./pages/Account";
@@ -45,8 +45,12 @@ const router = createBrowserRouter([
                         element: <Account />,
                     },
                     {
-                        path: "recettes/generer",
-                        element: <RecipeGeneration />,
+                        path: "recettes/generer/localisation",
+                        element: <RecipeLocationGeneration />,
+                    },
+                    {
+                        path: "recettes/generer/sandbox",
+                        element: <Sandbox />,
                     },
                     {
                         path: "myrecipes",

@@ -8,6 +8,7 @@ import RecipeService from "../../api/services/RecipeService";
 import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
+import RecipeGenerationChoiceModal from "../../components/popups/RecipeGenerationChoiceModal";
 
 export default function MyRecipesMobile({
   isMobile
@@ -19,7 +20,24 @@ export default function MyRecipesMobile({
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showGenerationChoice, setShowGenerationChoice] = useState(false);
   const [linkingRecipe, setLinkingRecipe] = useState(false);
+
+  // Fetch des recettes au chargement de la page
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      if (!user) return;
+
+      try {
+        const fetchedRecipes = await RecipeService.fetchRecipesRemotly();
+        setRecipes(fetchedRecipes);
+      } catch (err) {
+        console.error('Erreur lors du fetch des recettes:', err);
+      }
+    };
+
+    fetchRecipes();
+  }, [user, setRecipes]);
 
   // Vérifier et lier une recette anonyme au chargement de la page
   useEffect(() => {
@@ -120,7 +138,7 @@ export default function MyRecipesMobile({
             Commencez à créer votre bibliothèque de recettes en générant votre première recette avec l'IA !
           </p>
           <button
-            onClick={() => navigate('/generate')}
+            onClick={() => setShowGenerationChoice(true)}
             className="flex items-center gap-2 px-6 py-3 bg-cout-yellow text-cout-purple font-bold rounded-xl shadow-lg hover:bg-yellow-400 active:scale-95 transition-all duration-200"
           >
             <SparklesIcon className="w-5 h-5" />
@@ -128,6 +146,12 @@ export default function MyRecipesMobile({
           </button>
         </div>
       )}
+
+      {/* Generation Choice Modal */}
+      <RecipeGenerationChoiceModal
+        isOpen={showGenerationChoice}
+        onClose={() => setShowGenerationChoice(false)}
+      />
 
       {/* Paywall Modal */}
       <CreditPaywallModal

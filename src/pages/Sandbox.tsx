@@ -3,28 +3,36 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { ExclamationTriangleIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import AnimatedGradientBox from "../components/sandbox/AnimatedGradientBox";
-import SandboxRecipeCard from "../components/sandbox/SandboxRecipeCard";
 import LockedRecipeCard from "../components/sandbox/LockedRecipeCard";
+import RecipeCard from "../components/cards/RecipeCard";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
+import MultipleRecipeConfirmationModal from "../components/popups/MultipleRecipeConfirmationModal";
+import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
+import Header from "../components/global/Header";
 import { useTypingPlaceholder } from "../hooks/useTypingPlaceholder";
 import SandboxService from "../api/services/SandboxService";
+import RecipeService from "../api/services/RecipeService";
 import { SandboxRecipe } from "../api/interfaces/sandbox/SandboxRecipe";
 import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 import useAuth from "../api/hooks/useAuth";
+import { useRecipeContext } from "../contexts/RecipeContext";
 
 export default function Sandbox() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { recipes: userRecipes, setRecipes: setUserRecipes } = useRecipeContext();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [prompt, setPrompt] = useState(searchParams.get("q") || "");
-  const [recipes, setRecipes] = useState<SandboxRecipe[]>([]);
+  const [sandboxRecipes, setSandboxRecipes] = useState<SandboxRecipe[]>([]);
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [, setAnonymousRecipeUuid] = useState<string | null>(null);
+  const [recipeCount, setRecipeCount] = useState(1);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -87,6 +95,32 @@ export default function Sandbox() {
     }
   }, [searchParams]);
 
+  const handleGenerateClick = () => {
+    if (!prompt.trim() || prompt.trim().length < 3) {
+      setError("Veuillez entrer au moins 3 caractères");
+      return;
+    }
+
+    // Si utilisateur connecté, vérifier les crédits
+    if (user && quotaInfo) {
+      // Si utilisateur non-premium et crédits insuffisants
+      if (!quotaInfo.isSubscriber && quotaInfo.remainingFree < recipeCount) {
+        setError(`Crédits insuffisants. Vous avez ${quotaInfo.remainingFree} crédit${quotaInfo.remainingFree > 1 ? 's' : ''} mais essayez d'en générer ${recipeCount}.`);
+        setShowPaywall(true);
+        return;
+      }
+
+      // Si génération multiple, afficher la modale de confirmation
+      if (recipeCount > 1) {
+        setShowConfirmation(true);
+        return;
+      }
+    }
+
+    // Sinon, générer directement
+    handleGenerate();
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim() || prompt.trim().length < 3) {
       setError("Veuillez entrer au moins 3 caractères");
@@ -95,18 +129,28 @@ export default function Sandbox() {
 
     setIsLoading(true);
     setError(null);
-    setRecipes([]);
+    setSandboxRecipes([]);
 
     try {
       setSearchParams({ q: prompt });
 
       const response = await SandboxService.generateRecipes({
         prompt: prompt.trim(),
-        count: user ? 3 : 1,
+        count: user ? recipeCount : 1,
       });
 
-      setRecipes(response.recipes);
+      setSandboxRecipes(response.recipes);
       setQuotaInfo(response.quota);
+
+      // Si utilisateur connecté, refetch toutes ses recettes pour mettre à jour le contexte
+      if (user) {
+        try {
+          const updatedRecipes = await RecipeService.fetchRecipesRemotly();
+          setUserRecipes(updatedRecipes);
+        } catch (err) {
+          console.error('Erreur lors du fetch des recettes:', err);
+        }
+      }
 
       if (response.recipeUuid && !user) {
         localStorage.setItem('anonymousRecipeUuid', response.recipeUuid);
@@ -139,7 +183,7 @@ export default function Sandbox() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleGenerate();
+      handleGenerateClick();
     }
   };
 
@@ -152,8 +196,21 @@ export default function Sandbox() {
 
   return (
     <div className="min-h-screen bg-bg-color">
+      {/* Header - Only for logged in users */}
+      {user && (
+        <div className="p-6 pb-0">
+          <Header
+            back={true}
+            home={true}
+            title={true}
+            profile={true}
+            pageName="Sandbox - Création libre"
+          />
+        </div>
+      )}
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple pt-24 pb-32 px-4">
+      <section className={`relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple ${user ? 'pt-12' : 'pt-24'} pb-32 px-4`}>
         <div className="absolute inset-0 overflow-hidden opacity-20">
           <div className="absolute top-20 left-10 w-64 h-64 bg-cout-yellow rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
@@ -169,7 +226,7 @@ export default function Sandbox() {
             </p>
             {user && quotaInfo && !quotaInfo.isSubscriber && (
               <p className="text-sm text-cout-yellow font-semibold">
-                {quotaInfo.remainingFree} / {quotaInfo.limitFree} générations gratuites restantes
+                {quotaInfo.remainingFree} crédit{quotaInfo.remainingFree > 1 ? 's' : ''} restant{quotaInfo.remainingFree > 1 ? 's' : ''} / {recipeCount} recette{recipeCount > 1 ? 's' : ''} à générer
               </p>
             )}
           </div>
@@ -187,8 +244,34 @@ export default function Sandbox() {
             />
 
             <div className="mt-6 flex flex-col items-center gap-4">
+              {/* Recipe Count Selector - Only for logged in users */}
+              {user && (
+                <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm px-6 py-3 rounded-xl border border-white/20">
+                  <label htmlFor="recipeCount" className="text-white font-semibold text-sm">
+                    Nombre de recettes :
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((count) => (
+                      <button
+                        key={count}
+                        type="button"
+                        onClick={() => setRecipeCount(count)}
+                        disabled={isLoading}
+                        className={`w-10 h-10 rounded-lg font-bold text-sm transition-all duration-200 ${
+                          recipeCount === count
+                            ? 'bg-cout-yellow text-cout-purple shadow-lg scale-110'
+                            : 'bg-white/20 text-white hover:bg-white/30'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {count}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <button
-                onClick={handleGenerate}
+                onClick={handleGenerateClick}
                 disabled={isLoading || !prompt.trim()}
                 className="group px-8 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl text-lg shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 aria-label="Générer mes recettes"
@@ -201,7 +284,7 @@ export default function Sandbox() {
                 ) : (
                   <>
                     <SparklesIcon className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-                    Générer mes recettes
+                    Générer {user && recipeCount > 1 ? `${recipeCount} recettes` : 'mes recettes'}
                   </>
                 )}
               </button>
@@ -275,7 +358,7 @@ export default function Sandbox() {
       )}
 
       {/* Results Section */}
-      {!isLoading && recipes.length > 0 && (
+      {!isLoading && sandboxRecipes.length > 0 && (
         <section className="py-12 px-4" ref={resultsRef}>
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-8">
@@ -283,7 +366,7 @@ export default function Sandbox() {
                 Vos recettes sont prêtes ! 🎉
               </h2>
               <p className="text-text-secondary">
-                {recipes.length} recette{recipes.length > 1 ? 's' : ''} générée{recipes.length > 1 ? 's' : ''} pour vous
+                {sandboxRecipes.length} recette{sandboxRecipes.length > 1 ? 's' : ''} générée{sandboxRecipes.length > 1 ? 's' : ''} pour vous
               </p>
               {quotaInfo && !quotaInfo.isSubscriber && (
                 <p className="text-sm text-cout-base font-semibold mt-2">
@@ -293,18 +376,27 @@ export default function Sandbox() {
             </div>
 
             {/* Si utilisateur non connecté avec 1 seule recette, afficher en pleine largeur centré */}
-            {!user && recipes.length === 1 ? (
+            {!user && sandboxRecipes.length === 1 ? (
               <div className="max-w-4xl mx-auto mb-8">
-                <LockedRecipeCard recipe={recipes[0]} />
+                <LockedRecipeCard recipe={sandboxRecipes[0]} />
+              </div>
+            ) : user ? (
+              // Utilisateur connecté : afficher les vraies recettes depuis le contexte
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {sandboxRecipes
+                  .filter(recipe => recipe.uuid)
+                  .map((sandboxRecipe) => {
+                    const fullRecipe = userRecipes.find(r => r.uuid === sandboxRecipe.uuid);
+                    return fullRecipe ? (
+                      <RecipeCard key={String(fullRecipe.uuid)} recipe={fullRecipe} />
+                    ) : null;
+                  })}
               </div>
             ) : (
+              // Utilisateur anonyme : afficher les cartes verrouillées
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {recipes.map((recipe, index) => (
-                  user ? (
-                    <SandboxRecipeCard key={index} recipe={recipe} />
-                  ) : (
-                    <LockedRecipeCard key={index} recipe={recipe} />
-                  )
+                {sandboxRecipes.map((recipe, index) => (
+                  <LockedRecipeCard key={index} recipe={recipe} />
                 ))}
               </div>
             )}
@@ -345,7 +437,7 @@ export default function Sandbox() {
                 <button
                   onClick={() => {
                     setPrompt("");
-                    setRecipes([]);
+                    setSandboxRecipes([]);
                     inputRef.current?.focus();
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
@@ -360,7 +452,7 @@ export default function Sandbox() {
       )}
 
       {/* Empty State */}
-      {!isLoading && recipes.length === 0 && !error && (
+      {!isLoading && sandboxRecipes.length === 0 && !error && (
         <section className="py-16 px-4">
           <div className="max-w-2xl mx-auto text-center">
             <SparklesIcon className="w-16 h-16 text-cout-base mx-auto mb-4 opacity-50" />
@@ -389,11 +481,25 @@ export default function Sandbox() {
         </section>
       )}
 
+      {/* Loading Modal */}
+      <RecipeGenerationLoadingModal isOpen={isLoading} />
+
       {/* Paywall Modal */}
       <CreditPaywallModal
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
       />
+
+      {/* Multiple Recipe Confirmation Modal */}
+      {user && quotaInfo && (
+        <MultipleRecipeConfirmationModal
+          isOpen={showConfirmation}
+          onClose={() => setShowConfirmation(false)}
+          onConfirm={handleGenerate}
+          recipeCount={recipeCount}
+          remainingCredits={quotaInfo.isSubscriber ? -1 : quotaInfo.remainingFree}
+        />
+      )}
     </div>
   );
 }

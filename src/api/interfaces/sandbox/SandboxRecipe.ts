@@ -6,4 +6,5 @@ export interface SandboxRecipe {
   servings: number;
   diet: string;
   imageUrl?: string | null;
+  uuid?: string | null;
 }

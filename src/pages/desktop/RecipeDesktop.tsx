@@ -11,6 +11,7 @@ import RecipeService from "../../api/services/RecipeService";
 import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
+import RecipeGenerationChoiceModal from "../../components/popups/RecipeGenerationChoiceModal";
 
 export default function RecipeDesktop() {
 
@@ -18,7 +19,24 @@ export default function RecipeDesktop() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showGenerationChoice, setShowGenerationChoice] = useState(false);
   const [linkingRecipe, setLinkingRecipe] = useState(false);
+
+  // Fetch des recettes au chargement de la page
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      if (!user) return;
+
+      try {
+        const fetchedRecipes = await RecipeService.fetchRecipesRemotly();
+        setRecipes(fetchedRecipes);
+      } catch (err) {
+        console.error('Erreur lors du fetch des recettes:', err);
+      }
+    };
+
+    fetchRecipes();
+  }, [user, setRecipes]);
 
   // Vérifier et lier une recette anonyme au chargement de la page
   useEffect(() => {
@@ -84,7 +102,7 @@ export default function RecipeDesktop() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <AddRecipeButton setRecipes={setRecipes} disabled={false} />
             <ImportRecipeButton setRecipes={setRecipes} disabled={false} />
-            <GenerateAIRecipeButton disabled={false} />
+            <GenerateAIRecipeButton disabled={false} onClick={() => setShowGenerationChoice(true)} />
           </div>
         </div>
 
@@ -122,6 +140,12 @@ export default function RecipeDesktop() {
       <CreditPaywallModal
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
+      />
+
+      {/* Generation Choice Modal */}
+      <RecipeGenerationChoiceModal
+        isOpen={showGenerationChoice}
+        onClose={() => setShowGenerationChoice(false)}
       />
     </div>
   )

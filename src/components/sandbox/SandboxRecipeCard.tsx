@@ -1,11 +1,15 @@
 import { ClockIcon, UserGroupIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { SandboxRecipe } from "../../api/interfaces/sandbox/SandboxRecipe";
+import { useNavigate } from "react-router-dom";
 
 interface SandboxRecipeCardProps {
   recipe: SandboxRecipe;
+  isClickable?: boolean;
 }
 
-export default function SandboxRecipeCard({ recipe }: SandboxRecipeCardProps) {
+export default function SandboxRecipeCard({ recipe, isClickable = false }: SandboxRecipeCardProps) {
+  const navigate = useNavigate();
+
   const getDietBadgeColor = (diet: string) => {
     const dietLower = diet.toLowerCase();
     if (dietLower.includes('vegan') || dietLower.includes('végétalien')) return 'bg-green-500';
@@ -15,8 +19,17 @@ export default function SandboxRecipeCard({ recipe }: SandboxRecipeCardProps) {
     return 'bg-cout-base';
   };
 
+  const handleClick = () => {
+    if (isClickable && recipe.uuid) {
+      navigate(`/recettes/${recipe.uuid}`);
+    }
+  };
+
   return (
-    <div className="bg-primary rounded-xl border-2 border-border-color hover:border-cout-base hover:shadow-xl transition-all duration-300 overflow-hidden group">
+    <div
+      className={`bg-primary rounded-xl border-2 border-border-color hover:border-cout-base hover:shadow-xl transition-all duration-300 overflow-hidden group ${isClickable && recipe.uuid ? 'cursor-pointer' : ''}`}
+      onClick={handleClick}
+    >
       {/* Header */}
       <div className="p-6 border-b border-border-color">
         <div className="flex items-start justify-between gap-4">

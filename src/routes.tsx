@@ -1,6 +1,7 @@
 // routes.tsx
 import { createBrowserRouter } from "react-router-dom";
 import Home from "./pages/Home";
+import Sandbox from "./pages/Sandbox";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
 import RecipeGeneration from "./pages/RecipeGeneration";
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
             {
                 path: "",
                 element: <Home />,
+            },
+            {
+                path: "sandbox",
+                element: <Sandbox />,
             },
             {
                 path: "login",

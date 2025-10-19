@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from "uuid";
 import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
@@ -21,8 +20,8 @@ import { convertFirebaseUser } from '../api/authentication/convertFirebaseUser';
 import Header from '../components/global/Header';
 import RecipeService from '../api/services/RecipeService';
 import BackendService from '../api/services/BackendService';
+import SandboxService from '../api/services/SandboxService';
 import { useRecipeContext } from '../contexts/RecipeContext';
-import { UserRole } from '../api/interfaces/users/UserInterface';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -70,33 +69,45 @@ export default function LoginPage() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const token = await userCredential.user.getIdToken();
 
-            // Enregistrer l'utilisateur dans le backend et récupérer ses données complètes
-            const userData = await BackendService.registerNewUser(
-                {
-                    email: userCredential.user.email || "",
-                    displayName: userCredential.user.displayName || "",
-                    profilePhoto: userCredential.user.photoURL || "",
-                    uid: uuidv4().toString(),
-                    provider: 'email',
-                    role: UserRole.MEMBER,
-                    isPremium: false,
-                    createdAt: new Date(),
-                },
+            // Utiliser /connect au lieu de /register pour éviter les doublons
+            // /connect crée automatiquement l'utilisateur s'il n'existe pas
+            const userData = await BackendService.connectUser(
+                userCredential.user.email || "",
                 token
             );
-
-            // Ajouter le token aux données utilisateur
-            userData.token = token;
 
             localStorage.setItem('firebaseIdToken', token);
             localStorage.setItem('email', userData.email || "");
             localStorage.setItem('profilePhoto', userData.profilePhoto || "/no-pp.jpg");
 
             login(userData);
+
+            // Lier la recette anonyme si elle existe
+            const anonymousRecipeUuid = localStorage.getItem('anonymousRecipeUuid');
+            if (anonymousRecipeUuid) {
+                try {
+                    const result = await SandboxService.linkAnonymousRecipe(anonymousRecipeUuid);
+
+                    if (result.success) {
+                        localStorage.removeItem('anonymousRecipeUuid');
+                        console.log('✅ Recette liée avec succès');
+                    } else if (result.error === 'INSUFFICIENT_CREDITS') {
+                        setError('Quota insuffisant pour associer cette recette. Veuillez acheter des crédits.');
+                        // TODO: Afficher le paywall modal ici
+                    } else if (result.alreadyLinked) {
+                        localStorage.removeItem('anonymousRecipeUuid');
+                        console.log('ℹ️ Recette déjà liée');
+                    }
+                } catch (err) {
+                    console.error('Erreur lors de la liaison de la recette:', err);
+                }
+            }
+
+            // IMPORTANT: Récupérer les recettes APRÈS la liaison
             const recipes = await RecipeService.fetchRecipesRemotly();
             setRecipes(recipes);
 
-            navigate('/recettes');
+            navigate('/myrecipes');
         } catch (err: unknown) {
 
             setError(err instanceof Error ? err.message : 'An error happened');

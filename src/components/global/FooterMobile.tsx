@@ -3,6 +3,7 @@ import { UserCircleIcon, BookOpenIcon, LightBulbIcon } from "@heroicons/react/24
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Avatar } from "@material-tailwind/react";
+import RecipeGenerationChoiceModal from "../popups/RecipeGenerationChoiceModal";
 
 
 export default function FooterMobile() {
@@ -13,6 +14,7 @@ export default function FooterMobile() {
 
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showFooter, setShowFooter] = useState(true);
+  const [showGenerationChoice, setShowGenerationChoice] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,7 +57,7 @@ export default function FooterMobile() {
       >
         <Button
           className="bg-cout-purple shadow-none rounded-full"
-          onClick={() => navigateTo("/recettes/generer")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}        >
+          onClick={() => setShowGenerationChoice(true)} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}        >
           <LightBulbIcon className="w-6 h-6 text-white" />
         </Button>
         <Button
@@ -80,6 +82,12 @@ export default function FooterMobile() {
           }
         </Button>
       </div>
+
+      {/* Generation Choice Modal */}
+      <RecipeGenerationChoiceModal
+        isOpen={showGenerationChoice}
+        onClose={() => setShowGenerationChoice(false)}
+      />
     </footer>
   );
 }

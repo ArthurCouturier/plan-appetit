@@ -51,16 +51,27 @@ export function ImportRecipeButtonDetail({
 }
 
 export function GenerateAIRecipeButton({
-    disabled
+    disabled,
+    onClick
 }: {
     disabled: boolean;
+    onClick?: () => void;
 }) {
 
     const navigate = useNavigate();
 
+    const handleClick = () => {
+        if (onClick) {
+            onClick();
+        } else {
+            // Fallback to old behavior for compatibility
+            navigate("/recettes/generer/localisation");
+        }
+    };
+
     return (
         <button
-            onClick={() => navigate("/recettes/generer")}
+            onClick={handleClick}
             className={`relative bg-amber-300 hover:bg-amber-400 border-6 border-amber-700 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200 flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed" : ""
                 }`}
         >

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import { ImportRecipeButton } from "../../components/buttons/DataImportButtons";
 import { AddRecipeButton, GenerateAIRecipeButton } from "../../components/buttons/NewRecipeButton";
@@ -6,11 +7,73 @@ import Header from "../../components/global/Header";
 import { useRecipeContext } from "../../contexts/RecipeContext";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
+import RecipeService from "../../api/services/RecipeService";
+import SandboxService from "../../api/services/SandboxService";
+import useAuth from "../../api/hooks/useAuth";
+import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
+import RecipeGenerationChoiceModal from "../../components/popups/RecipeGenerationChoiceModal";
 
 export default function RecipeDesktop() {
 
   const { recipes, setRecipes } = useRecipeContext();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [showGenerationChoice, setShowGenerationChoice] = useState(false);
+  const [linkingRecipe, setLinkingRecipe] = useState(false);
+
+  // Fetch des recettes au chargement de la page
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      if (!user) return;
+
+      try {
+        const fetchedRecipes = await RecipeService.fetchRecipesRemotly();
+        setRecipes(fetchedRecipes);
+      } catch (err) {
+        console.error('Erreur lors du fetch des recettes:', err);
+      }
+    };
+
+    fetchRecipes();
+  }, [user, setRecipes]);
+
+  // Vérifier et lier une recette anonyme au chargement de la page
+  useEffect(() => {
+    const linkAnonymousRecipeIfExists = async () => {
+      if (!user) return;
+
+      const anonymousRecipeUuid = localStorage.getItem('anonymousRecipeUuid');
+      if (!anonymousRecipeUuid) return;
+
+      setLinkingRecipe(true);
+
+      try {
+        const result = await SandboxService.linkAnonymousRecipe(anonymousRecipeUuid);
+
+        if (result.success) {
+          localStorage.removeItem('anonymousRecipeUuid');
+          console.log('✅ Recette liée avec succès sur RecipeDesktop');
+
+          // Récupérer toutes les recettes après liaison
+          const updatedRecipes = await RecipeService.fetchRecipesRemotly();
+          setRecipes(updatedRecipes);
+        } else if (result.error === 'INSUFFICIENT_CREDITS') {
+          console.warn('⚠️ Quota insuffisant pour lier la recette');
+          setShowPaywall(true);
+        } else if (result.alreadyLinked) {
+          localStorage.removeItem('anonymousRecipeUuid');
+          console.log('ℹ️ Recette déjà liée');
+        }
+      } catch (err) {
+        console.error('Erreur lors de la liaison de la recette:', err);
+      } finally {
+        setLinkingRecipe(false);
+      }
+    };
+
+    linkAnonymousRecipeIfExists();
+  }, [user, setRecipes]);
 
   return (
     <div className="min-h-screen bg-bg-color p-6">
@@ -22,9 +85,13 @@ export default function RecipeDesktop() {
           <div>
             <h2 className="text-3xl font-bold text-text-primary mb-2">Ma Bibliothèque</h2>
             <p className="text-text-secondary">
-              {recipes.length > 0 
-                ? `${recipes.length} recette${recipes.length > 1 ? 's' : ''} dans votre collection` 
-                : "Votre bibliothèque est vide"}
+              {linkingRecipe ? (
+                <span className="text-cout-base animate-pulse">Liaison de votre recette en cours...</span>
+              ) : recipes.length > 0 ? (
+                `${recipes.length} recette${recipes.length > 1 ? 's' : ''} dans votre collection`
+              ) : (
+                "Votre bibliothèque est vide"
+              )}
             </p>
           </div>
         </div>
@@ -35,7 +102,7 @@ export default function RecipeDesktop() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <AddRecipeButton setRecipes={setRecipes} disabled={false} />
             <ImportRecipeButton setRecipes={setRecipes} disabled={false} />
-            <GenerateAIRecipeButton disabled={false} />
+            <GenerateAIRecipeButton disabled={false} onClick={() => setShowGenerationChoice(true)} />
           </div>
         </div>
 
@@ -68,6 +135,18 @@ export default function RecipeDesktop() {
           </div>
         )}
       </div>
+
+      {/* Paywall Modal */}
+      <CreditPaywallModal
+        isOpen={showPaywall}
+        onClose={() => setShowPaywall(false)}
+      />
+
+      {/* Generation Choice Modal */}
+      <RecipeGenerationChoiceModal
+        isOpen={showGenerationChoice}
+        onClose={() => setShowGenerationChoice(false)}
+      />
     </div>
   )
 }

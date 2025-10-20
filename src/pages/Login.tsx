@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
@@ -25,8 +25,11 @@ import { useRecipeContext } from '../contexts/RecipeContext';
 
 export default function LoginPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { login } = useAuth();
     const { setRecipes } = useRecipeContext();
+
+    const from = (location.state as { from?: string })?.from || '/myrecipes';
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -52,7 +55,7 @@ export default function LoginPage() {
             const recipes = await RecipeService.fetchRecipesRemotly();
             setRecipes(recipes);
 
-            navigate('/recettes');
+            navigate(from, { replace: true });
 
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
@@ -107,7 +110,7 @@ export default function LoginPage() {
             const recipes = await RecipeService.fetchRecipesRemotly();
             setRecipes(recipes);
 
-            navigate('/myrecipes');
+            navigate(from, { replace: true });
         } catch (err: unknown) {
 
             setError(err instanceof Error ? err.message : 'An error happened');
@@ -133,7 +136,7 @@ export default function LoginPage() {
             const recipes = await RecipeService.fetchRecipesRemotly();
             setRecipes(recipes);
 
-            navigate('/recettes');
+            navigate(from, { replace: true });
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'An error happened');
         }

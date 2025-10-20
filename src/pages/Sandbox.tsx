@@ -310,6 +310,18 @@ export default function Sandbox() {
               </button>
             ))}
           </div>
+
+          {/* Login Button - Only for non-logged users */}
+          {!user && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={() => navigate('/login')}
+                className="px-6 py-3 bg-cout-yellow hover:bg-yellow-400 text-cout-purple font-bold rounded-xl transition-all duration-200 shadow-lg hover:scale-105 transform"
+              >
+                Me Connecter
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

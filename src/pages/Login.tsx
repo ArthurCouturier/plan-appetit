@@ -22,6 +22,10 @@ import RecipeService from '../api/services/RecipeService';
 import BackendService from '../api/services/BackendService';
 import SandboxService from '../api/services/SandboxService';
 import { useRecipeContext } from '../contexts/RecipeContext';
+import { getFirebaseErrorMessage } from '../utils/firebaseErrorMessages';
+import { validatePassword, getPasswordStrengthText } from '../utils/passwordValidation';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { UserRole } from '../api/interfaces/users/UserInterface';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -33,9 +37,26 @@ export default function LoginPage() {
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
+    const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [registerMode, setRegisterMode] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+    const [passwordTouched, setPasswordTouched] = useState<boolean>(false);
+
+    const passwordStrength = validatePassword(password);
+    const passwordsMatch = password === confirmPassword;
+
+    const handleModeSwitch = (newMode: boolean) => {
+        setRegisterMode(newMode);
+        setPassword('');
+        setConfirmPassword('');
+        setError(null);
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+        setPasswordTouched(false);
+    };
 
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,7 +79,7 @@ export default function LoginPage() {
             navigate(from, { replace: true });
 
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'An error happened');
+            setError(getFirebaseErrorMessage(err));
         }
         setLoading(false);
     };
@@ -68,24 +89,65 @@ export default function LoginPage() {
         setLoading(true);
         setError(null);
 
+        if (!passwordStrength.isValid) {
+            setError('Le mot de passe ne respecte pas tous les critères de sécurité.');
+            setLoading(false);
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setError('Les mots de passe ne correspondent pas.');
+            setLoading(false);
+            return;
+        }
+
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const token = await userCredential.user.getIdToken();
 
-            // Utiliser /connect au lieu de /register pour éviter les doublons
-            // /connect crée automatiquement l'utilisateur s'il n'existe pas
-            const userData = await BackendService.connectUser(
-                userCredential.user.email || "",
-                token
-            );
-
             localStorage.setItem('firebaseIdToken', token);
-            localStorage.setItem('email', userData.email || "");
-            localStorage.setItem('profilePhoto', userData.profilePhoto || "/no-pp.jpg");
+            localStorage.setItem('email', userCredential.user.email || "");
+            localStorage.setItem('profilePhoto', userCredential.user.photoURL || "/no-pp.jpg");
+
+            let userData;
+            let retryCount = 0;
+            const maxRetries = 4;
+            const retryDelay = 1500;
+
+            while (retryCount < maxRetries) {
+                try {
+                    if (retryCount > 0) {
+                        console.log(`Nouvelle tentative dans ${retryDelay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    }
+                    userData = await BackendService.connectUser(
+                        userCredential.user.email || "",
+                        token
+                    );
+                    console.log('✅ Connexion au backend réussie');
+                    break;
+                } catch (err) {
+                    retryCount++;
+                    console.warn(`Tentative ${retryCount}/${maxRetries} de connexion au backend échouée`);
+                    if (retryCount >= maxRetries) {
+                        console.error('Échec de la connexion au backend après plusieurs tentatives');
+                        userData = {
+                            uid: userCredential.user.uid,
+                            email: userCredential.user.email || "",
+                            displayName: userCredential.user.displayName || userCredential.user.email?.split('@')[0] || "Utilisateur",
+                            token: token,
+                            provider: "email" as const,
+                            role: UserRole.MEMBER,
+                            isPremium: false,
+                            createdAt: new Date(),
+                            profilePhoto: userCredential.user.photoURL || "/no-pp.jpg"
+                        };
+                    }
+                }
+            }
 
             login(userData);
 
-            // Lier la recette anonyme si elle existe
             const anonymousRecipeUuid = localStorage.getItem('anonymousRecipeUuid');
             if (anonymousRecipeUuid) {
                 try {
@@ -95,8 +157,7 @@ export default function LoginPage() {
                         localStorage.removeItem('anonymousRecipeUuid');
                         console.log('✅ Recette liée avec succès');
                     } else if (result.error === 'INSUFFICIENT_CREDITS') {
-                        setError('Quota insuffisant pour associer cette recette. Veuillez acheter des crédits.');
-                        // TODO: Afficher le paywall modal ici
+                        console.warn('Quota insuffisant pour associer cette recette');
                     } else if (result.alreadyLinked) {
                         localStorage.removeItem('anonymousRecipeUuid');
                         console.log('ℹ️ Recette déjà liée');
@@ -106,14 +167,17 @@ export default function LoginPage() {
                 }
             }
 
-            // IMPORTANT: Récupérer les recettes APRÈS la liaison
-            const recipes = await RecipeService.fetchRecipesRemotly();
-            setRecipes(recipes);
+            try {
+                const recipes = await RecipeService.fetchRecipesRemotly();
+                setRecipes(recipes);
+            } catch (err) {
+                console.error('Erreur lors de la récupération des recettes:', err);
+                setRecipes([]);
+            }
 
             navigate(from, { replace: true });
         } catch (err: unknown) {
-
-            setError(err instanceof Error ? err.message : 'An error happened');
+            setError(getFirebaseErrorMessage(err));
         }
         setLoading(false);
     }
@@ -138,7 +202,7 @@ export default function LoginPage() {
 
             navigate(from, { replace: true });
         } catch (err: unknown) {
-            setError(err instanceof Error ? err.message : 'An error happened');
+            setError(getFirebaseErrorMessage(err));
         }
         setLoading(false);
     };
@@ -199,19 +263,122 @@ export default function LoginPage() {
                                 label="Email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                required onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} crossOrigin={undefined} />
-                            <Input
-                                type="password"
-                                label="Mot de passe"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} crossOrigin={undefined} />
+                                required
+                                onPointerEnterCapture={undefined}
+                                onPointerLeaveCapture={undefined}
+                                crossOrigin={undefined}
+                            />
+
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    label="Mot de passe"
+                                    value={password}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        if (registerMode && !passwordTouched) {
+                                            setPasswordTouched(true);
+                                        }
+                                    }}
+                                    required
+                                    onPointerEnterCapture={undefined}
+                                    onPointerLeaveCapture={undefined}
+                                    crossOrigin={undefined}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 transition-colors"
+                                    aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                                >
+                                    {showPassword ? (
+                                        <EyeSlashIcon className="h-5 w-5" />
+                                    ) : (
+                                        <EyeIcon className="h-5 w-5" />
+                                    )}
+                                </button>
+                            </div>
+
+                            {registerMode && (
+                                <>
+                                    <div className="relative">
+                                        <Input
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            label="Confirmer le mot de passe"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                            onPointerEnterCapture={undefined}
+                                            onPointerLeaveCapture={undefined}
+                                            crossOrigin={undefined}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 transition-colors"
+                                            aria-label={showConfirmPassword ? "Masquer la confirmation" : "Afficher la confirmation"}
+                                        >
+                                            {showConfirmPassword ? (
+                                                <EyeSlashIcon className="h-5 w-5" />
+                                            ) : (
+                                                <EyeIcon className="h-5 w-5" />
+                                            )}
+                                        </button>
+                                    </div>
+
+                                    {confirmPassword && !passwordsMatch && (
+                                        <Typography variant="small" color="red" className="flex items-center gap-1" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                            ✗ Les mots de passe ne correspondent pas
+                                        </Typography>
+                                    )}
+
+                                    {passwordTouched && (
+                                        <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                                            <Typography variant="small" className={`font-semibold ${getPasswordStrengthText(passwordStrength).color}`} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                                Force du mot de passe : {getPasswordStrengthText(passwordStrength).text}
+                                            </Typography>
+                                            <div className="space-y-1">
+                                                <Typography variant="small" className={passwordStrength.hasMinLength ? "text-green-600" : "text-gray-600"} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                                    {passwordStrength.hasMinLength ? "✓" : "○"} Au moins 8 caractères
+                                                </Typography>
+                                                <Typography variant="small" className={passwordStrength.hasUpperCase ? "text-green-600" : "text-gray-600"} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                                    {passwordStrength.hasUpperCase ? "✓" : "○"} Une lettre majuscule
+                                                </Typography>
+                                                <Typography variant="small" className={passwordStrength.hasLowerCase ? "text-green-600" : "text-gray-600"} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                                    {passwordStrength.hasLowerCase ? "✓" : "○"} Une lettre minuscule
+                                                </Typography>
+                                                <Typography variant="small" className={passwordStrength.hasNumber ? "text-green-600" : "text-gray-600"} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                                    {passwordStrength.hasNumber ? "✓" : "○"} Un chiffre
+                                                </Typography>
+                                                <Typography variant="small" className={passwordStrength.hasSpecialChar ? "text-green-600" : "text-gray-600"} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                                    {passwordStrength.hasSpecialChar ? "✓" : "○"} Un caractère spécial (!@#$%^&*...)
+                                                </Typography>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
                             {registerMode ? (
-                                <Button type="submit" disabled={loading} fullWidth placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                <Button
+                                    type="submit"
+                                    disabled={loading || !passwordStrength.isValid || !passwordsMatch}
+                                    fullWidth
+                                    placeholder={undefined}
+                                    onPointerEnterCapture={undefined}
+                                    onPointerLeaveCapture={undefined}
+                                >
                                     {loading ? 'Inscription en cours...' : 'S\'inscrire'}
                                 </Button>
                             ) : (
-                                <Button type="submit" disabled={loading} fullWidth placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                <Button
+                                    type="submit"
+                                    disabled={loading}
+                                    fullWidth
+                                    placeholder={undefined}
+                                    onPointerEnterCapture={undefined}
+                                    onPointerLeaveCapture={undefined}
+                                >
                                     {loading ? 'Connexion en cours...' : 'Se connecter'}
                                 </Button>
                             )}
@@ -224,7 +391,7 @@ export default function LoginPage() {
                                 Vous n'avez pas de compte ?{' '}
                                 <button
                                     className="text-blue-500 hover:underline"
-                                    onClick={() => setRegisterMode(true)}
+                                    onClick={() => handleModeSwitch(true)}
                                 >
                                     S'inscrire
                                 </button>
@@ -237,7 +404,7 @@ export default function LoginPage() {
                                 Vous avez déjà un compte ?{' '}
                                 <button
                                     className="text-blue-500 hover:underline"
-                                    onClick={() => setRegisterMode(false)}
+                                    onClick={() => handleModeSwitch(false)}
                                 >
                                     Se connecter
                                 </button>

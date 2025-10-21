@@ -48,7 +48,6 @@ export default class RecipeService {
     static async fetchRecipesRemotly(): Promise<RecipeInterface[]> {
         const email: string = localStorage.getItem('email') as string;
         const token: string = localStorage.getItem('firebaseIdToken') as string;
-        console.log(email + " et le token : " + token)
         const recipes: RecipeInterface[] = await BackendService.getPersonalRecipes(email, token);
         localStorage.setItem('recipes', JSON.stringify(recipes));
         return recipes;

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LockClosedIcon } from '@heroicons/react/24/solid';
 import UserStatsService from '../../api/services/UserStatsService';
 import StatisticsInterface from '../../api/interfaces/users/StatisticsInterface';
 import SuccessInterface, { SuccessType } from '../../api/interfaces/users/SuccessInterface';
 import CreditIcon from '../icons/CreditIcon';
+import confetti from 'canvas-confetti';
 
 interface AchievementItem {
     id: SuccessType;
@@ -49,6 +50,9 @@ export default function OnboardingChecklist() {
     const [success, setSuccess] = useState<SuccessInterface | null>(null);
     const [claimingStates, setClaimingStates] = useState<Record<string, boolean>>({});
     const [strikingStates, setStrikingStates] = useState<Record<string, boolean>>({});
+    const [isImploding, setIsImploding] = useState(false);
+    const [shouldHide, setShouldHide] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         loadData();
@@ -67,6 +71,49 @@ export default function OnboardingChecklist() {
         }
     };
 
+    const launchConfetti = () => {
+        // Attendre 1 seconde (moment où le composant est le plus rétréci)
+        setTimeout(() => {
+            if (!containerRef.current) return;
+
+            // Calculer la position du centre du composant
+            const rect = containerRef.current.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            // Convertir en coordonnées relatives à la fenêtre (0-1)
+            const x = centerX / window.innerWidth;
+            const y = centerY / window.innerHeight;
+
+            const duration = 2000;
+            const animationEnd = Date.now() + duration;
+            const defaults = {
+                startVelocity: 40,
+                spread: 360,
+                ticks: 60,
+                zIndex: 0,
+                colors: ['#F4B63C', '#8B5CF6', '#EC4899']
+            };
+
+            const interval: NodeJS.Timeout = setInterval(() => {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+
+                // Confettis partent du centre du composant
+                confetti({
+                    ...defaults,
+                    particleCount,
+                    origin: { x, y }
+                });
+            }, 100);
+        }, 1000);
+    };
+
     const handleClaimReward = async (achievement: AchievementItem) => {
         if (claimingStates[achievement.id] || strikingStates[achievement.id]) {
             return;
@@ -83,6 +130,23 @@ export default function OnboardingChecklist() {
                 setTimeout(async () => {
                     await loadData();
                     setStrikingStates(prev => ({ ...prev, [achievement.id]: false }));
+
+                    // Vérifier si c'était le dernier succès
+                    const updatedSuccess = await UserStatsService.fetchSuccess();
+                    const allCompleted = ONBOARDING_ACHIEVEMENTS.every(
+                        ach => ach.isClaimed(updatedSuccess)
+                    );
+
+                    if (allCompleted) {
+                        // Lancer l'animation d'implosion et confettis
+                        setIsImploding(true);
+                        launchConfetti();
+
+                        // Masquer complètement après 3 secondes
+                        setTimeout(() => {
+                            setShouldHide(true);
+                        }, 3000);
+                    }
                 }, 400);
             } else {
                 console.error('Failed to claim reward:', response.message);
@@ -99,16 +163,24 @@ export default function OnboardingChecklist() {
         return null;
     }
 
+    if (shouldHide) {
+        return null;
+    }
+
+    // Si tout est complété ET qu'on n'est pas en train d'imploder, ne pas afficher
     const allCompleted = ONBOARDING_ACHIEVEMENTS.every(
         achievement => achievement.isClaimed(success)
     );
 
-    if (allCompleted) {
+    if (allCompleted && !isImploding) {
         return null;
     }
 
     return (
-        <div className="bg-primary rounded-xl p-6 shadow-md border border-border-color mb-6 relative overflow-hidden">
+        <div
+            ref={containerRef}
+            className={`bg-primary rounded-xl p-6 shadow-md border border-border-color mb-6 relative overflow-hidden ${isImploding ? 'imploding' : ''
+                }`}>
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cout-base via-cout-purple to-cout-yellow"></div>
 
             <div className="flex items-center gap-3 mb-4">
@@ -118,7 +190,7 @@ export default function OnboardingChecklist() {
                 <div>
                     <h3 className="text-lg font-bold text-text-primary">Premiers Pas</h3>
                     <p className="text-sm text-text-secondary">
-                        Débloquez des crédits en complétant ces actions
+                        Débloquez des crédits gratuitement en complétant ces actions
                     </p>
                 </div>
             </div>
@@ -154,9 +226,8 @@ export default function OnboardingChecklist() {
                                 <button
                                     onClick={() => handleClaimReward(achievement)}
                                     disabled={isClaiming}
-                                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[var(--cout-yellow)] text-[var(--cout-purple)] rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 ${
-                                        isClaiming ? 'opacity-50 cursor-not-allowed' : ''
-                                    }`}
+                                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[var(--cout-yellow)] text-[var(--cout-purple)] rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 ${isClaiming ? 'opacity-50 cursor-not-allowed' : ''
+                                        }`}
                                 >
                                     <CreditIcon className="w-4 h-4" />
                                     <span>+{achievement.credits}</span>
@@ -182,13 +253,12 @@ export default function OnboardingChecklist() {
                             )}
 
                             <span
-                                className={`flex-1 text-sm font-medium transition-all duration-300 ${
-                                    claimed
-                                        ? 'text-green-600 line-through'
-                                        : completed
+                                className={`flex-1 text-sm font-medium transition-all duration-300 ${claimed
+                                    ? 'text-green-600 line-through'
+                                    : completed
                                         ? 'text-text-primary'
                                         : 'text-text-secondary'
-                                }`}
+                                    }`}
                             >
                                 {achievement.title}
                             </span>
@@ -205,6 +275,26 @@ export default function OnboardingChecklist() {
                     100% {
                         transform: translateX(100%);
                     }
+                }
+
+                @keyframes implode {
+                    0% {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                    10% {
+                        transform: scale(1.1);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: scale(0);
+                        opacity: 0;
+                    }
+                }
+
+                .imploding {
+                    animation: implode 1s ease-in-out forwards;
+                    transform-origin: center center;
                 }
             `}</style>
         </div>

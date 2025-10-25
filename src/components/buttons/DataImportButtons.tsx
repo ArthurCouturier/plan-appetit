@@ -1,8 +1,9 @@
-import { ChangeEvent, useRef } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeService from "../../api/services/RecipeService";
 import { ImportRecipeButtonDetail } from "./NewRecipeButton";
 import { useNavigate } from "react-router-dom";
+import BackendService from "../../api/services/BackendService";
 
 function exportData(datakey: string, uuid?: string, name?: string) {
     const storedData = localStorage.getItem(datakey);
@@ -41,17 +42,33 @@ function exportData(datakey: string, uuid?: string, name?: string) {
 }
 
 export function ExportRecipeButton({ recipe }: { recipe: RecipeInterface }) {
+    const [isExporting, setIsExporting] = useState(false);
 
-    const handleExport = () => {
-        exportData('recipes', recipe.uuid.toString(), "recette_" + recipe.name);
+    const handleExport = async () => {
+        setIsExporting(true);
+        try {
+            exportData('recipes', recipe.uuid.toString(), "recette_" + recipe.name);
+
+            const email = localStorage.getItem('email');
+            const token = localStorage.getItem('firebaseIdToken');
+
+            if (email && token) {
+                await BackendService.trackRecipeExport(email, token);
+            }
+        } catch (error) {
+            console.error('Erreur lors du tracking de l\'export:', error);
+        } finally {
+            setIsExporting(false);
+        }
     };
 
     return (
         <button
             onClick={handleExport}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-sm"
+            disabled={isExporting}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-            Exporter la recette
+            {isExporting ? 'Export en cours...' : 'Exporter la recette'}
         </button>
     );
 };

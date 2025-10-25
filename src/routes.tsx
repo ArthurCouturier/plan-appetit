@@ -11,6 +11,7 @@ import Account from "./pages/Account";
 import MyRecipes from "./pages/MyRecipes";
 import Layout from "./components/global/Layout";
 import BecomePremium from "./pages/BecomePremium";
+import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } from "./pages/legal";
 
 const router = createBrowserRouter([
     {
@@ -36,6 +37,22 @@ const router = createBrowserRouter([
             {
                 path: "recettes/:uuid",
                 element: <RecipeDetail />,
+            },
+            {
+                path: "legal/cgu",
+                element: <CGUPage />,
+            },
+            {
+                path: "legal/cgv",
+                element: <CGVPage />,
+            },
+            {
+                path: "legal/politique-de-confidentialite",
+                element: <PolitiqueConfidentialitePage />,
+            },
+            {
+                path: "legal/mentions-legales",
+                element: <MentionsLegalesPage />,
             },
             {
                 element: <ProtectedRoute />,

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import Header from '../components/global/Header';
+import Footer from '../components/global/Footer';
 import BackendService from '../api/services/BackendService';
 import CreditPaywallModal from '../components/popups/CreditPaywallModal';
 import { SunIcon, MoonIcon, UserCircleIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon } from "@heroicons/react/24/solid";
@@ -98,8 +99,9 @@ export default function Account() {
     };
 
     return (
-        <div className='min-h-screen bg-bg-color p-4 md:p-6'>
-            {isMobile ? null : <AccountHeader />}
+        <div className='min-h-screen bg-bg-color flex flex-col'>
+            <div className="flex-grow p-4 md:p-6">
+                {isMobile ? null : <AccountHeader />}
 
             <div className="max-w-2xl mx-auto mt-4 space-y-4">
                 {/* User Info Card */}
@@ -240,6 +242,9 @@ export default function Account() {
                     </button>
                 </div>
             </div>
+            </div>
+
+            <Footer />
         </div>
     );
 };

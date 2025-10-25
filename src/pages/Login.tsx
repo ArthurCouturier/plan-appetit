@@ -5,6 +5,7 @@ import {
     createUserWithEmailAndPassword,
     signInWithPopup,
     GoogleAuthProvider,
+    sendPasswordResetEmail,
 } from 'firebase/auth';
 import {
     Button,
@@ -44,6 +45,7 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
     const [passwordTouched, setPasswordTouched] = useState<boolean>(false);
+    const [resetPasswordSuccess, setResetPasswordSuccess] = useState<string | null>(null);
 
     const passwordStrength = validatePassword(password);
     const passwordsMatch = password === confirmPassword;
@@ -53,6 +55,7 @@ export default function LoginPage() {
         setPassword('');
         setConfirmPassword('');
         setError(null);
+        setResetPasswordSuccess(null);
         setShowPassword(false);
         setShowConfirmPassword(false);
         setPasswordTouched(false);
@@ -182,6 +185,25 @@ export default function LoginPage() {
         setLoading(false);
     }
 
+    const handleForgotPassword = async () => {
+        if (!email) {
+            setError('Veuillez entrer votre adresse email.');
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+        setResetPasswordSuccess(null);
+
+        try {
+            await sendPasswordResetEmail(auth, email);
+            setResetPasswordSuccess('Un email de réinitialisation a été envoyé à votre adresse email. ⚠️ Vérifiez vos spams si vous ne le trouvez pas.');
+        } catch (err: unknown) {
+            setError(getFirebaseErrorMessage(err));
+        }
+        setLoading(false);
+    };
+
     const handleGoogleLogin = async () => {
         setLoading(true);
         setError(null);
@@ -233,6 +255,12 @@ export default function LoginPage() {
                         {error && (
                             <Typography color="red" className="text-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                                 {error}
+                            </Typography>
+                        )}
+
+                        {resetPasswordSuccess && (
+                            <Typography color="green" className="text-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+                                {resetPasswordSuccess}
                             </Typography>
                         )}
 
@@ -357,6 +385,19 @@ export default function LoginPage() {
                                         </div>
                                     )}
                                 </>
+                            )}
+
+                            {!registerMode && (
+                                <div className="text-right -mt-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleForgotPassword}
+                                        disabled={loading}
+                                        className="text-blue-500 hover:underline text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Mot de passe oublié ?
+                                    </button>
+                                </div>
                             )}
 
                             {registerMode ? (

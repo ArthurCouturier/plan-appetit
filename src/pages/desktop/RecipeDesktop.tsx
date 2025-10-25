@@ -12,6 +12,7 @@ import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
 import RecipeGenerationChoiceModal from "../../components/popups/RecipeGenerationChoiceModal";
+import OnboardingChecklist from "../../components/onboarding/OnboardingChecklist";
 
 export default function RecipeDesktop() {
 
@@ -99,12 +100,15 @@ export default function RecipeDesktop() {
         {/* Action buttons */}
         <div className="bg-primary rounded-xl p-6 shadow-md border border-border-color mb-6">
           <h3 className="text-lg font-semibold text-text-primary mb-4">Actions rapides</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex flex-wrap gap-3">
             <AddRecipeButton setRecipes={setRecipes} disabled={false} />
             <ImportRecipeButton setRecipes={setRecipes} disabled={false} />
             <GenerateAIRecipeButton disabled={false} onClick={() => setShowGenerationChoice(true)} />
           </div>
         </div>
+
+        {/* Onboarding Checklist */}
+        <OnboardingChecklist />
 
         {/* Recipes grid or empty state */}
         {recipes.length > 0 ? (

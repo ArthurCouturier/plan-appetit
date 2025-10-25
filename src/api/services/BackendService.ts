@@ -2,6 +2,8 @@ import { redirect } from "react-router-dom";
 import RecipeGenerationParametersInterface from "../interfaces/recipes/RecipeGenerationParametersInterface";
 import RecipeInterface from "../interfaces/recipes/RecipeInterface";
 import UserInterface from "../interfaces/users/UserInterface";
+import StatisticsInterface from "../interfaces/users/StatisticsInterface";
+import SuccessInterface, { SuccessClaimResponse } from "../interfaces/users/SuccessInterface";
 import { auth } from "../authentication/firebase";
 
 export default class BackendService {
@@ -317,6 +319,87 @@ export default class BackendService {
 
         if (!response.ok) {
             throw new Error('Erreur lors de la connexion utilisateur');
+        }
+
+        return response.json();
+    }
+
+    public static async getUserStatistics(
+        email: string,
+        token: string
+    ): Promise<StatisticsInterface> {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/statistics`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des statistiques');
+        }
+
+        return response.json();
+    }
+
+    public static async getUserSuccess(
+        email: string,
+        token: string
+    ): Promise<SuccessInterface> {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/success`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des succès');
+        }
+
+        return response.json();
+    }
+
+    public static async claimSuccessReward(
+        email: string,
+        token: string,
+        successType: string
+    ): Promise<SuccessClaimResponse> {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/success/claim/${successType}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (!response.ok && response.status !== 400) {
+            throw new Error('Erreur lors de la réclamation du succès');
+        }
+
+        return response.json();
+    }
+
+    public static async trackRecipeExport(
+        email: string,
+        token: string
+    ): Promise<{ success: boolean }> {
+        const response = await this.fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/track-export`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors du tracking de l\'export');
         }
 
         return response.json();

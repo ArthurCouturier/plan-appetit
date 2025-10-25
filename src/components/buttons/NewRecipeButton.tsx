@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { PlusIcon, ArrowDownTrayIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeService from "../../api/services/RecipeService";
 import PremiumFeatureDisplayer from "../displayers/PremiumFeatureDisplayer";
@@ -14,7 +15,7 @@ export function AddRecipeButton({
 
     return (
         <button
-            className="bg-confirmation-1 hover:bg-confirmation-2 border-6 border-blue-800 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200"
+            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--confirmation-1)] hover:bg-[var(--confirmation-2)] text-white rounded-full font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             disabled={disabled}
             onClick={async () => {
                 try {
@@ -27,7 +28,8 @@ export function AddRecipeButton({
                 }
             }}
         >
-            Ajouter une recette
+            <PlusIcon className="w-5 h-5" />
+            <span>Ajouter</span>
         </button>
     )
 }
@@ -43,9 +45,10 @@ export function ImportRecipeButtonDetail({
         <button
             onClick={handleImportClick}
             disabled={disabled}
-            className="bg-green-500 hover:bg-green-600 border-6 border-green-700 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200"
+            className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
-            Importer une recette
+            <ArrowDownTrayIcon className="w-5 h-5" />
+            <span>Importer</span>
         </button>
     )
 }
@@ -64,7 +67,6 @@ export function GenerateAIRecipeButton({
         if (onClick) {
             onClick();
         } else {
-            // Fallback to old behavior for compatibility
             navigate("/recettes/generer/localisation");
         }
     };
@@ -72,14 +74,14 @@ export function GenerateAIRecipeButton({
     return (
         <button
             onClick={handleClick}
-            className={`relative bg-amber-300 hover:bg-amber-400 border-6 border-amber-700 text-text-primary p-2 aspect-square rounded-md m-2 transition duration-200 flex items-center justify-center ${disabled ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+            disabled={disabled}
+            className={`relative flex items-center gap-2 px-5 py-2.5 bg-[var(--cout-yellow)] hover:bg-amber-400 text-[var(--cout-purple)] rounded-full font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 ${disabled ? "opacity-50 cursor-not-allowed hover:scale-100" : ""}`}
         >
-            <div className="absolute -top-3 -left-3">
+            <div className="absolute -top-2 -right-2">
                 <PremiumFeatureDisplayer />
             </div>
-
-            Générer une recette
+            <SparklesIcon className="w-5 h-5" />
+            <span>Générer</span>
         </button>
     );
 }

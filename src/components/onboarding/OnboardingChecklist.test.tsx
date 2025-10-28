@@ -288,4 +288,92 @@ describe('OnboardingChecklist', () => {
             }, { timeout: 2000 });
         });
     });
+
+    describe('Prop isMobile', () => {
+        it('devrait s\'afficher correctement avec isMobile={false} par défaut', async () => {
+            vi.mocked(UserStatsService.fetchStatistics).mockResolvedValue(mockStatistics);
+            vi.mocked(UserStatsService.fetchSuccess).mockResolvedValue(mockSuccess);
+
+            const { container } = render(<OnboardingChecklist />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Premiers Pas')).toBeInTheDocument();
+            });
+
+            // Vérifier que le composant s'affiche correctement
+            expect(container.querySelector('.bg-primary')).toBeInTheDocument();
+            expect(screen.getByText('Générer 1 recette')).toBeInTheDocument();
+        });
+
+        it('devrait s\'afficher correctement avec isMobile={true}', async () => {
+            vi.mocked(UserStatsService.fetchStatistics).mockResolvedValue(mockStatistics);
+            vi.mocked(UserStatsService.fetchSuccess).mockResolvedValue(mockSuccess);
+
+            const { container } = render(<OnboardingChecklist isMobile={true} />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Premiers Pas')).toBeInTheDocument();
+            });
+
+            // Vérifier que le composant s'affiche correctement
+            expect(container.querySelector('.bg-primary')).toBeInTheDocument();
+            expect(screen.getByText('Générer 1 recette')).toBeInTheDocument();
+        });
+
+        it('devrait appliquer le styling mobile avec isMobile={true}', async () => {
+            vi.mocked(UserStatsService.fetchStatistics).mockResolvedValue(mockStatistics);
+            vi.mocked(UserStatsService.fetchSuccess).mockResolvedValue(mockSuccess);
+
+            const { container } = render(<OnboardingChecklist isMobile={true} />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Premiers Pas')).toBeInTheDocument();
+            });
+
+            const mainContainer = container.querySelector('.bg-primary');
+            expect(mainContainer).toHaveClass('p-4');
+        });
+
+        it('devrait appliquer le styling desktop avec isMobile={false}', async () => {
+            vi.mocked(UserStatsService.fetchStatistics).mockResolvedValue(mockStatistics);
+            vi.mocked(UserStatsService.fetchSuccess).mockResolvedValue(mockSuccess);
+
+            const { container } = render(<OnboardingChecklist isMobile={false} />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Premiers Pas')).toBeInTheDocument();
+            });
+
+            const mainContainer = container.querySelector('.bg-primary');
+            expect(mainContainer).toHaveClass('p-6');
+        });
+
+        it('devrait permettre de claim les récompenses en mode mobile', async () => {
+            const user = userEvent.setup();
+
+            vi.mocked(UserStatsService.fetchStatistics).mockResolvedValue(mockStatistics);
+            vi.mocked(UserStatsService.fetchSuccess).mockResolvedValue(mockSuccess);
+            vi.mocked(UserStatsService.claimSuccessReward).mockResolvedValue({
+                success: true,
+                message: 'Succès réclamé',
+                creditsAwarded: 1,
+                alreadyClaimed: false,
+                totalCreditsEarned: 1,
+            });
+
+            render(<OnboardingChecklist isMobile={true} />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Premiers Pas')).toBeInTheDocument();
+            });
+
+            const claimButtons = screen.getAllByText(/\+\d+/);
+            const claimButton = claimButtons[0].closest('button')!;
+            await user.click(claimButton);
+
+            await waitFor(() => {
+                expect(UserStatsService.claimSuccessReward).toHaveBeenCalled();
+            }, { timeout: 2000 });
+        });
+    });
 });

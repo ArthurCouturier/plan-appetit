@@ -101,7 +101,7 @@ export default function Account() {
 
     return (
         <div className='min-h-screen bg-bg-color flex flex-col'>
-            <div className="flex-grow p-4 md:p-6">
+            <div className={`flex-grow ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
                 {isMobile ? null : <AccountHeader />}
 
             <div className="max-w-2xl mx-auto mt-4 space-y-4">

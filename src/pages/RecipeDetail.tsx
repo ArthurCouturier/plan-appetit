@@ -47,7 +47,7 @@ export default function RecipeDetail() {
     }, []);
 
     return recipe ? (
-        <div className="min-h-screen bg-bg-color p-4 md:p-6">
+        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
             {!isMobile && <RecipeHeader />}
             
             {/* Recipe Title Card */}
@@ -156,7 +156,7 @@ export default function RecipeDetail() {
             )}
         </div>
     ) : (
-        <div className="min-h-screen bg-bg-color p-4 md:p-6">
+        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
             {!isMobile && <RecipeHeader />}
             <RecipeError />
         </div>

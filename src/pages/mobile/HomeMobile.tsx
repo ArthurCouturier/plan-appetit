@@ -27,7 +27,7 @@ export default function HomeMobile() {
 
   return (
     <div>
-      <div className="flex flex-col items-center pt-10 space-y-20">
+      <div className="flex flex-col items-center px-4 pt-20 pb-24 space-y-20">
         <Button onClick={() => handleClick()} className="bg-primary text-text-primary w-full text-xl flex items-center justify-center gap-2" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined} >
           <PlusIcon className="w-6 h-6 font-bold" />
           <span className="lowercase first-letter:uppercase">Ajouter une recette</span>

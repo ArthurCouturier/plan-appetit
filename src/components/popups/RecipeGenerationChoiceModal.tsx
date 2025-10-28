@@ -1,6 +1,8 @@
 import { Dialog, DialogHeader, DialogBody } from "@material-tailwind/react";
 import { SparklesIcon, MapPinIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 interface RecipeGenerationChoiceModalProps {
   isOpen: boolean;
@@ -12,6 +14,18 @@ export default function RecipeGenerationChoiceModal({
   onClose,
 }: RecipeGenerationChoiceModalProps) {
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSandboxChoice = () => {
     onClose();
@@ -34,12 +48,23 @@ export default function RecipeGenerationChoiceModal({
       onPointerLeaveCapture={undefined}
     >
       <DialogHeader
-        className="text-text-primary border-b border-border-color"
+        className="text-text-primary border-b border-border-color relative"
         placeholder={undefined}
         onPointerEnterCapture={undefined}
         onPointerLeaveCapture={undefined}
       >
-        Comment souhaitez-vous générer votre recette ?
+        Mode de génération
+
+        {/* Croix de fermeture - Mobile uniquement */}
+        {isMobile && (
+          <button
+            onClick={onClose}
+            className="absolute top-1/2 -translate-y-1/2 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 transition-colors duration-200 shadow-lg"
+            aria-label="Fermer"
+          >
+            <XMarkIcon className="w-5 h-5 text-white" />
+          </button>
+        )}
       </DialogHeader>
       <DialogBody
         className="space-y-4 p-6"
@@ -65,10 +90,6 @@ export default function RecipeGenerationChoiceModal({
                 <h3 className="text-xl font-bold text-white mb-2">
                   Création libre
                 </h3>
-                <p className="text-white/90 text-sm leading-relaxed">
-                  Décrivez librement ce que vous voulez cuisiner.
-                  L'IA créera une recette sur-mesure basée sur votre demande.
-                </p>
                 <div className="mt-3 flex items-center gap-2 text-cout-yellow text-xs font-semibold">
                   <SparklesIcon className="w-4 h-4" />
                   <span>Rapide et intuitif</span>
@@ -94,10 +115,6 @@ export default function RecipeGenerationChoiceModal({
                 <h3 className="text-xl font-bold text-white mb-2">
                   Création par localisation
                 </h3>
-                <p className="text-white/90 text-sm leading-relaxed">
-                  Générez des recettes en fonction d'une localisation,
-                  de la saison, des ingrédients disponibles et de votre budget.
-                </p>
                 <div className="mt-3 flex items-center gap-2 text-emerald-100 text-xs font-semibold">
                   <MapPinIcon className="w-4 h-4" />
                   <span>Personnalisé et précis</span>
@@ -109,15 +126,17 @@ export default function RecipeGenerationChoiceModal({
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/10 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
         </button>
 
-        {/* Bouton Annuler */}
-        <div className="mt-6 pt-4 border-t border-border-color">
-          <button
-            onClick={onClose}
-            className="w-full px-6 py-3 bg-secondary text-text-primary font-semibold rounded-lg hover:bg-secondary/80 transition-all duration-200"
-          >
-            Annuler
-          </button>
-        </div>
+        {/* Bouton Annuler - Desktop uniquement */}
+        {!isMobile && (
+          <div className="mt-6 pt-4 border-t border-border-color">
+            <button
+              onClick={onClose}
+              className="w-full px-6 py-3 bg-secondary text-text-primary font-semibold rounded-lg hover:bg-secondary/80 transition-all duration-200"
+            >
+              Annuler
+            </button>
+          </div>
+        )}
       </DialogBody>
     </Dialog>
   );

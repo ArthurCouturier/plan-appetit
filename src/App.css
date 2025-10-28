@@ -1,8 +1,15 @@
 #root {
   margin: 0 auto;
   height: 100vh;
-  padding: 2rem;
+  padding: 0;
   text-align: center;
+}
+
+/* Padding uniquement sur tablette et desktop */
+@media (min-width: 769px) {
+  #root {
+    padding: 2rem;
+  }
 }
 
 .logo {

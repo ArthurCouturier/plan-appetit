@@ -148,7 +148,7 @@ export default function RecipeLocationGeneration() {
     }, []);
 
     return (
-        <div className="relative bg-bg-color min-h-screen md:p-6">
+        <div className={`relative bg-bg-color min-h-screen ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
             <RecipeGenerationLoadingModal isOpen={isLoading} />
 
             {isMobile ? null : <RecipeGenerationHeader />}

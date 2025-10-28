@@ -24,7 +24,7 @@ function RecipeCardMobile({
     const navigate = useNavigate();
 
     return (
-        <button 
+        <button
             onClick={() => navigate(`/recettes/${recipe.uuid}`)}
             className="w-full bg-primary rounded-xl shadow-md border border-border-color p-4 hover:shadow-lg hover:border-cout-base transition-all duration-200 active:scale-[0.98]"
         >
@@ -33,22 +33,25 @@ function RecipeCardMobile({
                     <h3 className="text-lg font-bold text-text-primary mb-2 line-clamp-1">
                         {recipe.name}
                     </h3>
-                    
+
                     <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary">
                         <div className="flex items-center gap-1">
                             <UserGroupIcon className="w-4 h-4 text-cout-base" />
                             <span>{recipe.covers} pers</span>
                         </div>
-                        
+
                         <div className="flex items-center gap-1">
                             <ClockIcon className="w-4 h-4 text-cout-base" />
                             <span>{recipe.steps.length} étape{recipe.steps.length > 1 ? 's' : ''}</span>
                         </div>
 
-                        <div className="flex items-center gap-1">
-                            <CurrencyEuroIcon className="w-4 h-4 text-cout-yellow" />
-                            <span>{recipe.buyPrice.toFixed(2)}€/pers</span>
-                        </div>
+                        {recipe.buyPrice > 0 &&
+                            <div className="flex items-center gap-1">
+                                <CurrencyEuroIcon className="w-4 h-4 text-cout-yellow" />
+                                <span>{recipe.buyPrice.toFixed(2)}€/pers</span>
+                            </div>
+                        }
+
                     </div>
                 </div>
 
@@ -67,7 +70,7 @@ function RecipeCardDesktop({
     const navigate = useNavigate();
 
     return (
-        <button 
+        <button
             onClick={() => navigate(`/recettes/${recipe.uuid}`)}
             className="group bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg border-2 border-border-color hover:border-cout-base p-6 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 text-left h-full flex flex-col"
         >

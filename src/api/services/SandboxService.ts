@@ -72,27 +72,34 @@ export default class SandboxService {
 
     public static async getPlaceholders(): Promise<string[]> {
         try {
-            const response = await fetch(
-                `${this.baseUrl}:${this.port}/api/v1/sandbox/placeholders`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                }
-            );
+            const response = await fetch('/sandbox_placeholders.txt');
 
             if (!response.ok) {
-                console.warn('Erreur lors du chargement des placeholders depuis l\'API');
+                console.warn('Erreur lors du chargement des placeholders depuis le fichier');
                 return this.getDefaultPlaceholders();
             }
 
-            const data = await response.json();
-            return data.items || this.getDefaultPlaceholders();
+            const text = await response.text();
+            const placeholders = text
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+
+            // Randomiser l'ordre des placeholders
+            return this.shuffleArray(placeholders);
         } catch (error) {
-            console.warn('Erreur réseau lors du chargement des placeholders:', error);
+            console.warn('Erreur lors du chargement des placeholders:', error);
             return this.getDefaultPlaceholders();
         }
+    }
+
+    private static shuffleArray<T>(array: T[]): T[] {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
     }
 
     public static async getQuotaStatus(): Promise<QuotaInfo> {
@@ -177,7 +184,7 @@ export default class SandboxService {
     }
 
     private static getDefaultPlaceholders(): string[] {
-        return [
+        const defaults = [
             "Un dahl de lentilles corail rapide pour ce soir",
             "5 recettes autour de la courge butternut",
             "Un dessert sans lactose avec des poires",
@@ -189,5 +196,6 @@ export default class SandboxService {
             "Un curry thaï végétalien express",
             "Des recettes anti-gaspillage avec des légumes de saison"
         ];
+        return this.shuffleArray(defaults);
     }
 }

@@ -9,6 +9,7 @@ import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
 import RecipeGenerationChoiceModal from "../../components/popups/RecipeGenerationChoiceModal";
+import OnboardingChecklist from "../../components/onboarding/OnboardingChecklist";
 
 export default function MyRecipesMobile({
   isMobile
@@ -89,7 +90,7 @@ export default function MyRecipesMobile({
   };
 
   return (
-    <div className="min-h-screen bg-bg-color p-4 pb-24">
+    <div className="min-h-screen bg-bg-color px-4 pt-20 pb-24">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-text-primary mb-2">Mes Recettes</h1>
@@ -103,6 +104,9 @@ export default function MyRecipesMobile({
           )}
         </p>
       </div>
+
+      {/* Onboarding Checklist */}
+      <OnboardingChecklist isMobile={isMobile} />
 
       {/* Recipes list or empty state */}
       {recipes.length > 0 ? (

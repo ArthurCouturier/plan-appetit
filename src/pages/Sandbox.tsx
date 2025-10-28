@@ -35,6 +35,7 @@ export default function Sandbox() {
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [, setAnonymousRecipeUuid] = useState<string | null>(null);
   const [recipeCount, setRecipeCount] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -98,6 +99,17 @@ export default function Sandbox() {
       setPrompt(searchParams.get("q") || "");
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleGenerateClick = () => {
     if (!prompt.trim() || prompt.trim().length < 3) {
@@ -247,8 +259,8 @@ export default function Sandbox() {
   return (
     <div className="min-h-screen bg-bg-color flex flex-col">
       <div className="flex-grow">
-        {/* Header - Only for logged in users */}
-        {user && (
+        {/* Header - Only for logged in users on tablet/desktop */}
+        {user && !isMobile && (
           <div className="p-6 pb-0">
             <Header
               back={true}
@@ -261,7 +273,7 @@ export default function Sandbox() {
         )}
 
         {/* Hero Section */}
-        <section className={`relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple ${user ? 'pt-12' : 'pt-24'} pb-32 px-4`}>
+        <section className={`relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple ${user && !isMobile ? 'pt-12' : 'pt-24'} pb-32 px-4`}>
           <div className="absolute inset-0 overflow-hidden opacity-20">
             <div className="absolute top-20 left-10 w-64 h-64 bg-cout-yellow rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
@@ -339,14 +351,14 @@ export default function Sandbox() {
                   )}
                 </button>
 
-                <p className="text-white/70 text-sm text-center max-w-xl">
-                  Exemples : "{examplePrompts[0]}", "{examplePrompts[1]}", ou tout autre plat que vous imaginez !
+                <p className="text-white/70 text-sm text-center max-w-xl mt-3">
+                  Quelques exemples pour vous aider:
                 </p>
               </div>
             </div>
 
             {/* Quick examples */}
-            <div className="mt-8 flex flex-wrap justify-center gap-2">
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
               {examplePrompts.map((example, index) => (
                 <button
                   key={index}

@@ -6,6 +6,10 @@ import SuccessInterface, { SuccessType } from '../../api/interfaces/users/Succes
 import CreditIcon from '../icons/CreditIcon';
 import confetti from 'canvas-confetti';
 
+interface OnboardingChecklistProps {
+    isMobile?: boolean;
+}
+
 interface AchievementItem {
     id: SuccessType;
     title: string;
@@ -45,7 +49,7 @@ const ONBOARDING_ACHIEVEMENTS: AchievementItem[] = [
     }
 ];
 
-export default function OnboardingChecklist() {
+export default function OnboardingChecklist({ isMobile = false }: OnboardingChecklistProps) {
     const [statistics, setStatistics] = useState<StatisticsInterface | null>(null);
     const [success, setSuccess] = useState<SuccessInterface | null>(null);
     const [claimingStates, setClaimingStates] = useState<Record<string, boolean>>({});
@@ -179,23 +183,23 @@ export default function OnboardingChecklist() {
     return (
         <div
             ref={containerRef}
-            className={`bg-primary rounded-xl p-6 shadow-md border border-border-color mb-6 relative overflow-hidden ${isImploding ? 'imploding' : ''
+            className={`bg-primary rounded-xl ${isMobile ? 'p-4' : 'p-6'} shadow-md border border-border-color ${isMobile ? 'mb-4' : 'mb-6'} relative overflow-hidden ${isImploding ? 'imploding' : ''
                 }`}>
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cout-base via-cout-purple to-cout-yellow"></div>
 
-            <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-cout-base to-cout-purple rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-lg">🎯</span>
+            <div className={`flex items-center gap-3 ${isMobile ? 'mb-3' : 'mb-4'}`}>
+                <div className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'} bg-gradient-to-br from-cout-base to-cout-purple rounded-full flex items-center justify-center flex-shrink-0`}>
+                    <span className={`text-white font-bold ${isMobile ? 'text-base' : 'text-lg'}`}>🎯</span>
                 </div>
-                <div>
-                    <h3 className="text-lg font-bold text-text-primary">Premiers Pas</h3>
-                    <p className="text-sm text-text-secondary">
-                        Débloquez des crédits gratuitement en complétant ces actions
+                <div className="flex-1 min-w-0">
+                    <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-bold text-text-primary`}>Premiers Pas</h3>
+                    <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-text-secondary`}>
+                        {isMobile ? 'Débloquez des crédits gratuitement' : 'Débloquez des crédits gratuitement en complétant ces actions'}
                     </p>
                 </div>
             </div>
 
-            <div className="space-y-3">
+            <div className={isMobile ? 'space-y-2' : 'space-y-3'}>
                 {ONBOARDING_ACHIEVEMENTS.map((achievement) => {
                     const completed = achievement.isCompleted(statistics);
                     const claimed = achievement.isClaimed(success);
@@ -205,7 +209,7 @@ export default function OnboardingChecklist() {
                     return (
                         <div
                             key={achievement.id}
-                            className="relative flex items-center gap-3 p-3 rounded-lg bg-secondary border border-border-color transition-all duration-200 overflow-hidden"
+                            className={`relative flex items-center ${isMobile ? 'gap-2 p-2.5' : 'gap-3 p-3'} rounded-lg bg-secondary border border-border-color transition-all duration-200 overflow-hidden`}
                         >
                             {isStriking && (
                                 <div
@@ -217,8 +221,8 @@ export default function OnboardingChecklist() {
                             )}
 
                             {!claimed && !completed && (
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-thirdary/30 flex items-center justify-center">
-                                    <LockClosedIcon className="w-4 h-4 text-text-secondary" />
+                                <div className={`flex-shrink-0 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'} rounded-full bg-thirdary/30 flex items-center justify-center`}>
+                                    <LockClosedIcon className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-text-secondary`} />
                                 </div>
                             )}
 
@@ -226,18 +230,18 @@ export default function OnboardingChecklist() {
                                 <button
                                     onClick={() => handleClaimReward(achievement)}
                                     disabled={isClaiming}
-                                    className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-[var(--cout-yellow)] text-[var(--cout-purple)] rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 ${isClaiming ? 'opacity-50 cursor-not-allowed' : ''
+                                    className={`flex-shrink-0 flex items-center ${isMobile ? 'gap-1 px-2.5 py-1' : 'gap-1.5 px-3 py-1.5'} bg-[var(--cout-yellow)] text-[var(--cout-purple)] rounded-full font-bold ${isMobile ? 'text-xs' : 'text-sm'} shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 ${isClaiming ? 'opacity-50 cursor-not-allowed' : ''
                                         }`}
                                 >
-                                    <CreditIcon className="w-4 h-4" />
+                                    <CreditIcon className={`${isMobile ? 'w-3.5 h-3.5' : 'w-4 h-4'}`} />
                                     <span>+{achievement.credits}</span>
                                 </button>
                             )}
 
                             {claimed && (
-                                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                                <div className={`flex-shrink-0 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'} rounded-full bg-green-500/20 flex items-center justify-center`}>
                                     <svg
-                                        className="w-5 h-5 text-green-600"
+                                        className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} text-green-600`}
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -253,7 +257,7 @@ export default function OnboardingChecklist() {
                             )}
 
                             <span
-                                className={`flex-1 text-sm font-medium transition-all duration-300 ${claimed
+                                className={`flex-1 ${isMobile ? 'text-xs' : 'text-sm'} font-medium transition-all duration-300 ${claimed
                                     ? 'text-green-600 line-through'
                                     : completed
                                         ? 'text-text-primary'

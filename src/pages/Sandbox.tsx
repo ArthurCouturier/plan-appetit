@@ -17,6 +17,7 @@ import { SandboxRecipe } from "../api/interfaces/sandbox/SandboxRecipe";
 import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 import useAuth from "../api/hooks/useAuth";
 import { useRecipeContext } from "../contexts/RecipeContext";
+import { usePostHog } from "../contexts/PostHogContext";
 
 export default function Sandbox() {
   const navigate = useNavigate();
@@ -44,6 +45,8 @@ export default function Sandbox() {
     deletingSpeed: 50,
     pauseDuration: 2000,
   });
+
+  const { trackEvent } = usePostHog()
 
   useEffect(() => {
     SandboxService.getPlaceholders().then(setPlaceholders);
@@ -132,12 +135,23 @@ export default function Sandbox() {
     setError(null);
     setSandboxRecipes([]);
 
+    const requestedRecipeCount = user ? recipeCount : 1;
+
+    trackEvent('recipe_generation_started', {
+      source: 'sandbox',
+      prompt: prompt.trim().substring(0, 100), // Limiter à 100 caractères pour PostHog
+      recipeCount: requestedRecipeCount,
+      isAuthenticated: !!user,
+      isPremium: quotaInfo?.isSubscriber || false,
+      remainingCredits: quotaInfo?.remainingFree || 0,
+    });
+
     try {
       setSearchParams({ q: prompt });
 
       const response = await SandboxService.generateRecipes({
         prompt: prompt.trim(),
-        count: user ? recipeCount : 1,
+        count: requestedRecipeCount,
       });
 
       setSandboxRecipes(response.recipes);
@@ -158,6 +172,16 @@ export default function Sandbox() {
         setAnonymousRecipeUuid(response.recipeUuid);
       }
 
+      trackEvent('recipe_generation_completed', {
+        source: 'sandbox',
+        recipesGenerated: response.recipes.length,
+        recipesRequested: requestedRecipeCount,
+        isAuthenticated: !!user,
+        isPremium: response.quota?.isSubscriber || false,
+        remainingCredits: response.quota?.remainingFree || 0,
+        recipeUuids: response.recipes.map(r => r.uuid).filter(Boolean),
+      });
+
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -168,13 +192,38 @@ export default function Sandbox() {
       if (err.type === "QUOTA_EXCEEDED") {
         setError(err.message || "Quota épuisé. Passez Premium pour continuer !");
         setQuotaInfo(err.quota);
+
+        trackEvent('quota_limit_reached', {
+          source: 'sandbox',
+          recipesRequested: requestedRecipeCount,
+          isAuthenticated: !!user,
+          isPremium: err.quota?.isSubscriber || false,
+          remainingCredits: err.quota?.remainingFree || 0,
+        });
+
         if (!user || (quotaInfo && !quotaInfo.isSubscriber)) {
           setShowPaywall(true);
         }
       } else if (err.type === "VALIDATION_ERROR") {
         setError(err.message || "Erreur de validation de votre demande");
+
+        trackEvent('recipe_generation_failed', {
+          source: 'sandbox',
+          errorType: 'validation',
+          errorMessage: err.message || 'Validation error',
+          recipesRequested: requestedRecipeCount,
+          isAuthenticated: !!user,
+        });
       } else {
         setError("Une erreur est survenue lors de la génération. Veuillez réessayer.");
+
+        trackEvent('recipe_generation_failed', {
+          source: 'sandbox',
+          errorType: 'unknown',
+          errorMessage: err.message || 'Unknown error',
+          recipesRequested: requestedRecipeCount,
+          isAuthenticated: !!user,
+        });
       }
     } finally {
       setIsLoading(false);
@@ -260,8 +309,8 @@ export default function Sandbox() {
                           onClick={() => setRecipeCount(count)}
                           disabled={isLoading}
                           className={`w-10 h-10 rounded-lg font-bold text-sm transition-all duration-200 ${recipeCount === count
-                              ? 'bg-cout-yellow text-cout-purple shadow-lg scale-110'
-                              : 'bg-white/20 text-white hover:bg-white/30'
+                            ? 'bg-cout-yellow text-cout-purple shadow-lg scale-110'
+                            : 'bg-white/20 text-white hover:bg-white/30'
                             } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                           {count}

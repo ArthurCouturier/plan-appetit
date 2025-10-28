@@ -12,6 +12,7 @@ import { useRecipeContext } from "../contexts/RecipeContext";
 import RecipeService from "../api/services/RecipeService";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
+import { usePostHog } from "../contexts/PostHogContext";
 
 const DRAFT_STORAGE_KEY = "recipeGenerationDraft";
 
@@ -19,6 +20,7 @@ export default function RecipeLocationGeneration() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const { setRecipes } = useRecipeContext();
     const navigate = useNavigate();
+    const { trackEvent } = usePostHog();
 
     // Load draft from localStorage
     const loadDraft = () => {
@@ -76,6 +78,16 @@ export default function RecipeLocationGeneration() {
             sellingPrice: buyingPrice * 2, // Valeur par défaut : 2x le prix d'achat
         };
 
+        trackEvent('recipe_generation_started', {
+            localisation,
+            seasons: seasons.join(', '),
+            hasIngredients: !!ingredients,
+            useBook,
+            vegan,
+            hasAllergens: !!allergens,
+            buyingPrice,
+        });
+
         setIsLoading(true);
 
         try {
@@ -90,14 +102,29 @@ export default function RecipeLocationGeneration() {
             if (newRecipe) {
                 const updatedRecipes = await RecipeService.fetchRecipesRemotly();
                 setRecipes(updatedRecipes);
+
+                trackEvent('recipe_generation_completed', {
+                    recipeUuid: newRecipe.uuid,
+                    localisation,
+                    vegan,
+                });
+
                 navigate(`/recettes/${newRecipe.uuid}`);
             }
         } catch (error: any) {
             if (error.type === "INSUFFICIENT_CREDITS") {
+                trackEvent('quota_limit_reached', {
+                    localisation,
+                    vegan,
+                });
                 showModalRechargerCredits();
                 setIsLoading(false);
                 return;
             }
+            trackEvent('recipe_generation_failed', {
+                error: error.message || 'Unknown error',
+                localisation,
+            });
             console.error(error);
             alert("une erreur est surevenue")
             navigate('/myrecipes');

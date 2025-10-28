@@ -5,6 +5,7 @@ import StripeService from "../api/services/StripeService";
 import { Product } from "../api/interfaces/stripe/Product";
 import { CartItem } from "../api/interfaces/stripe/CartItem";
 import useAuth from "../api/hooks/useAuth";
+import { usePostHog } from "../contexts/PostHogContext";
 
 export default function BecomePremium() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function BecomePremium() {
   const [isMobile, setIsMobile] = useState(false);
 
   const user = useAuth().user;
+  const { trackEvent } = usePostHog();
 
   useEffect(() => {
     StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_MENSUAL)
@@ -35,6 +37,13 @@ export default function BecomePremium() {
 
   const handleSubscribe = () => {
     if (!premiumProduct) return;
+
+    trackEvent('checkout_started', {
+      product_type: 'premium_subscription',
+      price: premiumProduct.prices[0].unitAmount,
+      currency: 'EUR',
+    });
+
     const cart: CartItem = {
       priceId: premiumProduct.prices[0].stripePriceId,
       quantity: 1
@@ -44,6 +53,14 @@ export default function BecomePremium() {
 
   const handleBuyCredits = () => {
     if (!credit20Product) return;
+
+    trackEvent('checkout_started', {
+      product_type: 'credits',
+      credit_amount: 20,
+      price: credit20Product.prices[0].unitAmount,
+      currency: 'EUR',
+    });
+
     const cart: CartItem = {
       priceId: credit20Product.prices[0].stripePriceId,
       quantity: 1

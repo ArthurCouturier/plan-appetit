@@ -36,7 +36,7 @@
 }
 
 :root {
-  background-color: rgb(165 180 252);
+  background-color: var(--cout-base, end);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -60,20 +60,20 @@ input[type="number"] {
 
 /* Thème 1 */
 .theme1 {
-  --cout-yellow: #f4cf77;
-  --cout-purple: #2f2e6e;
-  --cout-base: #a5b4fc;
-  --bg-color: #f3f4f6; /* gray-100 */
-  --primary: #ffffff; /* white */
+  --cout-yellow: #edc79e;
+  --cout-purple: #f17c63;
+  --cout-base: #eda391;
+  --bg-color: #F6E3CF; /* gray-100 */
+  --primary: #FBF1E7; /* white */
   --text-primary: #1f2937; /* gray-800 */
   --secondary: #f9fafb; /* gray-50 */
   --text-secondary: #374151; /* gray-700 */
   --thirdary: #d1d5db; /* gray-300 */
   --border-color: #e5e7eb; /* gray-200 */
-  --confirmation-1: #a5b4fc; /* indigo-300 */
-  --cancel-1: #fca5a5; /* red-300 */
-  --confirmation-2: #818cf8; /* indigo-400 */
-  --cancel-2: #f87171; /* red-400 */
+  --confirmation-1: #E9B986; /* indigo-300 */
+  --cancel-1: #EE6344; /* red-300 */
+  --confirmation-2: #CF7D26; /* indigo-400 */
+  --cancel-2: #E03A15; /* red-400 */
 }
 
 /* Thème 2 */

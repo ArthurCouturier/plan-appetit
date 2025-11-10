@@ -161,8 +161,8 @@ function DefaultModeDesktop({
             <ul className="p-1">
                 <SeasonDisplayer seasons={ingredient.season} />
             </ul>
-            <ul className="p-1 w-max max-w-50 text-left">{ingredient.name}:</ul>
-            <ul className="p-1">{ingredient.quantity.value}</ul>
+            <ul className="p-1 w-max max-w-50 text-left">{ingredient.name}</ul>
+            {ingredient.quantity.value > 0 ? <ul className="p-1">{ingredient.quantity.value}</ul> : <></>}
             <ul className="p-1">
                 {!(ingredient.quantity.unit == UnitEnum.NONE) ? UnitLabels[ingredient.quantity.unit] : ""}
                 {ingredient.quantity.value > 1 ? "s" : ""}

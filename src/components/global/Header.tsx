@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import useAuth from "../../api/hooks/useAuth";
 import { isPremiumUser } from "../../api/interfaces/users/UserInterface";
+import LogoButton from "../buttons/LogoButton";
 
 export default function Header({
     back = false,
@@ -49,9 +50,9 @@ export default function Header({
                         </button>
                     )}
                     {title && (
-                        <h1 className="text-lg font-bold text-text-primary ml-2 hidden md:block">
-                            Plan'Appétit
-                        </h1>
+                        <div className="hidden md:block pl-4">
+                            <LogoButton size="xl" />
+                        </div>
                     )}
                 </div>
 

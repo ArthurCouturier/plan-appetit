@@ -10,6 +10,7 @@ import MultipleRecipeConfirmationModal from "../components/popups/MultipleRecipe
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
 import Header from "../components/global/Header";
 import Footer from "../components/global/Footer";
+import LogoButton from "../components/buttons/LogoButton";
 import { useTypingPlaceholder } from "../hooks/useTypingPlaceholder";
 import SandboxService from "../api/services/SandboxService";
 import RecipeService from "../api/services/RecipeService";
@@ -273,13 +274,20 @@ export default function Sandbox() {
         )}
 
         {/* Hero Section */}
-        <section className={`relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple ${user && !isMobile ? 'pt-12' : 'pt-24'} pb-32 px-4`}>
+        <section className={`relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple ${user && !isMobile ? 'pt-12' : 'pt-12'} pb-32 px-4`}>
           <div className="absolute inset-0 overflow-hidden opacity-20">
             <div className="absolute top-20 left-10 w-64 h-64 bg-cout-yellow rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
           </div>
 
           <div className="max-w-4xl mx-auto relative z-10">
+            {/* Logo Button - Only for non-logged users */}
+            {!user && (
+              <div className="flex justify-center mb-6 md:mb-12 mt-4 md:mt-8 scale-[2] lg:scale-[2.5] p-4">
+                <LogoButton clickable={false} size="2xl" />
+              </div>
+            )}
+
             <div className="text-center mb-8">
               <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight">
                 Qu'est-ce qu'on mange aujourd'hui ?

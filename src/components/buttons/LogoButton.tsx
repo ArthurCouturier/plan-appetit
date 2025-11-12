@@ -37,31 +37,34 @@ export default function LogoButton({ clickable = true, size = 'md' }: LogoButton
         };
     }, [theme]);
 
-    const logoSrc = theme === 'theme1' ? '/logo-light-2.svg' : '/logo-dark-2.svg';
+    const logoSrc = theme === 'theme1' ?
+        clickable ? '/logo/actual/logo-light-color.svg' : '/logo/actual/logo-light-white.svg'
+        :
+        clickable ? '/logo/actual/logo-dark-white.svg' : '/logo/actual/logo-dark-white.svg';
 
     const sizeConfig = {
         xs: {
-            imageSize: "w-6 h-3",
+            imageSize: "w-6",
         },
         sm: {
-            imageSize: "w-8 h-4",
+            imageSize: "w-8",
         },
         md: {
-            imageSize: "w-10 h-5 md:w-12 md:h-6",
+            imageSize: "w-10 md:w-12",
         },
         lg: {
-            imageSize: "w-14 h-7 md:w-16 md:h-8",
+            imageSize: "w-14 md:w-16",
         },
         xl: {
-            imageSize: "w-20 h-10 md:w-24 md:h-12",
+            imageSize: "w-20 md:w-24",
         },
         '2xl': {
-            imageSize: "w-28 h-14 md:w-32 md:h-16",
+            imageSize: "w-28 md:w-32",
         },
     };
 
     const config = sizeConfig[size];
-    const baseClasses = `rounded-lg inline-flex items-center justify-center`;
+    const baseClasses = `rounded-lg inline-flex items-center justify-center p-3`;
     const clickableClasses = clickable
         ? `cursor-pointer`
         : "cursor-default";
@@ -76,7 +79,7 @@ export default function LogoButton({ clickable = true, size = 'md' }: LogoButton
             <img
                 src={logoSrc}
                 alt="Plan Appetit Logo"
-                className={config.imageSize}
+                className={`${config.imageSize}`}
             />
         </button>
     );

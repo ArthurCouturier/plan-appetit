@@ -8,7 +8,7 @@ export default function DarkModeButton({
     return (
         <button
             onClick={changeMode}
-            className="fixed top-4 right-4 w-12 h-12 z-10 flex items-center justify-center rounded-full border border-gray-300 bg-bg-color shadow-lg"
+            className="fixed top-4 right-4 w-12 h-12 z-100 flex items-center justify-center rounded-full border border-gray-300 bg-bg-color shadow-lg"
         >
             {/* Sun */}
             {mode === "theme1" ? (

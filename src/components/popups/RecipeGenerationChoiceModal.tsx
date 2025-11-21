@@ -1,5 +1,5 @@
 import { Dialog, DialogHeader, DialogBody } from "@material-tailwind/react";
-import { SparklesIcon, MapPinIcon } from "@heroicons/react/24/solid";
+import { SparklesIcon, MapPinIcon, CameraIcon } from "@heroicons/react/24/solid";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -35,6 +35,11 @@ export default function RecipeGenerationChoiceModal({
   const handleLocationChoice = () => {
     onClose();
     navigate("/recettes/generer/localisation");
+  };
+
+  const handleInstagramChoice = () => {
+    onClose();
+    navigate("/instagram");
   };
 
   return (
@@ -118,6 +123,31 @@ export default function RecipeGenerationChoiceModal({
                 <div className="mt-3 flex items-center gap-2 text-emerald-100 text-xs font-semibold">
                   <MapPinIcon className="w-4 h-4" />
                   <span>Personnalisé et précis</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Effet de brillance au hover */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/10 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+        </button>
+
+        {/* Import Instagram */}
+        <button
+          onClick={handleInstagramChoice}
+          className="w-full group relative overflow-hidden bg-gradient-to-br from-purple-400 to-violet-500 hover:from-violet-500 hover:to-purple-400 p-6 rounded-xl text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+        >
+          <div className="relative z-10">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <CameraIcon className="w-8 h-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Import d'Instagram
+                </h3>
+                <div className="mt-3 flex items-center gap-2 text-purple-100 text-xs font-semibold">
+                  <CameraIcon className="w-4 h-4" />
+                  <span>Toutes tes recettes d'Instagram en un clic!</span>
                 </div>
               </div>
             </div>

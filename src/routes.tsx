@@ -11,6 +11,7 @@ import Account from "./pages/Account";
 import MyRecipes from "./pages/MyRecipes";
 import Layout from "./components/global/Layout";
 import BecomePremium from "./pages/BecomePremium";
+import InstagramImport from "./pages/InstagramImport";
 import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } from "./pages/legal";
 
 const router = createBrowserRouter([
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
             {
                 path: "sandbox",
                 element: <Sandbox />,
+            },
+            {
+                path: "instagram",
+                element: <InstagramImport />,
             },
             {
                 path: "login",

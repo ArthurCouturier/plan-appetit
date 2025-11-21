@@ -96,18 +96,20 @@ function RecipeCardDesktop({
                     <span className="text-sm font-medium">{recipe.steps.length} étape{recipe.steps.length > 1 ? 's' : ''}</span>
                 </div>
 
-                <div className="flex items-center gap-2 text-text-secondary">
-                    <CurrencyEuroIcon className="w-5 h-5 text-cout-yellow" />
-                    <span className="text-sm font-medium">{recipe.buyPrice.toFixed(2)}€ par personne</span>
-                </div>
+                {recipe.buyPrice > 0.01 ?
+                    <div className="flex items-center gap-2 text-text-secondary">
+                        <CurrencyEuroIcon className="w-5 h-5 text-cout-yellow" />
+                        <span className="text-sm font-medium">{recipe.buyPrice.toFixed(2)}€ par personne</span>
+                    </div>
+                    : <></>
+                }
             </div>
 
             {/* Footer badge */}
             <div className="mt-4 pt-4 border-t border-border-color">
                 <div className="flex items-center justify-center gap-2 px-3 py-2 bg-cout-yellow/20 rounded-lg">
-                    <CurrencyEuroIcon className="w-4 h-4 text-cout-base" />
                     <span className="text-sm font-bold text-cout-base">
-                        {(recipe.buyPrice * recipe.covers).toFixed(2)}€ total
+                        Voir la recette
                     </span>
                 </div>
             </div>

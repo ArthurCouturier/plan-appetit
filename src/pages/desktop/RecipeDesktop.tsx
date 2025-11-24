@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
-import { ImportRecipeButton } from "../../components/buttons/DataImportButtons";
-import { AddRecipeButton, GenerateAIRecipeButton } from "../../components/buttons/NewRecipeButton";
+import { GenerateAIRecipeButton, CreateCollectionButton } from "../../components/buttons/NewRecipeButton";
 import RecipeCard from "../../components/cards/RecipeCard";
 import Header from "../../components/global/Header";
 import { useRecipeContext } from "../../contexts/RecipeContext";
@@ -12,6 +11,7 @@ import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
 import RecipeGenerationChoiceModal from "../../components/popups/RecipeGenerationChoiceModal";
+import CreateCollectionModal from "../../components/popups/CreateCollectionModal";
 import OnboardingChecklist from "../../components/onboarding/OnboardingChecklist";
 
 export default function RecipeDesktop() {
@@ -21,6 +21,7 @@ export default function RecipeDesktop() {
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
   const [showGenerationChoice, setShowGenerationChoice] = useState(false);
+  const [showCreateCollection, setShowCreateCollection] = useState(false);
   const [linkingRecipe, setLinkingRecipe] = useState(false);
 
   // Fetch des recettes au chargement de la page
@@ -97,18 +98,17 @@ export default function RecipeDesktop() {
           </div>
         </div>
 
+        {/* Onboarding Checklist */}
+        <OnboardingChecklist />
+
         {/* Action buttons */}
         <div className="bg-primary rounded-xl p-6 shadow-md border border-border-color mb-6">
           <h3 className="text-lg font-semibold text-text-primary mb-4">Actions rapides</h3>
           <div className="flex flex-wrap gap-3">
-            <AddRecipeButton setRecipes={setRecipes} disabled={false} />
-            <ImportRecipeButton setRecipes={setRecipes} disabled={false} />
             <GenerateAIRecipeButton disabled={false} onClick={() => setShowGenerationChoice(true)} />
+            <CreateCollectionButton disabled={false} onClick={() => setShowCreateCollection(true)} />
           </div>
         </div>
-
-        {/* Onboarding Checklist */}
-        <OnboardingChecklist />
 
         {/* Recipes grid or empty state */}
         {recipes.length > 0 ? (
@@ -126,7 +126,7 @@ export default function RecipeDesktop() {
               Votre bibliothèque vous attend
             </h3>
             <p className="text-text-secondary text-center mb-8 max-w-md text-lg">
-              Commencez à construire votre collection de recettes personnalisées. 
+              Commencez à construire votre collection de recettes personnalisées.
               Utilisez l'IA pour générer des recettes adaptées à vos besoins !
             </p>
             <button
@@ -150,6 +150,16 @@ export default function RecipeDesktop() {
       <RecipeGenerationChoiceModal
         isOpen={showGenerationChoice}
         onClose={() => setShowGenerationChoice(false)}
+      />
+
+      {/* Create Collection Modal */}
+      <CreateCollectionModal
+        isOpen={showCreateCollection}
+        onClose={() => setShowCreateCollection(false)}
+        onCollectionCreated={() => {
+          // Optionally refresh collections list here
+          console.log("Collection created successfully!");
+        }}
       />
     </div>
   )

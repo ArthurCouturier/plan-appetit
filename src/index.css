@@ -15,6 +15,8 @@
   --color-cancel-1: var(--cancel-1);
   --color-confirmation-2: var(--confirmation-2);
   --color-cancel-2: var(--cancel-2);
+  --color-premium-background: var(--premium-background);
+  --color-premium-text: var(--premium-text);
 }
 
 /*
@@ -74,6 +76,8 @@ input[type="number"] {
   --cancel-1: #EE6344; /* red-300 */
   --confirmation-2: #CF7D26; /* indigo-400 */
   --cancel-2: #E03A15; /* red-400 */
+  --premium-background: #fef3c7; /* jaune clair (amber-100) */
+  --premium-text: #f17c63; /* cout-purple */
 }
 
 /* Thème 2 */
@@ -92,6 +96,8 @@ input[type="number"] {
   --cancel-1: #ef4444; /* red-500 */
   --confirmation-2: #4338ca; /* indigo-700 */
   --cancel-2: #b91c1c; /* red-700 */
+  --premium-background: #fef3c7; /* jaune clair (amber-100) */
+  --premium-text: #2f2e6e; /* cout-purple */
 }
 
 html, body {

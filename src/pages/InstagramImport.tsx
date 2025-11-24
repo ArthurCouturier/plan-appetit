@@ -7,15 +7,12 @@ import LogoButton from "../components/buttons/LogoButton";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import InstagramService from "../api/services/InstagramService";
 import SandboxService from "../api/services/SandboxService";
-import RecipeService from "../api/services/RecipeService";
 import useAuth from "../api/hooks/useAuth";
-import { useRecipeContext } from "../contexts/RecipeContext";
 import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 
 export default function InstagramImport() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { setRecipes: setUserRecipes } = useRecipeContext();
 
   const [instagramUrl, setInstagramUrl] = useState("");
   const [showEmbed, setShowEmbed] = useState(false);
@@ -139,17 +136,13 @@ export default function InstagramImport() {
       );
       console.log("Generated recipe:", response);
 
-      // Refetch quota and recipes
+      // Refetch quota
       if (user) {
         try {
-          const [updatedRecipes, updatedQuota] = await Promise.all([
-            RecipeService.fetchRecipesRemotly(),
-            SandboxService.getQuotaStatus()
-          ]);
-          setUserRecipes(updatedRecipes);
+          const updatedQuota = await SandboxService.getQuotaStatus();
           setQuotaInfo(updatedQuota);
         } catch (err) {
-          console.error('Erreur lors du fetch des recettes/quota:', err);
+          console.error('Erreur lors du fetch du quota:', err);
         }
       }
 

@@ -85,6 +85,29 @@ export default class CollectionService {
         return await response.json();
     }
 
+    static async getRootCollections(): Promise<RecipeCollectionInterface[]> {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+
+        if (!email || !token) {
+            throw new Error('User not logged in');
+        }
+
+        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/root`, {
+            method: 'GET',
+            headers: {
+                'Email': email,
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch root collections: ${response.statusText}`);
+        }
+
+        return await response.json();
+    }
+
     static async deleteCollection(uuid: string): Promise<void> {
         const email: string = localStorage.getItem('email') as string;
         const token: string = localStorage.getItem('firebaseIdToken') as string;

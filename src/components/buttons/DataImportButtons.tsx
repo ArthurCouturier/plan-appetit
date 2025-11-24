@@ -1,8 +1,5 @@
-import { ChangeEvent, useRef, useState } from "react";
+import { useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
-import RecipeService from "../../api/services/RecipeService";
-import { ImportRecipeButtonDetail } from "./NewRecipeButton";
-import { useNavigate } from "react-router-dom";
 import BackendService from "../../api/services/BackendService";
 
 function exportData(datakey: string, uuid?: string, name?: string) {
@@ -88,42 +85,3 @@ export function ExportOpenAIRecipeButton() {
     );
 };
 
-export function ImportRecipeButton({
-    setRecipes,
-    disabled
-}: {
-    setRecipes: (recipes: RecipeInterface[]) => void;
-    disabled: boolean;
-}) {
-    const navigate = useNavigate();
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleImportClick = () => {
-        try {
-            fileInputRef.current?.click();
-        } catch (err) {
-            console.error(err);
-            navigate('/login');
-        }
-    };
-
-    const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-        RecipeService.importRecipe(file, setRecipes);
-    };
-
-    return (
-        <>
-            <ImportRecipeButtonDetail handleImportClick={handleImportClick} disabled={disabled} />
-
-            <input
-                type="file"
-                accept="application/json"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-            />
-        </>
-    );
-}

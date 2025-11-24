@@ -4,7 +4,6 @@ import { SparklesIcon } from "@heroicons/react/24/solid";
 import { ExclamationTriangleIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import AnimatedGradientBox from "../components/sandbox/AnimatedGradientBox";
 import LockedRecipeCard from "../components/sandbox/LockedRecipeCard";
-import RecipeCard from "../components/cards/RecipeCard";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import MultipleRecipeConfirmationModal from "../components/popups/MultipleRecipeConfirmationModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
@@ -13,17 +12,14 @@ import Footer from "../components/global/Footer";
 import LogoButton from "../components/buttons/LogoButton";
 import { useTypingPlaceholder } from "../hooks/useTypingPlaceholder";
 import SandboxService from "../api/services/SandboxService";
-import RecipeService from "../api/services/RecipeService";
 import { SandboxRecipe } from "../api/interfaces/sandbox/SandboxRecipe";
 import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 import useAuth from "../api/hooks/useAuth";
-import { useRecipeContext } from "../contexts/RecipeContext";
 import { usePostHog } from "../contexts/PostHogContext";
 
 export default function Sandbox() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { recipes: userRecipes, setRecipes: setUserRecipes } = useRecipeContext();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [prompt, setPrompt] = useState(searchParams.get("q") || "");
@@ -169,16 +165,6 @@ export default function Sandbox() {
 
       setSandboxRecipes(response.recipes);
       setQuotaInfo(response.quota);
-
-      // Si utilisateur connecté, refetch toutes ses recettes pour mettre à jour le contexte
-      if (user) {
-        try {
-          const updatedRecipes = await RecipeService.fetchRecipesRemotly();
-          setUserRecipes(updatedRecipes);
-        } catch (err) {
-          console.error('Erreur lors du fetch des recettes:', err);
-        }
-      }
 
       if (response.recipeUuid && !user) {
         localStorage.setItem('anonymousRecipeUuid', response.recipeUuid);
@@ -463,16 +449,24 @@ export default function Sandbox() {
                   <LockedRecipeCard recipe={sandboxRecipes[0]} />
                 </div>
               ) : user ? (
-                // Utilisateur connecté : afficher les vraies recettes depuis le contexte
+                // Utilisateur connecté : afficher les cartes cliquables
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                   {sandboxRecipes
                     .filter(recipe => recipe.uuid)
-                    .map((sandboxRecipe) => {
-                      const fullRecipe = userRecipes.find(r => r.uuid === sandboxRecipe.uuid);
-                      return fullRecipe ? (
-                        <RecipeCard key={String(fullRecipe.uuid)} recipe={fullRecipe} />
-                      ) : null;
-                    })}
+                    .map((sandboxRecipe) => (
+                      <button
+                        key={sandboxRecipe.uuid}
+                        onClick={() => navigate(`/recettes/${sandboxRecipe.uuid}`)}
+                        className="bg-primary rounded-xl border-2 border-border-color p-6 text-left hover:border-cout-base transition-all duration-200 hover:shadow-lg"
+                      >
+                        <h3 className="text-lg font-bold text-text-primary mb-2">{sandboxRecipe.title}</h3>
+                        <div className="flex items-center gap-4 text-text-secondary text-sm">
+                          <span>{sandboxRecipe.servings} pers.</span>
+                          <span>{sandboxRecipe.timeMinutes} min</span>
+                          <span>{sandboxRecipe.steps.length} étapes</span>
+                        </div>
+                      </button>
+                    ))}
                 </div>
               ) : (
                 // Utilisateur anonyme : afficher les cartes verrouillées

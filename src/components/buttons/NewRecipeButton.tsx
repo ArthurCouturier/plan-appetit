@@ -1,38 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { PlusIcon, ArrowDownTrayIcon, SparklesIcon, FolderPlusIcon } from "@heroicons/react/24/solid";
-import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
-import RecipeService from "../../api/services/RecipeService";
+import { ArrowDownTrayIcon, SparklesIcon, FolderPlusIcon } from "@heroicons/react/24/solid";
 import PremiumFeatureDisplayer from "../displayers/PremiumFeatureDisplayer";
-
-export function AddRecipeButton({
-    setRecipes,
-    disabled
-}: {
-    setRecipes: (recipes: RecipeInterface[]) => void;
-    disabled: boolean;
-}) {
-    const navigate = useNavigate();
-
-    return (
-        <button
-            className="flex items-center gap-2 px-5 py-2.5 bg-[var(--confirmation-1)] hover:bg-[var(--confirmation-2)] text-white rounded-full font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            disabled={disabled}
-            onClick={async () => {
-                try {
-                    await RecipeService.addEmptyRecipe();
-                    const updatedRecipes = await RecipeService.fetchRecipesRemotly();
-                    setRecipes(updatedRecipes);
-                } catch (err) {
-                    console.error(err);
-                    navigate('/login');
-                }
-            }}
-        >
-            <PlusIcon className="w-5 h-5" />
-            <span>Ajouter</span>
-        </button>
-    )
-}
 
 export function ImportRecipeButtonDetail({
     handleImportClick,

@@ -1,4 +1,4 @@
-import RecipeInterface from "../recipes/RecipeInterface";
+import RecipeSummaryInterface from "../recipes/RecipeSummaryInterface";
 
 export default interface RecipeCollectionInterface {
     uuid?: string;
@@ -8,7 +8,6 @@ export default interface RecipeCollectionInterface {
     isDefault: boolean;
     createdAt: string;
     lastUpdated: string;
-    recipes?: RecipeInterface[];
+    recipes?: RecipeSummaryInterface[];
     subCollections?: RecipeCollectionInterface[];
-    parentCollection?: RecipeCollectionInterface | null;
 }

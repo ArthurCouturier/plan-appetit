@@ -8,8 +8,6 @@ import RecipeGenerationParametersInterface from "../api/interfaces/recipes/Recip
 import LinearNumberField from "../components/fields/LinearNumberField";
 import Header from "../components/global/Header";
 import { useNavigate } from "react-router-dom";
-import { useRecipeContext } from "../contexts/RecipeContext";
-import RecipeService from "../api/services/RecipeService";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
 import { usePostHog } from "../contexts/PostHogContext";
@@ -18,7 +16,6 @@ const DRAFT_STORAGE_KEY = "recipeGenerationDraft";
 
 export default function RecipeLocationGeneration() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const { setRecipes } = useRecipeContext();
     const navigate = useNavigate();
     const { trackEvent } = usePostHog();
 
@@ -98,11 +95,8 @@ export default function RecipeLocationGeneration() {
             // Clear draft on successful generation
             localStorage.removeItem(DRAFT_STORAGE_KEY);
 
-            // Mettre à jour le contexte avec les recettes actualisées
+            // Naviguer vers la recette générée
             if (newRecipe) {
-                const updatedRecipes = await RecipeService.fetchRecipesRemotly();
-                setRecipes(updatedRecipes);
-
                 trackEvent('recipe_generation_completed', {
                     recipeUuid: newRecipe.uuid,
                     localisation,

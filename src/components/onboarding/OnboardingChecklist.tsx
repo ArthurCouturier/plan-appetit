@@ -35,7 +35,7 @@ const ONBOARDING_ACHIEVEMENTS: AchievementItem[] = [
     },
     {
         id: SuccessType.GENERATE_ONE_MULTI_RECIPE,
-        title: 'Générer plusieurs recettes d\'un coup',
+        title: 'Générer plusieurs recettes en création libre',
         credits: 3,
         isCompleted: (stats) => stats.multiRecipes >= 1,
         isClaimed: (success) => success.generateOneMultiRecipe

@@ -320,8 +320,31 @@ export default function InstagramImport() {
         {showEmbed && embedUrl && (
           <section className="py-12 px-4">
             <div className="max-w-4xl mx-auto">
+              <button
+                onClick={handleGenerateRecipe}
+                disabled={isGenerating || !!generatedRecipe}
+                className="w-full px-6 py-4 bg-gradient-to-r from-cout-purple to-cout-base text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
+              >
+                {isGenerating ? (
+                  <>
+                    <ArrowPathIcon className="w-6 h-6 animate-spin" />
+                    <span className="text-sm md:text-base">Génération en cours...</span>
+                  </>
+                ) : generatedRecipe ? (
+                  <>
+                    <CheckCircleIcon className="w-6 h-6" />
+                    <span className="text-sm md:text-base">Recette générée avec succès !</span>
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="w-6 h-6" />
+                    <span className="text-sm md:text-base">Générer la recette avec l'IA</span>
+                  </>
+                )}
+              </button>
+
               {/* Instagram Embed */}
-              <div className="bg-primary rounded-xl border-2 border-border-color p-4 md:p-6 flex justify-center mb-6" ref={embedContainerRef}>
+              <div className="bg-primary rounded-xl border-2 border-border-color p-4 md:p-6 flex justify-center mb-6 mt-6" ref={embedContainerRef}>
                 <blockquote
                   className="instagram-media"
                   data-instgrm-captioned

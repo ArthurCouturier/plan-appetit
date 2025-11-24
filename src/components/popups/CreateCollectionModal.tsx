@@ -7,15 +7,17 @@ interface CreateCollectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCollectionCreated?: () => void;
+  parentCollectionUuid?: string;
 }
 
 export default function CreateCollectionModal({
   isOpen,
   onClose,
   onCollectionCreated,
+  parentCollectionUuid,
 }: CreateCollectionModalProps) {
   const [name, setName] = useState("");
-  const [isPublic, setIsPublic] = useState(false);
+  const [isPublic, setIsPublic] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,7 +33,7 @@ export default function CreateCollectionModal({
     setError(null);
 
     try {
-      await CollectionService.createCollection(name, isPublic);
+      await CollectionService.createCollection(name, isPublic, parentCollectionUuid);
 
       // Reset form
       setName("");
@@ -53,10 +55,6 @@ export default function CreateCollectionModal({
   };
 
   const handleClose = () => {
-    // Reset form on close
-    setName("");
-    setIsPublic(false);
-    setError(null);
     onClose();
   };
 
@@ -68,9 +66,6 @@ export default function CreateCollectionModal({
       size="md"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        <p className="text-text-secondary">
-          Organisez vos recettes en créant des collections personnalisées.
-        </p>
 
         {/* Nom de la collection */}
         <div>
@@ -94,7 +89,7 @@ export default function CreateCollectionModal({
           <div>
             <p className="text-sm font-semibold text-text-primary">Collection publique</p>
             <p className="text-xs text-text-secondary mt-1">
-              Les collections publiques peuvent être consultées par d'autres utilisateurs
+              Consultable par d'autres utilisateurs
             </p>
           </div>
           <SwitchField

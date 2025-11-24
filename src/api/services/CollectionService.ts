@@ -1,5 +1,6 @@
 import BackendService from "./BackendService";
 import RecipeCollectionInterface from "../interfaces/collections/RecipeCollectionInterface";
+import CollectionBasicInfoInterface from "../interfaces/collections/CollectionBasicInfoInterface";
 import CreateCollectionRequest from "../interfaces/collections/CreateCollectionRequest";
 
 export default class CollectionService {
@@ -62,7 +63,7 @@ export default class CollectionService {
         return await response.json();
     }
 
-    static async getDefaultCollection(): Promise<RecipeCollectionInterface> {
+    static async getDefaultCollection(): Promise<CollectionBasicInfoInterface> {
         const email: string = localStorage.getItem('email') as string;
         const token: string = localStorage.getItem('firebaseIdToken') as string;
 
@@ -103,6 +104,33 @@ export default class CollectionService {
 
         if (!response.ok) {
             throw new Error(`Failed to fetch root collections: ${response.statusText}`);
+        }
+
+        return await response.json();
+    }
+
+    static async getCollectionById(uuid: string): Promise<RecipeCollectionInterface | null> {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+
+        if (!email || !token) {
+            throw new Error('User not logged in');
+        }
+
+        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${uuid}`, {
+            method: 'GET',
+            headers: {
+                'Email': email,
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (response.status === 404) {
+            return null;
+        }
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch collection: ${response.statusText}`);
         }
 
         return await response.json();

@@ -6,6 +6,7 @@ export default interface RecipeCollectionInterface {
     level: number;
     isPublic: boolean;
     isDefault: boolean;
+    displayOrder: number;
     createdAt: string;
     lastUpdated: string;
     recipes?: RecipeSummaryInterface[];

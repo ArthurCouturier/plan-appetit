@@ -1,16 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
 import RecipeCollectionInterface from "../../api/interfaces/collections/RecipeCollectionInterface";
-import { GenerateAIRecipeButton, CreateCollectionButton } from "../../components/buttons/NewRecipeButton";
 import CollectionCard from "../../components/cards/CollectionCard";
 import Header from "../../components/global/Header";
+import QuickActions from "../../components/actions/QuickActions";
 import { SparklesIcon, FolderIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 import CollectionService from "../../api/services/CollectionService";
 import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
-import RecipeGenerationChoiceModal from "../../components/popups/RecipeGenerationChoiceModal";
-import CreateCollectionModal from "../../components/popups/CreateCollectionModal";
 import OnboardingChecklist from "../../components/onboarding/OnboardingChecklist";
 
 export default function RecipeDesktop() {
@@ -18,8 +16,6 @@ export default function RecipeDesktop() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
-  const [showGenerationChoice, setShowGenerationChoice] = useState(false);
-  const [showCreateCollection, setShowCreateCollection] = useState(false);
   const [linkingRecipe, setLinkingRecipe] = useState(false);
   const [collections, setCollections] = useState<RecipeCollectionInterface[]>([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
@@ -119,13 +115,12 @@ export default function RecipeDesktop() {
         <OnboardingChecklist />
 
         {/* Action buttons */}
-        <div className="bg-primary rounded-xl p-6 shadow-md border border-border-color mb-6">
-          <h3 className="text-lg font-semibold text-text-primary mb-4">Actions rapides</h3>
-          <div className="flex flex-wrap gap-3">
-            <GenerateAIRecipeButton disabled={false} onClick={() => setShowGenerationChoice(true)} />
-            <CreateCollectionButton disabled={false} onClick={() => setShowCreateCollection(true)} />
-          </div>
-        </div>
+        <QuickActions
+          onCollectionCreated={async () => {
+            const fetchedCollections = await CollectionService.getRootCollections();
+            setCollections(fetchedCollections);
+          }}
+        />
 
         {/* Collections section */}
         <div className="mb-8">
@@ -189,22 +184,6 @@ export default function RecipeDesktop() {
       <CreditPaywallModal
         isOpen={showPaywall}
         onClose={() => setShowPaywall(false)}
-      />
-
-      {/* Generation Choice Modal */}
-      <RecipeGenerationChoiceModal
-        isOpen={showGenerationChoice}
-        onClose={() => setShowGenerationChoice(false)}
-      />
-
-      {/* Create Collection Modal */}
-      <CreateCollectionModal
-        isOpen={showCreateCollection}
-        onClose={() => setShowCreateCollection(false)}
-        onCollectionCreated={async () => {
-          const fetchedCollections = await CollectionService.getRootCollections();
-          setCollections(fetchedCollections);
-        }}
       />
     </div>
   )

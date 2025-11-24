@@ -7,4 +7,5 @@ export default interface RecipeSummaryInterface {
     stepsCount: number;
     buyPrice: number;
     isPublic: boolean;
+    displayOrder: number;
 }

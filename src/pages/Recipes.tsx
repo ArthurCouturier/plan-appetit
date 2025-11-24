@@ -1,23 +1,32 @@
-import { useEffect, useState } from "react";
-import HomeMobile from "./mobile/HomeMobile";
-import RecipeDesktop from "./desktop/RecipeDesktop";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import CollectionService from "../api/services/CollectionService";
+import useAuth from "../api/hooks/useAuth";
 
 export default function Recipes() {
-
-    const [isMobile, setIsMobile] = useState(false);
+    const navigate = useNavigate();
+    const { user } = useAuth();
 
     useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
+        const redirectToDefaultCollection = async () => {
+            if (!user) return;
+
+            try {
+                const defaultCollection = await CollectionService.getDefaultCollection();
+                if (defaultCollection?.uuid) {
+                    navigate(`/collections/${defaultCollection.uuid}`, { replace: true });
+                }
+            } catch (err) {
+                console.error('Erreur lors de la récupération de la collection par défaut:', err);
+            }
         };
 
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+        redirectToDefaultCollection();
+    }, [user, navigate]);
 
     return (
-        isMobile ? <HomeMobile /> : <RecipeDesktop />
+        <div className="min-h-screen bg-bg-color flex items-center justify-center">
+            <div className="animate-pulse text-text-secondary">Chargement...</div>
+        </div>
     );
 }

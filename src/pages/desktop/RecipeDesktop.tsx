@@ -9,7 +9,6 @@ import CollectionService from "../../api/services/CollectionService";
 import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
-import OnboardingChecklist from "../../components/onboarding/OnboardingChecklist";
 
 export default function RecipeDesktop() {
 
@@ -110,9 +109,6 @@ export default function RecipeDesktop() {
             </p>
           </div>
         </div>
-
-        {/* Onboarding Checklist */}
-        <OnboardingChecklist />
 
         {/* Action buttons */}
         <QuickActions

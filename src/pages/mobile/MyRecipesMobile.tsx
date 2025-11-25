@@ -7,7 +7,6 @@ import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
 import RecipeGenerationChoiceModal from "../../components/popups/RecipeGenerationChoiceModal";
-import OnboardingChecklist from "../../components/onboarding/OnboardingChecklist";
 
 export default function MyRecipesMobile({
   isMobile
@@ -99,9 +98,6 @@ export default function MyRecipesMobile({
           )}
         </p>
       </div>
-
-      {/* Onboarding Checklist */}
-      <OnboardingChecklist isMobile={isMobile} />
 
       {/* Collections list or empty state */}
       {loadingCollections ? (

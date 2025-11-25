@@ -24,6 +24,7 @@ import RecipeSummaryInterface from "../api/interfaces/recipes/RecipeSummaryInter
 import CollectionService from "../api/services/CollectionService";
 import DraggableRecipeCard from "../components/dnd/DraggableRecipeCard";
 import DroppableCollectionCard from "../components/dnd/DroppableCollectionCard";
+import ParentDropZone from "../components/dnd/ParentDropZone";
 import RecipeCard from "../components/cards/RecipeCard";
 import CollectionCard from "../components/cards/CollectionCard";
 import QuickActions from "../components/actions/QuickActions";
@@ -391,6 +392,8 @@ function CollectionDetailMobile({ collection, onCollectionCreated, isDragging }:
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
     const recipeIds = recipes.map(r => `recipe-${r.uuid}`);
 
+    const hasParent = !!collection.parentCollectionUuid;
+
     return (
         <div className="min-h-screen bg-bg-color px-4 pt-20 pb-24">
             <div className="mb-6">
@@ -417,6 +420,15 @@ function CollectionDetailMobile({ collection, onCollectionCreated, isDragging }:
                 onCollectionCreated={onCollectionCreated}
                 isMobile={true}
             />
+
+            {hasParent && (
+                <ParentDropZone
+                    parentCollectionUuid={collection.parentCollectionUuid!}
+                    parentCollectionName={collection.parentCollectionName || undefined}
+                    isMobile={true}
+                    isVisible={isDragging}
+                />
+            )}
 
             {subCollections.length > 0 && (
                 <div className="mb-6">
@@ -479,6 +491,8 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, isDragging }
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
     const recipeIds = recipes.map(r => `recipe-${r.uuid}`);
 
+    const hasParent = !!collection.parentCollectionUuid;
+
     return (
         <div className="min-h-screen bg-bg-color p-6">
             <Header
@@ -506,6 +520,15 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, isDragging }
                     parentCollectionUuid={collection.uuid}
                     onCollectionCreated={onCollectionCreated}
                 />
+
+                {hasParent && (
+                    <ParentDropZone
+                        parentCollectionUuid={collection.parentCollectionUuid!}
+                        parentCollectionName={collection.parentCollectionName || undefined}
+                        isMobile={false}
+                        isVisible={isDragging}
+                    />
+                )}
 
                 {subCollections.length > 0 && (
                     <div className="mb-8">
@@ -555,7 +578,7 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, isDragging }
                         <FolderIcon className="w-24 h-24 text-text-secondary opacity-50 mb-4" />
                         <h3 className="text-2xl font-bold text-text-primary mb-2">Collection vide</h3>
                         <p className="text-text-secondary text-center mb-6">
-                            Cette collection ne contient pas encore de recettes ou sous-collections.
+                            Cette collection ne contient pas encore de recettes.
                         </p>
                     </div>
                 )}

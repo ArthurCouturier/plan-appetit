@@ -9,6 +9,8 @@ export default interface RecipeCollectionInterface {
     displayOrder: number;
     createdAt: string;
     lastUpdated: string;
+    parentCollectionUuid?: string | null;
+    parentCollectionName?: string | null;
     recipes?: RecipeSummaryInterface[];
     subCollections?: RecipeCollectionInterface[];
 }

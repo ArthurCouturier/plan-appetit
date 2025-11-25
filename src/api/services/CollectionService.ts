@@ -295,4 +295,30 @@ export default class CollectionService {
             throw new Error(`Failed to move collection: ${response.statusText}`);
         }
     }
+
+    static async updateCollection(
+        collectionUuid: string,
+        updates: { name?: string; isPublic?: boolean }
+    ): Promise<void> {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+
+        if (!email || !token) {
+            throw new Error('User not logged in');
+        }
+
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Email': email,
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(updates),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update collection: ${response.statusText}`);
+        }
+    }
 }

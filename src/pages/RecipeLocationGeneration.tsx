@@ -212,7 +212,7 @@ function RecipeGenerationHeader() {
     return (
         <Header
             back={true}
-            pageName={"Génération de recette (IA)"}
+            pageName={"Génération par localité/saisonnalité"}
         />
     )
 }

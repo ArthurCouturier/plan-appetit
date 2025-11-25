@@ -29,6 +29,7 @@ import RecipeCard from "../components/cards/RecipeCard";
 import CollectionCard from "../components/cards/CollectionCard";
 import QuickActions from "../components/actions/QuickActions";
 import Header from "../components/global/Header";
+import EditableCollectionTitle from "../components/collections/EditableCollectionTitle";
 import useAuth from "../api/hooks/useAuth";
 
 type DragItemType = {
@@ -290,6 +291,15 @@ export default function CollectionDetail() {
         setActiveItem(null);
     };
 
+    const handleNameChange = (newName: string) => {
+        if (collection) {
+            setCollection({
+                ...collection,
+                name: newName,
+            });
+        }
+    };
+
     if (loading) {
         return <CollectionDetailSkeleton isMobile={isMobile} />;
     }
@@ -310,12 +320,14 @@ export default function CollectionDetail() {
                 <CollectionDetailMobile
                     collection={collection}
                     onCollectionCreated={refreshCollection}
+                    onNameChange={handleNameChange}
                     isDragging={activeItem !== null}
                 />
             ) : (
                 <CollectionDetailDesktop
                     collection={collection}
                     onCollectionCreated={refreshCollection}
+                    onNameChange={handleNameChange}
                     isDragging={activeItem !== null}
                 />
             )}
@@ -381,13 +393,15 @@ function CollectionNotFound({ error, isMobile }: { error: string | null; isMobil
 type CollectionDetailLayoutProps = {
     collection: RecipeCollectionInterface;
     onCollectionCreated: () => void;
+    onNameChange: (newName: string) => void;
     isDragging: boolean;
 };
 
-function CollectionDetailMobile({ collection, onCollectionCreated, isDragging }: CollectionDetailLayoutProps) {
+function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange, isDragging }: CollectionDetailLayoutProps) {
     const navigate = useNavigate();
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
+    void onNameChange;
 
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
     const recipeIds = recipes.map(r => `recipe-${r.uuid}`);
@@ -484,7 +498,7 @@ function CollectionDetailMobile({ collection, onCollectionCreated, isDragging }:
     );
 }
 
-function CollectionDetailDesktop({ collection, onCollectionCreated, isDragging }: CollectionDetailLayoutProps) {
+function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange, isDragging }: CollectionDetailLayoutProps) {
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
 
@@ -501,10 +515,11 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, isDragging }
                 title={true}
                 profile={true}
                 pageName={
-                    <div className="flex items-center gap-4 mb-2">
-                        <FolderIcon className="w-10 h-10 text-cout-base" />
-                        <h1 className="text-3xl font-bold text-text-primary">{collection.name}</h1>
-                    </div>
+                    <EditableCollectionTitle
+                        collectionUuid={collection.uuid!}
+                        name={collection.name}
+                        onNameChange={onNameChange}
+                    />
                 }
             />
 

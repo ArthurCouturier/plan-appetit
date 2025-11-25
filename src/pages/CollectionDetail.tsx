@@ -8,6 +8,7 @@ import {
     rectIntersection,
     KeyboardSensor,
     PointerSensor,
+    TouchSensor,
     useSensor,
     useSensors,
     DragStartEvent,
@@ -49,15 +50,26 @@ export default function CollectionDetail() {
 
     const [activeItem, setActiveItem] = useState<DragItemType | null>(null);
 
+    const pointerSensor = useSensor(PointerSensor, {
+        activationConstraint: {
+            distance: 8,
+        },
+    });
+
+    const touchSensor = useSensor(TouchSensor, {
+        activationConstraint: {
+            delay: 250,
+            tolerance: 5,
+        },
+    });
+
+    const keyboardSensor = useSensor(KeyboardSensor, {
+        coordinateGetter: sortableKeyboardCoordinates,
+    });
+
     const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
+        ...(isMobile ? [touchSensor] : [pointerSensor]),
+        keyboardSensor
     );
 
     const customCollisionDetection: CollisionDetection = useCallback((args) => {

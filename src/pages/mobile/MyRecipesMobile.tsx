@@ -9,7 +9,7 @@ import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
 import RecipeGenerationChoiceModal from "../../components/popups/RecipeGenerationChoiceModal";
 
 export default function MyRecipesMobile({
-  isMobile
+  isMobile: _isMobile
 }: {
   isMobile: boolean;
 }) {

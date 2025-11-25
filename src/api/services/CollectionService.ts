@@ -204,4 +204,94 @@ export default class CollectionService {
 
         return await response.json();
     }
+
+    static async reorderCollectionItems(
+        collectionUuid: string,
+        recipeOrders?: Array<{ uuid: string; displayOrder: number }>,
+        subCollectionOrders?: Array<{ uuid: string; displayOrder: number }>
+    ): Promise<void> {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+
+        if (!email || !token) {
+            throw new Error('User not logged in');
+        }
+
+        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}/reorder`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Email': email,
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                recipeOrders: recipeOrders || null,
+                subCollectionOrders: subCollectionOrders || null,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to reorder collection items: ${response.statusText}`);
+        }
+    }
+
+    static async moveRecipeToCollection(
+        recipeUuid: string,
+        sourceCollectionUuid: string,
+        targetCollectionUuid: string,
+        targetDisplayOrder?: number
+    ): Promise<void> {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+
+        if (!email || !token) {
+            throw new Error('User not logged in');
+        }
+
+        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${targetCollectionUuid}/recipes/move`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Email': email,
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                recipeUuid,
+                sourceCollectionUuid,
+                targetDisplayOrder: targetDisplayOrder ?? null,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to move recipe to collection: ${response.statusText}`);
+        }
+    }
+
+    static async moveCollectionToParent(
+        collectionUuid: string,
+        newParentCollectionUuid: string
+    ): Promise<void> {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+
+        if (!email || !token) {
+            throw new Error('User not logged in');
+        }
+
+        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}/move`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Email': email,
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                newParentUuid: newParentCollectionUuid,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to move collection: ${response.statusText}`);
+        }
+    }
 }

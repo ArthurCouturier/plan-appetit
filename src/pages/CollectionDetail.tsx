@@ -1,13 +1,40 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FolderIcon, DocumentTextIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
+import {
+    DndContext,
+    DragOverlay,
+    pointerWithin,
+    rectIntersection,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragStartEvent,
+    DragEndEvent,
+    CollisionDetection,
+} from "@dnd-kit/core";
+import {
+    SortableContext,
+    sortableKeyboardCoordinates,
+    rectSortingStrategy,
+} from "@dnd-kit/sortable";
 import RecipeCollectionInterface from "../api/interfaces/collections/RecipeCollectionInterface";
+import RecipeSummaryInterface from "../api/interfaces/recipes/RecipeSummaryInterface";
 import CollectionService from "../api/services/CollectionService";
-import CollectionCard from "../components/cards/CollectionCard";
+import DraggableRecipeCard from "../components/dnd/DraggableRecipeCard";
+import DroppableCollectionCard from "../components/dnd/DroppableCollectionCard";
 import RecipeCard from "../components/cards/RecipeCard";
+import CollectionCard from "../components/cards/CollectionCard";
 import QuickActions from "../components/actions/QuickActions";
 import Header from "../components/global/Header";
 import useAuth from "../api/hooks/useAuth";
+
+type DragItemType = {
+    type: 'recipe' | 'collection';
+    recipe?: RecipeSummaryInterface;
+    collection?: RecipeCollectionInterface;
+};
 
 export default function CollectionDetail() {
     const { uuid } = useParams<{ uuid: string }>();
@@ -17,6 +44,42 @@ export default function CollectionDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isMobile, setIsMobile] = useState(false);
+
+    const [activeItem, setActiveItem] = useState<DragItemType | null>(null);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const customCollisionDetection: CollisionDetection = useCallback((args) => {
+        const dominated = pointerWithin(args);
+
+        const droppableCollision = dominated.find(
+            (collision) => String(collision.id).startsWith('droppable-collection-')
+        );
+
+        if (droppableCollision) {
+            const activeId = String(args.active.id);
+            const droppableId = String(droppableCollision.id);
+            const targetUuid = droppableId.replace('droppable-collection-', '');
+
+            const isActiveThisCollection = activeId === `collection-${targetUuid}`;
+
+            if (!isActiveThisCollection) {
+                return [droppableCollision];
+            }
+        }
+
+        const rectCollisions = rectIntersection(args);
+        return rectCollisions.length > 0 ? rectCollisions : dominated;
+    }, []);
 
     useEffect(() => {
         const handleResize = () => {
@@ -64,6 +127,168 @@ export default function CollectionDetail() {
         fetchCollection();
     }, [uuid, user]);
 
+    const handleDragStart = (event: DragStartEvent) => {
+        const { active } = event;
+        const activeData = active.data.current;
+
+        if (activeData?.type === 'recipe') {
+            setActiveItem({ type: 'recipe', recipe: activeData.recipe });
+        } else if (activeData?.type === 'collection') {
+            setActiveItem({ type: 'collection', collection: activeData.collection });
+        }
+    };
+
+    const handleDragEnd = async (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        setActiveItem(null);
+
+        if (!over || !collection) return;
+
+        const activeId = String(active.id);
+        const overId = String(over.id);
+        const activeData = active.data.current;
+
+        if (overId.startsWith('droppable-collection-') && activeData) {
+            const targetCollectionUuid = overId.replace('droppable-collection-', '');
+
+            if (activeData.type === 'recipe' && activeData.recipe) {
+                await handleMoveRecipeToCollection(activeData.recipe, targetCollectionUuid);
+            } else if (activeData.type === 'collection' && activeData.collection) {
+                await handleMoveCollectionToCollection(activeData.collection, targetCollectionUuid);
+            }
+            return;
+        }
+
+        if (activeId === overId) return;
+
+        const isActiveRecipe = activeId.startsWith('recipe-');
+        const isOverRecipe = overId.startsWith('recipe-');
+        const isActiveCollection = activeId.startsWith('collection-');
+        const isOverCollection = overId.startsWith('collection-');
+
+        if (isActiveRecipe && isOverRecipe) {
+            const recipes = [...(collection.recipes || [])];
+            const activeIndex = recipes.findIndex(r => `recipe-${r.uuid}` === activeId);
+            const overIndex = recipes.findIndex(r => `recipe-${r.uuid}` === overId);
+
+            if (activeIndex !== -1 && overIndex !== -1) {
+                const [movedRecipe] = recipes.splice(activeIndex, 1);
+                recipes.splice(overIndex, 0, movedRecipe);
+
+                const updatedRecipes = recipes.map((recipe, index) => ({
+                    ...recipe,
+                    displayOrder: index,
+                }));
+
+                setCollection({
+                    ...collection,
+                    recipes: updatedRecipes,
+                });
+
+                await handleSaveRecipeOrder(updatedRecipes);
+            }
+        } else if (isActiveCollection && isOverCollection) {
+            const subCollections = [...(collection.subCollections || [])];
+            const activeIndex = subCollections.findIndex(c => `collection-${c.uuid}` === activeId);
+            const overIndex = subCollections.findIndex(c => `collection-${c.uuid}` === overId);
+
+            if (activeIndex !== -1 && overIndex !== -1) {
+                const [movedCollection] = subCollections.splice(activeIndex, 1);
+                subCollections.splice(overIndex, 0, movedCollection);
+
+                const updatedCollections = subCollections.map((coll, index) => ({
+                    ...coll,
+                    displayOrder: index,
+                }));
+
+                setCollection({
+                    ...collection,
+                    subCollections: updatedCollections,
+                });
+
+                await handleSaveCollectionOrder(updatedCollections);
+            }
+        }
+    };
+
+    const handleMoveRecipeToCollection = async (recipe: RecipeSummaryInterface, targetCollectionUuid: string) => {
+        if (!collection || !uuid) return;
+
+        const updatedRecipes = (collection.recipes || []).filter(r => r.uuid !== recipe.uuid);
+        setCollection({
+            ...collection,
+            recipes: updatedRecipes,
+        });
+
+        try {
+            await CollectionService.moveRecipeToCollection(
+                String(recipe.uuid),
+                uuid,
+                targetCollectionUuid
+            );
+        } catch (err) {
+            console.error('Erreur lors du déplacement de la recette:', err);
+            refreshCollection();
+        }
+    };
+
+    const handleMoveCollectionToCollection = async (movedCollection: RecipeCollectionInterface, targetCollectionUuid: string) => {
+        if (!collection) return;
+
+        const updatedSubCollections = (collection.subCollections || []).filter(c => c.uuid !== movedCollection.uuid);
+        setCollection({
+            ...collection,
+            subCollections: updatedSubCollections,
+        });
+
+        try {
+            await CollectionService.moveCollectionToParent(
+                String(movedCollection.uuid),
+                targetCollectionUuid
+            );
+        } catch (err) {
+            console.error('Erreur lors du déplacement de la collection:', err);
+            refreshCollection();
+        }
+    };
+
+    const handleSaveRecipeOrder = async (recipes: RecipeSummaryInterface[]) => {
+        if (!uuid) return;
+
+        const recipeOrders = recipes.map((r, index) => ({
+            uuid: String(r.uuid),
+            displayOrder: index,
+        }));
+
+        try {
+            await CollectionService.reorderCollectionItems(uuid, recipeOrders, undefined);
+        } catch (err) {
+            console.error('Erreur lors de la sauvegarde de l\'ordre des recettes:', err);
+            refreshCollection();
+        }
+    };
+
+    const handleSaveCollectionOrder = async (collections: RecipeCollectionInterface[]) => {
+        if (!uuid) return;
+
+        const subCollectionOrders = collections.map((c, index) => ({
+            uuid: String(c.uuid),
+            displayOrder: index,
+        }));
+
+        try {
+            await CollectionService.reorderCollectionItems(uuid, undefined, subCollectionOrders);
+        } catch (err) {
+            console.error('Erreur lors de la sauvegarde de l\'ordre des collections:', err);
+            refreshCollection();
+        }
+    };
+
+    const handleDragCancel = () => {
+        setActiveItem(null);
+    };
+
     if (loading) {
         return <CollectionDetailSkeleton isMobile={isMobile} />;
     }
@@ -72,10 +297,36 @@ export default function CollectionDetail() {
         return <CollectionNotFound error={error} isMobile={isMobile} />;
     }
 
-    return isMobile ? (
-        <CollectionDetailMobile collection={collection} onCollectionCreated={refreshCollection} />
-    ) : (
-        <CollectionDetailDesktop collection={collection} onCollectionCreated={refreshCollection} />
+    return (
+        <DndContext
+            sensors={sensors}
+            collisionDetection={customCollisionDetection}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+        >
+            {isMobile ? (
+                <CollectionDetailMobile
+                    collection={collection}
+                    onCollectionCreated={refreshCollection}
+                    isDragging={activeItem !== null}
+                />
+            ) : (
+                <CollectionDetailDesktop
+                    collection={collection}
+                    onCollectionCreated={refreshCollection}
+                    isDragging={activeItem !== null}
+                />
+            )}
+            <DragOverlay>
+                {activeItem?.type === 'recipe' && activeItem.recipe && (
+                    <RecipeCard recipe={activeItem.recipe} isMobile={isMobile} />
+                )}
+                {activeItem?.type === 'collection' && activeItem.collection && (
+                    <CollectionCard collection={activeItem.collection} isMobile={isMobile} />
+                )}
+            </DragOverlay>
+        </DndContext>
     );
 }
 
@@ -126,14 +377,22 @@ function CollectionNotFound({ error, isMobile }: { error: string | null; isMobil
     );
 }
 
-function CollectionDetailMobile({ collection, onCollectionCreated }: { collection: RecipeCollectionInterface; onCollectionCreated: () => void }) {
+type CollectionDetailLayoutProps = {
+    collection: RecipeCollectionInterface;
+    onCollectionCreated: () => void;
+    isDragging: boolean;
+};
+
+function CollectionDetailMobile({ collection, onCollectionCreated, isDragging }: CollectionDetailLayoutProps) {
     const navigate = useNavigate();
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
 
+    const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
+    const recipeIds = recipes.map(r => `recipe-${r.uuid}`);
+
     return (
         <div className="min-h-screen bg-bg-color px-4 pt-20 pb-24">
-            {/* Header */}
             <div className="mb-6">
                 <button
                     onClick={() => navigate(-1)}
@@ -153,48 +412,53 @@ function CollectionDetailMobile({ collection, onCollectionCreated }: { collectio
                 </p>
             </div>
 
-            {/* Quick Actions */}
             <QuickActions
                 parentCollectionUuid={collection.uuid}
                 onCollectionCreated={onCollectionCreated}
                 isMobile={true}
             />
 
-            {/* Sub-collections */}
             {subCollections.length > 0 && (
                 <div className="mb-6">
                     <h2 className="text-lg font-bold text-text-primary mb-3 flex items-center gap-2">
                         <FolderIcon className="w-5 h-5 text-cout-yellow" />
                         Sous-collections
                     </h2>
-                    <div className="space-y-3">
-                        {subCollections.map((subCollection) => (
-                            <CollectionCard
-                                key={subCollection.uuid}
-                                collection={subCollection}
-                                isMobile={true}
-                            />
-                        ))}
-                    </div>
+                    <SortableContext items={collectionIds} strategy={rectSortingStrategy}>
+                        <div className="space-y-3">
+                            {subCollections.map((subCollection) => (
+                                <DroppableCollectionCard
+                                    key={subCollection.uuid}
+                                    collection={subCollection}
+                                    isMobile={true}
+                                    isDraggingItem={isDragging}
+                                />
+                            ))}
+                        </div>
+                    </SortableContext>
                 </div>
             )}
 
-            {/* Recipes */}
             {recipes.length > 0 && (
                 <div>
                     <h2 className="text-lg font-bold text-text-primary mb-3 flex items-center gap-2">
                         <DocumentTextIcon className="w-5 h-5 text-cout-base" />
                         Recettes
                     </h2>
-                    <div className="space-y-3">
-                        {recipes.map((recipe) => (
-                            <RecipeCard key={String(recipe.uuid)} recipe={recipe} isMobile={true} />
-                        ))}
-                    </div>
+                    <SortableContext items={recipeIds} strategy={rectSortingStrategy}>
+                        <div className="space-y-3">
+                            {recipes.map((recipe) => (
+                                <DraggableRecipeCard
+                                    key={String(recipe.uuid)}
+                                    recipe={recipe}
+                                    isMobile={true}
+                                />
+                            ))}
+                        </div>
+                    </SortableContext>
                 </div>
             )}
 
-            {/* Empty state */}
             {subCollections.length === 0 && recipes.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12">
                     <FolderIcon className="w-16 h-16 text-text-secondary opacity-50 mb-4" />
@@ -208,9 +472,12 @@ function CollectionDetailMobile({ collection, onCollectionCreated }: { collectio
     );
 }
 
-function CollectionDetailDesktop({ collection, onCollectionCreated }: { collection: RecipeCollectionInterface; onCollectionCreated: () => void }) {
+function CollectionDetailDesktop({ collection, onCollectionCreated, isDragging }: CollectionDetailLayoutProps) {
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
+
+    const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
+    const recipeIds = recipes.map(r => `recipe-${r.uuid}`);
 
     return (
         <div className="min-h-screen bg-bg-color p-6">
@@ -228,7 +495,6 @@ function CollectionDetailDesktop({ collection, onCollectionCreated }: { collecti
             />
 
             <div className="mt-6">
-                {/* Header section */}
                 <div className="mb-8">
                     <p className="text-text-secondary ml-14">
                         {recipes.length} recette{recipes.length > 1 ? 's' : ''}
@@ -236,13 +502,11 @@ function CollectionDetailDesktop({ collection, onCollectionCreated }: { collecti
                     </p>
                 </div>
 
-                {/* Quick Actions */}
                 <QuickActions
                     parentCollectionUuid={collection.uuid}
                     onCollectionCreated={onCollectionCreated}
                 />
 
-                {/* Sub-collections */}
                 {subCollections.length > 0 && (
                     <div className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
@@ -250,19 +514,21 @@ function CollectionDetailDesktop({ collection, onCollectionCreated }: { collecti
                             <h2 className="text-xl font-bold text-text-primary">Sous-collections</h2>
                             <span className="text-text-secondary text-sm">({subCollections.length})</span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                            {subCollections.map((subCollection) => (
-                                <CollectionCard
-                                    key={subCollection.uuid}
-                                    collection={subCollection}
-                                    isMobile={false}
-                                />
-                            ))}
-                        </div>
+                        <SortableContext items={collectionIds} strategy={rectSortingStrategy}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                                {subCollections.map((subCollection) => (
+                                    <DroppableCollectionCard
+                                        key={subCollection.uuid}
+                                        collection={subCollection}
+                                        isMobile={false}
+                                        isDraggingItem={isDragging}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
                     </div>
                 )}
 
-                {/* Recipes */}
                 {recipes.length > 0 && (
                     <div className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
@@ -270,15 +536,20 @@ function CollectionDetailDesktop({ collection, onCollectionCreated }: { collecti
                             <h2 className="text-xl font-bold text-text-primary">Recettes</h2>
                             <span className="text-text-secondary text-sm">({recipes.length})</span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                            {recipes.map((recipe) => (
-                                <RecipeCard key={String(recipe.uuid)} recipe={recipe} isMobile={false} />
-                            ))}
-                        </div>
+                        <SortableContext items={recipeIds} strategy={rectSortingStrategy}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                                {recipes.map((recipe) => (
+                                    <DraggableRecipeCard
+                                        key={String(recipe.uuid)}
+                                        recipe={recipe}
+                                        isMobile={false}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
                     </div>
                 )}
 
-                {/* Empty state */}
                 {subCollections.length === 0 && recipes.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-16">
                         <FolderIcon className="w-24 h-24 text-text-secondary opacity-50 mb-4" />

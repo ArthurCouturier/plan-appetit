@@ -360,41 +360,6 @@ export default function BecomePremium() {
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
-      <section className="py-20 px-4 bg-bg-color">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-4">
-              Ils nous font confiance
-            </h2>
-            <p className="text-lg text-text-secondary">
-              Rejoignez des centaines de professionnels et passionnés
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { name: "Marie Laurent", role: "Chef de cuisine", text: "Plan'Appétit a transformé ma façon de créer mes menus. Je gagne un temps précieux chaque semaine !" },
-              { name: "Thomas Dubois", role: "Restaurateur", text: "La personnalisation avancée est un game-changer. Mes clients adorent la variété des plats proposés." },
-              { name: "Sophie Martin", role: "Food blogger", text: "J'attends avec impatience la fonction Instagram. Ça va révolutionner ma création de contenu !" }
-            ].map((testimonial, i) => (
-              <div key={i} className="bg-primary p-6 rounded-xl border border-border-color shadow-md hover:shadow-lg transition-all duration-300">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-cout-yellow">⭐</span>
-                  ))}
-                </div>
-                <p className="text-text-secondary mb-4 italic">"{testimonial.text}"</p>
-                <div>
-                  <div className="font-bold text-text-primary">{testimonial.name}</div>
-                  <div className="text-sm text-text-secondary">{testimonial.role}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* FAQ SECTION */}
       <section className="py-20 px-4 bg-primary">
         <div className="max-w-3xl mx-auto">

@@ -2,6 +2,7 @@ import BackendService from "./BackendService";
 import RecipeCollectionInterface from "../interfaces/collections/RecipeCollectionInterface";
 import CollectionBasicInfoInterface from "../interfaces/collections/CollectionBasicInfoInterface";
 import CreateCollectionRequest from "../interfaces/collections/CreateCollectionRequest";
+import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
 
 export default class CollectionService {
 
@@ -23,7 +24,7 @@ export default class CollectionService {
             parentCollectionUuid: parentCollectionUuid || null
         };
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/create`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -48,7 +49,7 @@ export default class CollectionService {
             throw new Error('User not logged in');
         }
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/all`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/all`, {
             method: 'GET',
             headers: {
                 'Email': email,
@@ -71,7 +72,7 @@ export default class CollectionService {
             throw new Error('User not logged in');
         }
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/default`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/default`, {
             method: 'GET',
             headers: {
                 'Email': email,
@@ -94,7 +95,7 @@ export default class CollectionService {
             throw new Error('User not logged in');
         }
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/root`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/root`, {
             method: 'GET',
             headers: {
                 'Email': email,
@@ -117,7 +118,7 @@ export default class CollectionService {
             throw new Error('User not logged in');
         }
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${uuid}`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${uuid}`, {
             method: 'GET',
             headers: {
                 'Email': email,
@@ -144,7 +145,7 @@ export default class CollectionService {
             throw new Error('User not logged in');
         }
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${uuid}`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${uuid}`, {
             method: 'DELETE',
             headers: {
                 'Email': email,
@@ -165,7 +166,7 @@ export default class CollectionService {
             throw new Error('User not logged in');
         }
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}/recipes`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}/recipes`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -190,7 +191,7 @@ export default class CollectionService {
             throw new Error('User not logged in');
         }
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}/recipes/${recipeUuid}`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}/recipes/${recipeUuid}`, {
             method: 'DELETE',
             headers: {
                 'Email': email,
@@ -217,7 +218,7 @@ export default class CollectionService {
             throw new Error('User not logged in');
         }
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}/reorder`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}/reorder`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -248,7 +249,7 @@ export default class CollectionService {
             throw new Error('User not logged in');
         }
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${targetCollectionUuid}/recipes/move`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${targetCollectionUuid}/recipes/move`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -278,7 +279,7 @@ export default class CollectionService {
             throw new Error('User not logged in');
         }
 
-        const response = await fetch(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}/move`, {
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/${collectionUuid}/move`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

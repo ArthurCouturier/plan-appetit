@@ -410,10 +410,8 @@ type CollectionDetailLayoutProps = {
 };
 
 function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange, isDragging }: CollectionDetailLayoutProps) {
-    const navigate = useNavigate();
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
-    void onNameChange;
 
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
     const recipeIds = recipes.map(r => `recipe-${r.uuid}`);
@@ -421,20 +419,14 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
     const hasParent = !!collection.parentCollectionUuid;
 
     return (
-        <div className="min-h-screen bg-bg-color px-4 pt-20 pb-24">
+        <div className="min-h-screen bg-bg-color px-4 pt-20 pb-8">
             <div className="mb-6">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-cout-base mb-4"
-                >
-                    <ArrowLeftIcon className="w-5 h-5" />
-                    <span className="font-medium">Retour</span>
-                </button>
-
-                <div className="flex items-center gap-3 mb-2">
-                    <FolderIcon className="w-8 h-8 text-cout-base" />
-                    <h1 className="text-2xl font-bold text-text-primary">{collection.name}</h1>
-                </div>
+                <EditableCollectionTitle
+                    collectionUuid={collection.uuid!}
+                    name={collection.name}
+                    onNameChange={onNameChange}
+                    isMobile={true}
+                />
                 <p className="text-text-secondary text-sm">
                     {recipes.length} recette{recipes.length > 1 ? 's' : ''}
                     {subCollections.length > 0 && ` • ${subCollections.length} sous-collection${subCollections.length > 1 ? 's' : ''}`}

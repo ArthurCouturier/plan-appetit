@@ -6,12 +6,14 @@ type EditableCollectionTitleProps = {
     collectionUuid: string;
     name: string;
     onNameChange: (newName: string) => void;
+    isMobile?: boolean;
 };
 
 export default function EditableCollectionTitle({
     collectionUuid,
     name,
     onNameChange,
+    isMobile = false,
 }: EditableCollectionTitleProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [editedName, setEditedName] = useState(name);
@@ -70,20 +72,26 @@ export default function EditableCollectionTitle({
         }
     };
 
+    const iconSize = isMobile ? "w-8 h-8" : "w-10 h-10";
+    const textSize = isMobile ? "text-xl" : "text-2xl";
+    const checkIconSize = isMobile ? "w-5 h-5" : "w-6 h-6";
+    const gap = isMobile ? "gap-2" : "gap-3";
+
     if (isEditing) {
         return (
-            <div className="flex items-center gap-3">
-                <FolderIcon className="w-10 h-10 text-cout-base flex-shrink-0" />
+            <div className={`flex items-center ${gap}`}>
+                <FolderIcon className={`${iconSize} text-cout-base flex-shrink-0`} />
                 <div className="flex items-center gap-2 flex-1">
                     <input
                         ref={inputRef}
                         type="text"
                         value={editedName}
-                        onChange={(e) => setEditedName(e.target.value)}
+                        onChange={(e) => setEditedName(e.target.value.slice(0, 32))}
                         onKeyDown={handleKeyDown}
                         onBlur={handleBlur}
                         disabled={isSaving}
-                        className="text-2xl font-bold text-text-primary bg-secondary border-2 border-cout-base rounded-lg px-3 py-1 outline-none focus:border-cout-yellow transition-colors flex-1 min-w-0"
+                        maxLength={32}
+                        className={`${textSize} font-bold text-text-primary bg-secondary border-2 border-cout-base rounded-lg px-3 py-1 outline-none focus:border-cout-yellow transition-colors flex-1 min-w-0`}
                     />
                     <button
                         onMouseDown={(e) => e.preventDefault()}
@@ -91,7 +99,7 @@ export default function EditableCollectionTitle({
                         disabled={isSaving || !editedName.trim()}
                         className="p-2 rounded-lg bg-cout-base text-white hover:bg-cout-purple transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                     >
-                        <CheckIcon className="w-6 h-6" />
+                        <CheckIcon className={checkIconSize} />
                     </button>
                 </div>
             </div>
@@ -99,11 +107,11 @@ export default function EditableCollectionTitle({
     }
 
     return (
-        <div className="flex items-center gap-4 mb-2">
-            <FolderIcon className="w-10 h-10 text-cout-base" />
+        <div className={`flex items-center ${gap} mb-2`}>
+            <FolderIcon className={`${iconSize} text-cout-base`} />
             <h1
                 onClick={handleStartEditing}
-                className="text-2xl font-bold text-text-primary hover:text-cout-base transition-colors cursor-pointer"
+                className={`${textSize} font-bold text-text-primary hover:text-cout-base transition-colors cursor-pointer`}
                 title="Cliquer pour modifier le nom"
             >
                 {name}

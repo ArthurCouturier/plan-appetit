@@ -1,5 +1,4 @@
 import { Outlet, useLocation } from "react-router-dom";
-import FooterMobile from "./FooterMobile";
 import DarkModeButton from "../buttons/DarkModeButton";
 import { useEffect, useState } from "react";
 import HeaderMobile from "./HeaderMobile";
@@ -30,15 +29,11 @@ export default function Layout() {
     setTheme(prev => (prev === 'theme1' ? 'theme2' : 'theme1'));
   };
 
-  const hideFooterRoutes: string[] = [];
-  const shouldShowFooter = isMobile && !hideFooterRoutes.includes(location.pathname);
-
   return (
     <div className={`w-full h-full ${theme}`}>
       {!isMobile && <DarkModeButton mode={theme} changeMode={changeTheme} />}
-      {shouldShowFooter && <HeaderMobile />}
+      {isMobile && <HeaderMobile />}
       <Outlet />
-      {shouldShowFooter && <FooterMobile />}
     </div>
   );
 }

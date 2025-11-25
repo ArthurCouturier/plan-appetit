@@ -1,9 +1,14 @@
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useNavigate } from "react-router-dom";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeSummaryInterface from "../../api/interfaces/recipes/RecipeSummaryInterface";
 import { ChevronRightIcon, UserGroupIcon, CurrencyEuroIcon, DocumentTextIcon } from "@heroicons/react/24/solid";
+import { DraggableAttributes } from "@dnd-kit/core";
+import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
+import DropPlaceholder from "./DropPlaceholder";
 
-type RecipeCardProps = {
+type DraggableRecipeCardProps = {
     recipe: RecipeInterface | RecipeSummaryInterface;
     isMobile?: boolean;
 };
@@ -15,18 +20,84 @@ function getStepsCount(recipe: RecipeInterface | RecipeSummaryInterface): number
     return recipe.steps.length;
 }
 
-export default function RecipeCard({ recipe, isMobile }: RecipeCardProps) {
-    return isMobile ? <RecipeCardMobile recipe={recipe} /> : <RecipeCardDesktop recipe={recipe} />;
+export default function DraggableRecipeCard({ recipe, isMobile }: DraggableRecipeCardProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({
+        id: `recipe-${recipe.uuid}`,
+        data: {
+            type: 'recipe',
+            recipe,
+        },
+    });
+
+    const style: React.CSSProperties = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    if (isDragging) {
+        return (
+            <div ref={setNodeRef} style={style}>
+                <DropPlaceholder isMobile={isMobile} />
+            </div>
+        );
+    }
+
+    return isMobile ? (
+        <DraggableRecipeCardMobile
+            recipe={recipe}
+            style={style}
+            attributes={attributes}
+            listeners={listeners}
+            setNodeRef={setNodeRef}
+        />
+    ) : (
+        <DraggableRecipeCardDesktop
+            recipe={recipe}
+            style={style}
+            attributes={attributes}
+            listeners={listeners}
+            setNodeRef={setNodeRef}
+        />
+    );
 }
 
-function RecipeCardMobile({ recipe }: { recipe: RecipeInterface | RecipeSummaryInterface }) {
+type DraggableCardInnerProps = {
+    recipe: RecipeInterface | RecipeSummaryInterface;
+    style: React.CSSProperties;
+    attributes: DraggableAttributes;
+    listeners: SyntheticListenerMap | undefined;
+    setNodeRef: (node: HTMLElement | null) => void;
+};
+
+function DraggableRecipeCardMobile({
+    recipe,
+    style,
+    attributes,
+    listeners,
+    setNodeRef,
+}: DraggableCardInnerProps) {
     const navigate = useNavigate();
     const stepsCount = getStepsCount(recipe);
 
+    const handleClick = () => {
+        navigate(`/recettes/${recipe.uuid}`);
+    };
+
     return (
-        <button
-            onClick={() => navigate(`/recettes/${recipe.uuid}`)}
-            className="w-full bg-primary rounded-xl shadow-md border border-border-color p-4 hover:shadow-lg hover:border-cout-base transition-all duration-200 active:scale-[0.98]"
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            onClick={handleClick}
+            className="w-full bg-primary rounded-xl shadow-md border border-border-color p-4 hover:shadow-lg hover:border-cout-base transition-all duration-200 active:scale-[0.98] cursor-grab active:cursor-grabbing touch-none"
         >
             <div className="flex items-center justify-between">
                 <div className="flex-1 text-left">
@@ -56,20 +127,33 @@ function RecipeCardMobile({ recipe }: { recipe: RecipeInterface | RecipeSummaryI
 
                 <ChevronRightIcon className="w-6 h-6 text-cout-base flex-shrink-0 ml-2" />
             </div>
-        </button>
+        </div>
     );
 }
 
-function RecipeCardDesktop({ recipe }: { recipe: RecipeInterface | RecipeSummaryInterface }) {
+function DraggableRecipeCardDesktop({
+    recipe,
+    style,
+    attributes,
+    listeners,
+    setNodeRef,
+}: DraggableCardInnerProps) {
     const navigate = useNavigate();
     const stepsCount = getStepsCount(recipe);
 
+    const handleClick = () => {
+        navigate(`/recettes/${recipe.uuid}`);
+    };
+
     return (
-        <button
-            onClick={() => navigate(`/recettes/${recipe.uuid}`)}
-            className="group bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg border-2 border-border-color hover:border-cout-base p-6 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 text-left h-full flex flex-col"
+        <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
+            onClick={handleClick}
+            className="group bg-gradient-to-br from-primary to-secondary rounded-xl shadow-lg border-2 border-border-color hover:border-cout-base p-6 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 text-left h-full flex flex-col cursor-grab active:cursor-grabbing touch-none"
         >
-            {/* Header avec icône */}
             <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2 flex-1">
                     <DocumentTextIcon className="w-6 h-6 text-cout-base flex-shrink-0" />
@@ -79,7 +163,6 @@ function RecipeCardDesktop({ recipe }: { recipe: RecipeInterface | RecipeSummary
                 </div>
             </div>
 
-            {/* Info section */}
             <div className="space-y-3 flex-1">
                 <div className="flex items-center gap-2 text-text-secondary">
                     <UserGroupIcon className="w-5 h-5 text-cout-base" />
@@ -98,7 +181,6 @@ function RecipeCardDesktop({ recipe }: { recipe: RecipeInterface | RecipeSummary
                 )}
             </div>
 
-            {/* Footer badge */}
             <div className="mt-4 pt-4 border-t border-border-color">
                 <div className="flex items-center justify-center gap-2 px-3 py-2 bg-cout-yellow/20 rounded-lg">
                     <span className="text-sm font-bold text-cout-base">
@@ -106,6 +188,6 @@ function RecipeCardDesktop({ recipe }: { recipe: RecipeInterface | RecipeSummary
                     </span>
                 </div>
             </div>
-        </button>
+        </div>
     );
 }

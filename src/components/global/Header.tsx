@@ -17,7 +17,7 @@ export default function Header({
     home?: boolean;
     title?: boolean;
     profile?: boolean;
-    pageName?: string;
+    pageName?: React.ReactNode;
     children?: React.ReactNode;
 }) {
     const [profilePhoto] = useState<string>(localStorage.getItem("profilePhoto") || "/no-pp.jpg");

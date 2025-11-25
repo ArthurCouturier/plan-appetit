@@ -1,4 +1,3 @@
-import { UUIDTypes } from "uuid";
 import { useNavigate, useParams } from "react-router-dom";
 import RecipeService from "../api/services/RecipeService";
 import { useEffect, useState } from "react";
@@ -9,7 +8,6 @@ import RecipeStepsList from "../components/lists/RecipeStepsList";
 import StepInterface from "../api/interfaces/recipes/StepInterface";
 import { ExportRecipeButton } from "../components/buttons/DataImportButtons";
 import Header from "../components/global/Header";
-import { useRecipeContext } from "../contexts/RecipeContext";
 import { PencilIcon, TrashIcon, CheckIcon, XMarkIcon, UserGroupIcon } from "@heroicons/react/24/solid";
 
 export default function RecipeDetail() {
@@ -17,23 +15,38 @@ export default function RecipeDetail() {
     const navigate = useNavigate();
     const { uuid } = useParams<{ uuid: string }>();
 
-    const [recipe, setRecipe] = useState<RecipeInterface | undefined>(RecipeService.getRecipe(uuid as UUIDTypes));
+    const [recipe, setRecipe] = useState<RecipeInterface | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [notFound, setNotFound] = useState<boolean>(false);
     const [editMode, setEditMode] = useState<boolean>(false);
 
-    const handleSetRepice = async (recipe: RecipeInterface) => {
-        setRecipe(recipe);
-    }
-
-    const handleSaveRecipe = async (recipe: RecipeInterface) => {
-        const updateRecipe = await RecipeService.updateRecipe(recipe);
-        setRecipe(updateRecipe);
-        const updateRecipes = await RecipeService.fetchRecipesRemotly();
-        setRecipes(updateRecipes);
-    }
-
-    const { setRecipes } = useRecipeContext();
-
     const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const fetchRecipe = async () => {
+            if (!uuid) {
+                setNotFound(true);
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const fetchedRecipe = await RecipeService.fetchRecipeByUuid(uuid);
+                if (fetchedRecipe) {
+                    setRecipe(fetchedRecipe);
+                } else {
+                    setNotFound(true);
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement de la recette:', error);
+                setNotFound(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRecipe();
+    }, [uuid]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -46,10 +59,40 @@ export default function RecipeDetail() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    return recipe ? (
+    const handleSetRecipe = (updatedRecipe: RecipeInterface) => {
+        setRecipe(updatedRecipe);
+    };
+
+    const handleSaveRecipe = async (recipeToSave: RecipeInterface) => {
+        const updatedRecipe = await RecipeService.updateRecipe(recipeToSave);
+        setRecipe(updatedRecipe);
+    };
+
+    if (loading) {
+        return (
+            <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
+                {!isMobile && <RecipeHeader />}
+                <div className="bg-primary rounded-xl shadow-lg border border-border-color p-12 mt-4 text-center">
+                    <div className="animate-spin w-12 h-12 border-4 border-cout-base border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-text-secondary">Chargement de la recette...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (notFound || !recipe) {
+        return (
+            <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
+                {!isMobile && <RecipeHeader />}
+                <RecipeNotFound />
+            </div>
+        );
+    }
+
+    return (
         <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
             {!isMobile && <RecipeHeader />}
-            
+
             {/* Recipe Title Card */}
             <div className="bg-primary rounded-xl shadow-lg border border-border-color p-6 mt-4">
                 <div className="flex items-center justify-between mb-4">
@@ -59,7 +102,7 @@ export default function RecipeDetail() {
                             {editMode && (
                                 <button
                                     onClick={async () => {
-                                        const newRecipe = await RecipeService.changeRecipeName(recipe.uuid);
+                                        const newRecipe = await RecipeService.changeRecipeName(recipe.uuid, recipe.name);
                                         if (newRecipe) setRecipe(newRecipe);
                                     }}
                                     className="ml-3 p-2 rounded-lg bg-secondary hover:bg-cout-purple/20 text-cout-base transition-colors"
@@ -80,7 +123,7 @@ export default function RecipeDetail() {
                                         max={99}
                                         onChange={(e) => {
                                             const covers = parseInt(e.target.value);
-                                            handleSetRepice({ ...recipe, covers: !covers ? 1 : Math.max(1, Math.min(covers, 99)) });
+                                            handleSetRecipe({ ...recipe, covers: !covers ? 1 : Math.max(1, Math.min(covers, 99)) });
                                         }}
                                         className="w-16 px-2 py-1 text-center bg-secondary border border-border-color rounded-lg text-text-primary"
                                     />
@@ -91,7 +134,7 @@ export default function RecipeDetail() {
                             )}
                         </div>
                     </div>
-                    
+
                     {/* Action Buttons */}
                     <div className="flex gap-2">
                         {editMode ? (
@@ -131,7 +174,7 @@ export default function RecipeDetail() {
             {!editMode ? (
                 <>
                     <DefaultMode recipe={recipe} isMobile={isMobile} />
-                    
+
                     {/* Action Buttons Footer */}
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
                         <ExportRecipeButton recipe={recipe} />
@@ -139,8 +182,6 @@ export default function RecipeDetail() {
                             onClick={async () => {
                                 if (confirm(`Êtes-vous sûr de vouloir supprimer "${recipe.name}" ?`)) {
                                     await RecipeService.deleteRecipe(recipe.uuid);
-                                    const updatedRecipes = await RecipeService.fetchRecipesRemotly();
-                                    setRecipes(updatedRecipes);
                                     navigate('/recettes');
                                 }
                             }}
@@ -152,15 +193,10 @@ export default function RecipeDetail() {
                     </div>
                 </>
             ) : (
-                <EditMode recipe={recipe} setRecipe={handleSetRepice} saveRecipe={handleSaveRecipe} isMobile={isMobile} />
+                <EditMode recipe={recipe} setRecipe={handleSetRecipe} saveRecipe={handleSaveRecipe} isMobile={isMobile} />
             )}
         </div>
-    ) : (
-        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
-            {!isMobile && <RecipeHeader />}
-            <RecipeError />
-        </div>
-    )
+    );
 }
 
 function RecipeHeader() {
@@ -268,7 +304,7 @@ function EditMode({
 }
 
 
-function RecipeError() {
+function RecipeNotFound() {
     return (
         <div className="bg-primary rounded-xl shadow-lg border border-border-color p-12 mt-4 text-center">
             <div className="text-6xl mb-4">😔</div>
@@ -276,7 +312,7 @@ function RecipeError() {
                 Recette introuvable
             </h2>
             <p className="text-text-secondary">
-                Cette recette n'existe pas ou a été supprimée.
+                Désolé mais la recette que vous recherchez est introuvable ou privée.
             </p>
         </div>
     )

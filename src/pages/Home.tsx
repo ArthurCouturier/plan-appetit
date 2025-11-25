@@ -10,5 +10,5 @@ export default function Home() {
   }
 
   // Si connecté, rediriger vers ses recettes
-  return <Navigate to="/myrecipes" replace />;
+  return <Navigate to="/recettes" replace />;
 }

@@ -19,10 +19,8 @@ import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import { convertFirebaseUser } from '../api/authentication/convertFirebaseUser';
 import Header from '../components/global/Header';
-import RecipeService from '../api/services/RecipeService';
 import BackendService from '../api/services/BackendService';
 import SandboxService from '../api/services/SandboxService';
-import { useRecipeContext } from '../contexts/RecipeContext';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrorMessages';
 import { validatePassword, getPasswordStrengthText } from '../utils/passwordValidation';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
@@ -33,7 +31,6 @@ export default function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { login } = useAuth();
-    const { setRecipes } = useRecipeContext();
     const { trackEvent, identify } = usePostHog();
 
     const from = (location.state as { from?: string })?.from || '/myrecipes';
@@ -77,9 +74,6 @@ export default function LoginPage() {
             localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
 
             login(userData);
-
-            const recipes = await RecipeService.fetchRecipesRemotly();
-            setRecipes(recipes);
 
             identify(userData.uid, {
                 email: userData.email,
@@ -172,33 +166,24 @@ export default function LoginPage() {
 
                     if (result.success) {
                         localStorage.removeItem('anonymousRecipeUuid');
-                        console.log('✅ Recette liée avec succès');
+                        console.log('Recette liée avec succès');
                     } else if (result.error === 'INSUFFICIENT_CREDITS') {
                         console.warn('Quota insuffisant pour associer cette recette');
                     } else if (result.alreadyLinked) {
                         localStorage.removeItem('anonymousRecipeUuid');
-                        console.log('ℹ️ Recette déjà liée');
+                        console.log('Recette déjà liée');
                     }
                 } catch (err) {
                     console.error('Erreur lors de la liaison de la recette:', err);
                 }
             }
 
-            try {
-                const recipes = await RecipeService.fetchRecipesRemotly();
-                setRecipes(recipes);
-
-
-                identify(userData!.uid, {
-                    email: userData!.email,
-                    provider: 'email',
-                    role: userData!.role,
-                    isPremium: userData!.isPremium,
-                });
-            } catch (err) {
-                console.error('Erreur lors de la récupération des recettes:', err);
-                setRecipes([]);
-            }
+            identify(userData!.uid, {
+                email: userData!.email,
+                provider: 'email',
+                role: userData!.role,
+                isPremium: userData!.isPremium,
+            });
 
             trackEvent('user_signed_up', {
                 method: 'email',
@@ -249,9 +234,6 @@ export default function LoginPage() {
             localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
 
             login(userData);
-
-            const recipes = await RecipeService.fetchRecipesRemotly();
-            setRecipes(recipes);
 
             identify(userData.uid, {
                 email: userData.email,

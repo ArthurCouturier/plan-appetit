@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Sandbox from "./pages/Sandbox";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
+import CollectionDetail from "./pages/CollectionDetail";
 import RecipeLocationGeneration from "./pages/RecipeLocationGeneration";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
@@ -77,6 +78,10 @@ const router = createBrowserRouter([
                     {
                         path: "myrecipes",
                         element: <MyRecipes />,
+                    },
+                    {
+                        path: "collections/:uuid",
+                        element: <CollectionDetail />,
                     },
                     {
                         path: "premium",

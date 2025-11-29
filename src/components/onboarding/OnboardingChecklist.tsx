@@ -43,7 +43,7 @@ const ONBOARDING_ACHIEVEMENTS: AchievementItem[] = [
     },
     {
         id: SuccessType.EXPORT_ONE_RECIPE,
-        title: 'Exporter 1 recette',
+        title: 'Partager 1 recette',
         credits: 1,
         isCompleted: (stats) => stats.exportedRecipes >= 1,
         isClaimed: (success) => success.exportOneRecipe

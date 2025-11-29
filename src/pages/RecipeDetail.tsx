@@ -5,9 +5,8 @@ import { useEffect, useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import IngredientsList from "../components/lists/IngredientsList";
 import RecipeStepsList from "../components/lists/RecipeStepsList";
-import { ExportRecipeButton } from "../components/buttons/DataImportButtons";
 import Header from "../components/global/Header";
-import { TrashIcon, CheckIcon, UserGroupIcon, SparklesIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, CheckIcon, UserGroupIcon, SparklesIcon, ArrowUpOnSquareIcon } from "@heroicons/react/24/solid";
 import RecipeModificationModal from "../components/popups/RecipeModificationModal";
 import PurchaseModificationCreditsModal from "../components/popups/PurchaseModificationCreditsModal";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
@@ -105,6 +104,28 @@ export default function RecipeDetail() {
         setShowModificationModal(true);
     };
 
+    const handleShare = async () => {
+        const shareUrl = window.location.href;
+        const shareData = {
+            title: recipe?.name || 'Recette Plan Appetit',
+            text: `Découvrez cette recette : ${recipe?.name}`,
+            url: shareUrl,
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (error) {
+                if ((error as Error).name !== 'AbortError') {
+                    console.error('Erreur lors du partage:', error);
+                }
+            }
+        } else {
+            await navigator.clipboard.writeText(shareUrl);
+            alert('Lien copié dans le presse-papier !');
+        }
+    };
+
     if (loading) {
         return (
             <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
@@ -132,19 +153,32 @@ export default function RecipeDetail() {
 
             {/* Recipe Title Card */}
             <div className="bg-primary rounded-xl shadow-lg border border-border-color p-6 mt-4">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex-1">
+                <div className="flex items-center mb-4">
+                    {/* Spacer gauche pour équilibrer */}
+                    <div className="hidden md:flex flex-col gap-2 invisible">
+                        {recipe.isOwner && (
+                            <div className="px-4 py-2">
+                                <span className="px-4">Assistant IA</span>
+                            </div>
+                        )}
+                        <div className="px-4 py-2">
+                            <span className="px-4">Partager</span>
+                        </div>
+                    </div>
+
+                    {/* Titre centré */}
+                    <div className="flex-1 text-center">
                         <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
                             {recipe.name}
                         </h1>
-                        <div className="flex items-center gap-2 text-text-secondary">
+                        <div className="flex items-center justify-center gap-2 text-text-secondary">
                             <UserGroupIcon className="w-5 h-5 text-cout-base" />
                             <span>{recipe.covers} personne{recipe.covers > 1 && "s"}</span>
                         </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex flex-col gap-2">
                         {recipe.isOwner && (
                             <button
                                 onClick={handleOpenModificationModal}
@@ -154,6 +188,13 @@ export default function RecipeDetail() {
                                 <span className="hidden md:inline">Assistant IA</span>
                             </button>
                         )}
+                        <button
+                            onClick={handleShare}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+                        >
+                            <ArrowUpOnSquareIcon className="w-5 h-5" />
+                            <span className="hidden md:inline">Partager</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -172,7 +213,6 @@ export default function RecipeDetail() {
             {/* Action Buttons Footer */}
             {recipe.isOwner && (
                 <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                    <ExportRecipeButton recipe={recipe} />
                     <button
                         onClick={async () => {
                             if (confirm(`Êtes-vous sûr de vouloir supprimer "${recipe.name}" ?`)) {

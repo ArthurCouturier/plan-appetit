@@ -2,6 +2,7 @@ import { redirect } from "react-router-dom";
 import RecipeGenerationParametersInterface from "../interfaces/recipes/RecipeGenerationParametersInterface";
 import RecipeInterface from "../interfaces/recipes/RecipeInterface";
 import UserInterface from "../interfaces/users/UserInterface";
+import UserAccountInfoInterface from "../interfaces/users/UserAccountInfoInterface";
 import StatisticsInterface from "../interfaces/users/StatisticsInterface";
 import SuccessInterface, { SuccessClaimResponse } from "../interfaces/users/SuccessInterface";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
@@ -183,6 +184,26 @@ export default class BackendService {
 
         if (!response.ok) {
             throw new Error('Erreur lors de la récupération des crédits');
+        }
+
+        return response.json();
+    }
+
+    public static async getAccountInfo(
+        email: string,
+        token: string
+    ): Promise<UserAccountInfoInterface> {
+        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/account-info`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des informations du compte');
         }
 
         return response.json();

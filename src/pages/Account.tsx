@@ -7,18 +7,18 @@ import Header from '../components/global/Header';
 import Footer from '../components/global/Footer';
 import BackendService from '../api/services/BackendService';
 import CreditPaywallModal from '../components/popups/CreditPaywallModal';
-import { SunIcon, MoonIcon, UserCircleIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { SunIcon, MoonIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { isPremiumUser } from '../api/interfaces/users/UserInterface';
 import CreditIcon from '../components/icons/CreditIcon';
 import OnboardingChecklist from '../components/onboarding/OnboardingChecklist';
+import UserAvatar from '../components/global/UserAvatar';
 
 export default function Account() {
-    const { user, logout } = useAuth();
+    const { user, logout, login } = useAuth();
     const navigate = useNavigate();
 
     // Vérifier si l'utilisateur est premium
     const isUserPremium = user && user.role ? isPremiumUser(user.role) : false;
-    const borderColor = isUserPremium ? "border-cout-yellow" : "border-cout-base";
 
     // All hooks must be at the top, before any conditional returns
     const [newPassword, setNewPassword] = useState('');
@@ -31,15 +31,20 @@ export default function Account() {
     const [credits, setCredits] = useState<number | null>(null);
     const [showCreditModal, setShowCreditModal] = useState(false);
 
-    const fetchCredits = async () => {
+    const fetchAccountInfo = async () => {
         const token = localStorage.getItem('firebaseIdToken');
         const email = localStorage.getItem('email') as string;
         if (token && email) {
             try {
-                const creditsCount = await BackendService.getUserCredits(email, token);
-                setCredits(creditsCount);
+                const accountInfo = await BackendService.getAccountInfo(email, token);
+                setCredits(accountInfo.credits);
+
+                // Mettre à jour le rôle dans le contexte Auth si différent
+                if (user && user.role !== accountInfo.role) {
+                    login({ ...user, role: accountInfo.role });
+                }
             } catch (error) {
-                console.error('Erreur lors de la récupération des crédits:', error);
+                console.error('Erreur lors de la récupération des informations du compte:', error);
             }
         }
     };
@@ -48,7 +53,7 @@ export default function Account() {
         if (user === null) {
             navigate('/login');
         } else if (user) {
-            fetchCredits();
+            fetchAccountInfo();
         }
     }, [user, navigate]);
 
@@ -114,17 +119,7 @@ export default function Account() {
                     {/* User Info Card */}
                     <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">
                         <div className="flex flex-col items-center text-center mb-2">
-                            {localStorage.getItem("profilePhoto") && localStorage.getItem("profilePhoto") !== "/no-pp.jpg" ? (
-                                <img
-                                    src={localStorage.getItem("profilePhoto") || ""}
-                                    alt="Profile"
-                                    className={`w-20 h-20 rounded-full border-4 ${borderColor} mb-4 object-cover`}
-                                />
-                            ) : (
-                                <div className={`w-20 h-20 rounded-full bg-cout-purple/20 flex items-center justify-center mb-4 border-4 ${borderColor}`}>
-                                    <UserCircleIcon className="w-12 h-12 text-cout-base" />
-                                </div>
-                            )}
+                            <UserAvatar size="xl" className="mb-4" />
                             <h2 className="text-2xl font-bold text-text-primary">
                                 {user && user.displayName}
                             </h2>
@@ -158,7 +153,7 @@ export default function Account() {
                         onClose={() => setShowCreditModal(false)}
                     />
 
-                    <OnboardingChecklist onCreditsUpdated={fetchCredits} />
+                    <OnboardingChecklist onCreditsUpdated={fetchAccountInfo} />
 
                     {/* Change Password Card */}
                     <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">

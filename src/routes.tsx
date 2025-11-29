@@ -1,6 +1,6 @@
 // routes.tsx
 import { createBrowserRouter } from "react-router-dom";
-import Home from "./pages/Home";
+import Presentation from "./pages/Presentation";
 import Sandbox from "./pages/Sandbox";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
@@ -22,7 +22,7 @@ const router = createBrowserRouter([
         children: [
             {
                 path: "",
-                element: <Home />,
+                element: <Presentation />,
             },
             {
                 path: "sandbox",

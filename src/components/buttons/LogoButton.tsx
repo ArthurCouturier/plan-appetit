@@ -71,7 +71,7 @@ export default function LogoButton({ clickable = true, size = 'md' }: LogoButton
 
     return (
         <button
-            onClick={clickable ? () => navigate('/') : undefined}
+            onClick={clickable ? () => navigate('/recettes') : undefined}
             className={`${baseClasses} ${clickableClasses}`}
             aria-label={clickable ? "Retour à l'accueil" : "Logo Plan Appetit"}
             disabled={!clickable}

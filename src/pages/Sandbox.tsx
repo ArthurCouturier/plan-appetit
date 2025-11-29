@@ -30,6 +30,7 @@ export default function Sandbox() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [placeholders, setPlaceholders] = useState<string[]>([]);
+  const [examplePrompts, setExamplePrompts] = useState<string[]>([]);
   const [, setAnonymousRecipeUuid] = useState<string | null>(null);
   const [recipeCount, setRecipeCount] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
@@ -47,7 +48,9 @@ export default function Sandbox() {
   const { trackEvent } = usePostHog()
 
   useEffect(() => {
+    // Deux appels séparés pour avoir des listes différentes (chacune mélangée indépendamment)
     SandboxService.getPlaceholders().then(setPlaceholders);
+    SandboxService.getPlaceholders().then(all => setExamplePrompts(all.slice(0, 4)));
     SandboxService.getQuotaStatus().then(setQuotaInfo);
 
     const storedUuid = localStorage.getItem('anonymousRecipeUuid');
@@ -235,13 +238,6 @@ export default function Sandbox() {
       handleGenerateClick();
     }
   };
-
-  const examplePrompts = [
-    "5 recettes autour de la butternut",
-    "Un dessert sans lactose",
-    "Des idées de batch cooking",
-    "Un curry thaï végétalien express"
-  ];
 
   return (
     <div className="min-h-screen bg-bg-color flex flex-col">

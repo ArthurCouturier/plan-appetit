@@ -35,7 +35,7 @@ export default function Header({
                     )}
                     {home && (
                         <button
-                            onClick={() => navigate("/")}
+                            onClick={() => navigate("/recettes")}
                             className="p-2 rounded-lg bg-secondary hover:bg-cout-purple/20 text-cout-base transition-colors duration-200"
                         >
                             <HomeIcon className="w-5 h-5" />

@@ -4,12 +4,10 @@ import BackendService from "../api/services/BackendService";
 import { useEffect, useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import IngredientsList from "../components/lists/IngredientsList";
-import IngredientInterface from "../api/interfaces/recipes/IngredientInterface";
 import RecipeStepsList from "../components/lists/RecipeStepsList";
-import StepInterface from "../api/interfaces/recipes/StepInterface";
 import { ExportRecipeButton } from "../components/buttons/DataImportButtons";
 import Header from "../components/global/Header";
-import { PencilIcon, TrashIcon, CheckIcon, XMarkIcon, UserGroupIcon, SparklesIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, CheckIcon, UserGroupIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import RecipeModificationModal from "../components/popups/RecipeModificationModal";
 import PurchaseModificationCreditsModal from "../components/popups/PurchaseModificationCreditsModal";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
@@ -22,7 +20,6 @@ export default function RecipeDetail() {
     const [recipe, setRecipe] = useState<RecipeInterface | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [notFound, setNotFound] = useState<boolean>(false);
-    const [editMode, setEditMode] = useState<boolean>(false);
 
     const [isMobile, setIsMobile] = useState(false);
 
@@ -90,15 +87,6 @@ export default function RecipeDetail() {
         }
     }, [modificationSuccess]);
 
-    const handleSetRecipe = (updatedRecipe: RecipeInterface) => {
-        setRecipe(updatedRecipe);
-    };
-
-    const handleSaveRecipe = async (recipeToSave: RecipeInterface) => {
-        const updatedRecipe = await RecipeService.updateRecipe(recipeToSave);
-        setRecipe(updatedRecipe);
-    };
-
     const handleOpenModificationModal = () => {
         if (recipe && recipe.remainingModifications <= 0) {
             setShowPurchaseCreditsModal(true);
@@ -148,85 +136,23 @@ export default function RecipeDetail() {
                     <div className="flex-1">
                         <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
                             {recipe.name}
-                            {editMode && (
-                                <button
-                                    onClick={async () => {
-                                        const newRecipe = await RecipeService.changeRecipeName(recipe.uuid, recipe.name);
-                                        if (newRecipe) setRecipe(newRecipe);
-                                    }}
-                                    className="ml-3 p-2 rounded-lg bg-secondary hover:bg-cout-purple/20 text-cout-base transition-colors"
-                                >
-                                    <PencilIcon className="w-4 h-4" />
-                                </button>
-                            )}
                         </h1>
                         <div className="flex items-center gap-2 text-text-secondary">
                             <UserGroupIcon className="w-5 h-5 text-cout-base" />
-                            {editMode ? (
-                                <div className="flex items-center gap-2">
-                                    <span>Pour</span>
-                                    <input
-                                        type="number"
-                                        value={recipe.covers}
-                                        min={1}
-                                        max={99}
-                                        onChange={(e) => {
-                                            const covers = parseInt(e.target.value);
-                                            handleSetRecipe({ ...recipe, covers: !covers ? 1 : Math.max(1, Math.min(covers, 99)) });
-                                        }}
-                                        className="w-16 px-2 py-1 text-center bg-secondary border border-border-color rounded-lg text-text-primary"
-                                    />
-                                    <span>personne{recipe.covers > 1 && "s"}</span>
-                                </div>
-                            ) : (
-                                <span>{recipe.covers} personne{recipe.covers > 1 && "s"}</span>
-                            )}
+                            <span>{recipe.covers} personne{recipe.covers > 1 && "s"}</span>
                         </div>
                     </div>
 
                     {/* Action Buttons */}
                     <div className="flex gap-2">
-                        {editMode ? (
-                            <>
-                                <button
-                                    onClick={async () => {
-                                        await handleSaveRecipe(recipe);
-                                        setEditMode(false);
-                                    }}
-                                    className="flex items-center gap-2 px-4 py-2 bg-cout-base text-white rounded-lg hover:bg-cout-purple transition-colors"
-                                >
-                                    <CheckIcon className="w-5 h-5" />
-                                    <span className="hidden md:inline">Sauvegarder</span>
-                                </button>
-                                <button
-                                    onClick={() => setEditMode(false)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border-color text-text-primary rounded-lg hover:bg-red-500/10 transition-colors"
-                                >
-                                    <XMarkIcon className="w-5 h-5" />
-                                    <span className="hidden md:inline">Annuler</span>
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                {recipe.isOwner && (
-                                    <button
-                                        onClick={handleOpenModificationModal}
-                                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
-                                    >
-                                        <SparklesIcon className="w-5 h-5" />
-                                        <span className="hidden md:inline">Assistant IA</span>
-                                    </button>
-                                )}
-                                {recipe.isOwner && (
-                                    <button
-                                        onClick={() => setEditMode(true)}
-                                        className="flex items-center gap-2 px-4 py-2 bg-cout-yellow text-cout-purple font-semibold rounded-lg hover:bg-yellow-400 transition-colors"
-                                    >
-                                        <PencilIcon className="w-5 h-5" />
-                                        <span className="hidden md:inline">Modifier</span>
-                                    </button>
-                                )}
-                            </>
+                        {recipe.isOwner && (
+                            <button
+                                onClick={handleOpenModificationModal}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+                            >
+                                <SparklesIcon className="w-5 h-5" />
+                                <span className="hidden md:inline">Assistant IA</span>
+                            </button>
                         )}
                     </div>
                 </div>
@@ -241,31 +167,25 @@ export default function RecipeDetail() {
             )}
 
             {/* Content */}
-            {!editMode ? (
-                <>
-                    <DefaultMode recipe={recipe} isMobile={isMobile} />
+            <RecipeContent recipe={recipe} isMobile={isMobile} />
 
-                    {/* Action Buttons Footer */}
-                    {recipe.isOwner && (
-                        <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                            <ExportRecipeButton recipe={recipe} />
-                            <button
-                                onClick={async () => {
-                                    if (confirm(`Êtes-vous sûr de vouloir supprimer "${recipe.name}" ?`)) {
-                                        await RecipeService.deleteRecipe(recipe.uuid);
-                                        navigate('/recettes');
-                                    }
-                                }}
-                                className="flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-red-500/50 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all duration-200"
-                            >
-                                <TrashIcon className="w-5 h-5" />
-                                Supprimer la recette
-                            </button>
-                        </div>
-                    )}
-                </>
-            ) : (
-                <EditMode recipe={recipe} setRecipe={handleSetRecipe} saveRecipe={handleSaveRecipe} isMobile={isMobile} />
+            {/* Action Buttons Footer */}
+            {recipe.isOwner && (
+                <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                    <ExportRecipeButton recipe={recipe} />
+                    <button
+                        onClick={async () => {
+                            if (confirm(`Êtes-vous sûr de vouloir supprimer "${recipe.name}" ?`)) {
+                                await RecipeService.deleteRecipe(recipe.uuid);
+                                navigate('/recettes');
+                            }
+                        }}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-red-500/50 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all duration-200"
+                    >
+                        <TrashIcon className="w-5 h-5" />
+                        Supprimer la recette
+                    </button>
+                </div>
             )}
 
             {/* Modals */}
@@ -308,7 +228,7 @@ function RecipeHeader() {
     )
 }
 
-function DefaultMode({ recipe, isMobile }: { recipe: RecipeInterface, isMobile: boolean }) {
+function RecipeContent({ recipe, isMobile }: { recipe: RecipeInterface, isMobile: boolean }) {
     return (
         <div className="mt-6 space-y-6">
             {/* Ingredients Card */}
@@ -331,76 +251,6 @@ function DefaultMode({ recipe, isMobile }: { recipe: RecipeInterface, isMobile: 
         </div>
     )
 }
-
-function EditMode({
-    recipe,
-    setRecipe,
-    saveRecipe,
-    isMobile
-}: {
-    recipe: RecipeInterface;
-    setRecipe: (recipe: RecipeInterface) => void;
-    saveRecipe: (recipe: RecipeInterface) => void;
-    isMobile: boolean;
-}) {
-
-    const [editIngredients, setEditIngredients] = useState<boolean>(false);
-    const [editSteps, setEditSteps] = useState<boolean>(false);
-
-    const handleChangeIngredient = (updatedIngredients: IngredientInterface[]) => {
-        setRecipe({ ...recipe, ingredients: updatedIngredients });
-    }
-
-    const handleAddStep = (updatedSteps: StepInterface[]) => {
-        setRecipe({ ...recipe, steps: updatedSteps });
-    }
-
-    const handleSaveIngredients = (updatedIngredients: IngredientInterface[]) => {
-        saveRecipe({ ...recipe, ingredients: updatedIngredients });
-    }
-
-    const handleSaveSteps = (updatedSteps: StepInterface[]) => {
-        saveRecipe({ ...recipe, steps: updatedSteps });
-    }
-
-    return (
-        <div className="mt-6 space-y-6">
-            {/* Ingredients Edit Card */}
-            <div className="bg-primary rounded-xl shadow-lg border border-border-color p-6">
-                <h2 className="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
-                    <span className="text-2xl">🧄</span>
-                    Ingrédients
-                    <span className="ml-auto text-sm font-normal text-cout-base">Mode édition</span>
-                </h2>
-                <IngredientsList
-                    ingredients={recipe.ingredients}
-                    recipeEditMode={editIngredients}
-                    setRecipeEditMode={setEditIngredients}
-                    onChange={handleChangeIngredient}
-                    onSave={handleSaveIngredients}
-                    isMobile={isMobile}
-                />
-            </div>
-
-            {/* Steps Edit Card */}
-            <div className="bg-primary rounded-xl shadow-lg border border-border-color p-6">
-                <h2 className="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
-                    <span className="text-2xl">👨‍🍳</span>
-                    Étapes de préparation
-                    <span className="ml-auto text-sm font-normal text-cout-base">Mode édition</span>
-                </h2>
-                <RecipeStepsList
-                    steps={recipe.steps}
-                    recipeEditMode={editSteps}
-                    setRecipeEditMode={setEditSteps}
-                    onChange={handleAddStep}
-                    onSave={handleSaveSteps}
-                />
-            </div>
-        </div>
-    )
-}
-
 
 function RecipeNotFound() {
     return (

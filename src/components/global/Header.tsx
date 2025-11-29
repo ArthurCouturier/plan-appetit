@@ -1,9 +1,7 @@
-import { ArrowLeftIcon, HomeIcon, UserCircleIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon, HomeIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import useAuth from "../../api/hooks/useAuth";
-import { isPremiumUser } from "../../api/interfaces/users/UserInterface";
 import LogoButton from "../buttons/LogoButton";
+import UserAvatar from "./UserAvatar";
 
 export default function Header({
     back = false,
@@ -20,13 +18,7 @@ export default function Header({
     pageName?: React.ReactNode;
     children?: React.ReactNode;
 }) {
-    const [profilePhoto] = useState<string>(localStorage.getItem("profilePhoto") || "/no-pp.jpg");
     const navigate = useNavigate();
-    const { user } = useAuth();
-
-    // Vérifier si l'utilisateur est premium
-    const isUserPremium = user && user.role ? isPremiumUser(user.role) : false;
-    const borderColor = isUserPremium ? "border-cout-yellow" : "border-cout-base";
 
     return (
         <div className="bg-primary rounded-xl p-4 shadow-md border border-border-color">
@@ -71,17 +63,7 @@ export default function Header({
                         onClick={() => navigate("/profile")}
                         className="relative group"
                     >
-                        {profilePhoto && profilePhoto !== "/no-pp.jpg" ? (
-                            <img
-                                src={profilePhoto}
-                                alt="Profile"
-                                className={`w-11 h-11 md:w-12 md:h-12 rounded-full border-2 ${borderColor} group-hover:scale-105 transition-transform duration-200 object-cover`}
-                            />
-                        ) : (
-                            <div className={`w-11 h-11 md:w-12 md:h-12 rounded-full bg-cout-purple/20 flex items-center justify-center border-2 ${borderColor} group-hover:scale-105 transition-transform duration-200`}>
-                                <UserCircleIcon className="w-7 h-7 text-cout-base" />
-                            </div>
-                        )}
+                        <UserAvatar size="lg" showHoverEffect className="group-hover:scale-105" />
                     </button>
                 ) : null}
             </div>

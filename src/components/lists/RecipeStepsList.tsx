@@ -56,7 +56,7 @@ export default function RecipeStepsList({
                     </button>
                 }
             </div>
-            <div className="w-full mx-auto">
+            <div className="">
                 {steps.map((step) => (
                     <Step
                         key={step.key}
@@ -96,7 +96,7 @@ export function Step({
     }
 
     return (
-        <div className="flex items-center justify-center p-2 mb-2 mx-auto md:w-1/2">
+        <div className="flex items-center justify-center py-2 mb-2 mx-auto md:w-1/2">
             {!editMode ? (
                 <DefaultMode step={step} />
             ) : (
@@ -113,8 +113,8 @@ function DefaultMode({
 }) {
     return (
         <div className="flex flex-col">
-            <h3 className="font-extrabold mb-1">Etape {step.key}:</h3>
-            <pre className="break-word whitespace-normal w-full md:w-[50vw]">{step.value}</pre>
+            <h3 className="font-extrabold mb-1 text-left">Etape {step.key}:</h3>
+            <pre className="break-word whitespace-normal w-full md:w-[33vw] text-left">{step.value}</pre>
         </div>
     )
 }

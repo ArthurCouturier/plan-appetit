@@ -20,9 +20,9 @@ export function hasRoleLevel(userRole: UserRole, requiredRole: UserRole): boolea
     return USER_ROLE_LEVELS[userRole] >= USER_ROLE_LEVELS[requiredRole];
 }
 
-// Helper pour vérifier si un utilisateur est premium (PREMIUM ou PREMIUM_FOR_EVER)
+// Helper pour vérifier si un utilisateur est premium (PREMIUM, PREMIUM_FOR_EVER ou ADMIN)
 export function isPremiumUser(role: UserRole): boolean {
-    return role === UserRole.PREMIUM || role === UserRole.PREMIUM_FOR_EVER;
+    return USER_ROLE_LEVELS[role] >= USER_ROLE_LEVELS[UserRole.PREMIUM];
 }
 
 export default interface UserInterface {

@@ -2,6 +2,7 @@ import { redirect } from "react-router-dom";
 import RecipeGenerationParametersInterface from "../interfaces/recipes/RecipeGenerationParametersInterface";
 import RecipeInterface from "../interfaces/recipes/RecipeInterface";
 import UserInterface from "../interfaces/users/UserInterface";
+import UserAccountInfoInterface from "../interfaces/users/UserAccountInfoInterface";
 import StatisticsInterface from "../interfaces/users/StatisticsInterface";
 import SuccessInterface, { SuccessClaimResponse } from "../interfaces/users/SuccessInterface";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
@@ -188,6 +189,26 @@ export default class BackendService {
         return response.json();
     }
 
+    public static async getAccountInfo(
+        email: string,
+        token: string
+    ): Promise<UserAccountInfoInterface> {
+        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/account-info`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des informations du compte');
+        }
+
+        return response.json();
+    }
+
     public static async connectUser(
         email: string,
         token: string
@@ -284,6 +305,74 @@ export default class BackendService {
 
         if (!response.ok) {
             throw new Error('Erreur lors du tracking de l\'export');
+        }
+
+        return response.json();
+    }
+
+    public static async modifyRecipe(
+        email: string,
+        token: string,
+        recipeUuid: string,
+        prompt: string
+    ): Promise<RecipeInterface> {
+        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/${recipeUuid}/modifications`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+            body: JSON.stringify({ prompt }),
+        });
+
+        if (response.status === 402) {
+            throw { type: "INSUFFICIENT_MODIFICATION_CREDITS" };
+        }
+
+        if (response.status === 403) {
+            throw { type: "FORBIDDEN" };
+        }
+
+        if (response.status === 404) {
+            throw { type: "NOT_FOUND" };
+        }
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la modification de la recette');
+        }
+
+        return response.json();
+    }
+
+    public static async purchaseModificationCredits(
+        email: string,
+        token: string,
+        recipeUuid: string
+    ): Promise<RecipeInterface> {
+        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/${recipeUuid}/modifications/purchase`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (response.status === 402) {
+            throw { type: "INSUFFICIENT_CREDITS" };
+        }
+
+        if (response.status === 403) {
+            throw { type: "FORBIDDEN" };
+        }
+
+        if (response.status === 404) {
+            throw { type: "NOT_FOUND" };
+        }
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de l\'achat des crédits de modification');
         }
 
         return response.json();

@@ -1,15 +1,12 @@
 import { Button } from "@material-tailwind/react";
-import { UserCircleIcon, BookOpenIcon, LightBulbIcon } from "@heroicons/react/24/solid";
+import { BookOpenIcon, LightBulbIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Avatar } from "@material-tailwind/react";
 import RecipeGenerationChoiceModal from "../popups/RecipeGenerationChoiceModal";
+import UserAvatar from "./UserAvatar";
 
 
 export default function FooterMobile() {
-
-  const [profilePhoto] = useState<string>(localStorage.getItem("profilePhoto") || "");
-
   const navigateTo = useNavigate();
 
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -68,18 +65,7 @@ export default function FooterMobile() {
         <Button
           className="bg-bg-cout-purple shadow-none rounded-full"
           onClick={() => navigateTo("/profile")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
-          {profilePhoto.length === 0 ?
-            <UserCircleIcon className="w-7 h-7 text-white" />
-            :
-            <Avatar
-              placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}
-              color="blue"
-              size="sm"
-              withBorder={true}
-              src={profilePhoto}
-              className="border-2 hover:scale-105 transition duration-200"
-            />
-          }
+          <UserAvatar size="sm" showHoverEffect />
         </Button>
       </div>
 

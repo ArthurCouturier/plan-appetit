@@ -8,6 +8,7 @@ import confetti from 'canvas-confetti';
 
 interface OnboardingChecklistProps {
     isMobile?: boolean;
+    onCreditsUpdated?: () => void;
 }
 
 interface AchievementItem {
@@ -42,14 +43,14 @@ const ONBOARDING_ACHIEVEMENTS: AchievementItem[] = [
     },
     {
         id: SuccessType.EXPORT_ONE_RECIPE,
-        title: 'Exporter 1 recette',
+        title: 'Partager 1 recette',
         credits: 1,
         isCompleted: (stats) => stats.exportedRecipes >= 1,
         isClaimed: (success) => success.exportOneRecipe
     }
 ];
 
-export default function OnboardingChecklist({ isMobile = false }: OnboardingChecklistProps) {
+export default function OnboardingChecklist({ isMobile = false, onCreditsUpdated }: OnboardingChecklistProps) {
     const [statistics, setStatistics] = useState<StatisticsInterface | null>(null);
     const [success, setSuccess] = useState<SuccessInterface | null>(null);
     const [claimingStates, setClaimingStates] = useState<Record<string, boolean>>({});
@@ -130,6 +131,10 @@ export default function OnboardingChecklist({ isMobile = false }: OnboardingChec
 
             if (response.success) {
                 setStrikingStates(prev => ({ ...prev, [achievement.id]: true }));
+
+                if (onCreditsUpdated) {
+                    onCreditsUpdated();
+                }
 
                 setTimeout(async () => {
                     await loadData();

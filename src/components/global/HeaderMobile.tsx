@@ -1,20 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeftIcon, HomeIcon, UserCircleIcon } from "@heroicons/react/24/solid";
-import { useState } from "react";
-import useAuth from "../../api/hooks/useAuth";
-import { isPremiumUser } from "../../api/interfaces/users/UserInterface";
+import { ArrowLeftIcon, HomeIcon } from "@heroicons/react/24/solid";
+import UserAvatar from "./UserAvatar";
 
 type HeaderMobileProps = {
   pageName?: React.ReactNode;
 };
 
 export default function HeaderMobile({ pageName }: HeaderMobileProps) {
-  const [profilePhoto] = useState<string>(localStorage.getItem("profilePhoto") || "");
   const navigate = useNavigate();
-  const { user } = useAuth();
-
-  const isUserPremium = user && user.role ? isPremiumUser(user.role) : false;
-  const borderColor = isUserPremium ? "border-cout-yellow" : "border-cout-base";
 
   return (
     <header className="z-50 fixed inset-x-0 top-0 border-0 rounded-b-3xl bg-cout-purple shadow-md flex justify-between items-center px-2 py-2">
@@ -47,17 +40,7 @@ export default function HeaderMobile({ pageName }: HeaderMobileProps) {
         onClick={() => navigate("/profile")}
         className="p-1 z-10"
       >
-        {profilePhoto && profilePhoto !== "/no-pp.jpg" ? (
-          <img
-            src={profilePhoto}
-            alt="Profile"
-            className={`w-10 h-10 rounded-full border-2 ${borderColor} object-cover`}
-          />
-        ) : (
-          <div className={`w-10 h-10 rounded-full bg-cout-purple/20 flex items-center justify-center border-2 ${borderColor}`}>
-            <UserCircleIcon className="w-6 h-6 text-cout-base" />
-          </div>
-        )}
+        <UserAvatar size="md" />
       </button>
     </header>
   );

@@ -31,19 +31,24 @@ export default function Account() {
     const [credits, setCredits] = useState<number | null>(null);
     const [showCreditModal, setShowCreditModal] = useState(false);
 
+    const fetchCredits = async () => {
+        const token = localStorage.getItem('firebaseIdToken');
+        const email = localStorage.getItem('email') as string;
+        if (token && email) {
+            try {
+                const creditsCount = await BackendService.getUserCredits(email, token);
+                setCredits(creditsCount);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des crédits:', error);
+            }
+        }
+    };
+
     useEffect(() => {
         if (user === null) {
             navigate('/login');
         } else if (user) {
-            const token = localStorage.getItem('firebaseIdToken');
-            const email = localStorage.getItem('email') as string
-            if (token && user.uid) {
-                BackendService.getUserCredits(email, token)
-                    .then(creditsCount => setCredits(creditsCount))
-                    .catch(error => {
-                        console.error('Erreur lors de la récupération des crédits:', error);
-                    });
-            }
+            fetchCredits();
         }
     }, [user, navigate]);
 
@@ -153,7 +158,7 @@ export default function Account() {
                         onClose={() => setShowCreditModal(false)}
                     />
 
-                    <OnboardingChecklist />
+                    <OnboardingChecklist onCreditsUpdated={fetchCredits} />
 
                     {/* Change Password Card */}
                     <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">

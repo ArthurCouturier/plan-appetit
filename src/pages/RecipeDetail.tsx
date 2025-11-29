@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import RecipeService from "../api/services/RecipeService";
+import BackendService from "../api/services/BackendService";
 import { useEffect, useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import IngredientsList from "../components/lists/IngredientsList";
@@ -8,7 +9,10 @@ import RecipeStepsList from "../components/lists/RecipeStepsList";
 import StepInterface from "../api/interfaces/recipes/StepInterface";
 import { ExportRecipeButton } from "../components/buttons/DataImportButtons";
 import Header from "../components/global/Header";
-import { PencilIcon, TrashIcon, CheckIcon, XMarkIcon, UserGroupIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, TrashIcon, CheckIcon, XMarkIcon, UserGroupIcon, SparklesIcon } from "@heroicons/react/24/solid";
+import RecipeModificationModal from "../components/popups/RecipeModificationModal";
+import PurchaseModificationCreditsModal from "../components/popups/PurchaseModificationCreditsModal";
+import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 
 export default function RecipeDetail() {
 
@@ -21,6 +25,12 @@ export default function RecipeDetail() {
     const [editMode, setEditMode] = useState<boolean>(false);
 
     const [isMobile, setIsMobile] = useState(false);
+
+    const [showModificationModal, setShowModificationModal] = useState(false);
+    const [showPurchaseCreditsModal, setShowPurchaseCreditsModal] = useState(false);
+    const [showCreditPaywallModal, setShowCreditPaywallModal] = useState(false);
+    const [userCredits, setUserCredits] = useState(0);
+    const [modificationSuccess, setModificationSuccess] = useState(false);
 
     useEffect(() => {
         const fetchRecipe = async () => {
@@ -59,6 +69,27 @@ export default function RecipeDetail() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    useEffect(() => {
+        const fetchUserCredits = async () => {
+            try {
+                const email = localStorage.getItem("email") as string;
+                const token = localStorage.getItem("firebaseIdToken") as string;
+                const credits = await BackendService.getUserCredits(email, token);
+                setUserCredits(credits);
+            } catch (error) {
+                console.error("Erreur lors de la récupération des crédits:", error);
+            }
+        };
+        fetchUserCredits();
+    }, [showPurchaseCreditsModal]);
+
+    useEffect(() => {
+        if (modificationSuccess) {
+            const timer = setTimeout(() => setModificationSuccess(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [modificationSuccess]);
+
     const handleSetRecipe = (updatedRecipe: RecipeInterface) => {
         setRecipe(updatedRecipe);
     };
@@ -66,6 +97,24 @@ export default function RecipeDetail() {
     const handleSaveRecipe = async (recipeToSave: RecipeInterface) => {
         const updatedRecipe = await RecipeService.updateRecipe(recipeToSave);
         setRecipe(updatedRecipe);
+    };
+
+    const handleOpenModificationModal = () => {
+        if (recipe && recipe.remainingModifications <= 0) {
+            setShowPurchaseCreditsModal(true);
+        } else {
+            setShowModificationModal(true);
+        }
+    };
+
+    const handleModificationComplete = (modifiedRecipe: RecipeInterface) => {
+        setRecipe(modifiedRecipe);
+        setModificationSuccess(true);
+    };
+
+    const handlePurchaseComplete = (updatedRecipe: RecipeInterface) => {
+        setRecipe(updatedRecipe);
+        setShowModificationModal(true);
     };
 
     if (loading) {
@@ -158,17 +207,38 @@ export default function RecipeDetail() {
                                 </button>
                             </>
                         ) : (
-                            <button
-                                onClick={() => setEditMode(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-cout-yellow text-cout-purple font-semibold rounded-lg hover:bg-yellow-400 transition-colors"
-                            >
-                                <PencilIcon className="w-5 h-5" />
-                                <span className="hidden md:inline">Modifier</span>
-                            </button>
+                            <>
+                                {recipe.isOwner && (
+                                    <button
+                                        onClick={handleOpenModificationModal}
+                                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+                                    >
+                                        <SparklesIcon className="w-5 h-5" />
+                                        <span className="hidden md:inline">Assistant IA</span>
+                                    </button>
+                                )}
+                                {recipe.isOwner && (
+                                    <button
+                                        onClick={() => setEditMode(true)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-cout-yellow text-cout-purple font-semibold rounded-lg hover:bg-yellow-400 transition-colors"
+                                    >
+                                        <PencilIcon className="w-5 h-5" />
+                                        <span className="hidden md:inline">Modifier</span>
+                                    </button>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
             </div>
+
+            {/* Success Notification */}
+            {modificationSuccess && (
+                <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-pulse">
+                    <CheckIcon className="w-5 h-5" />
+                    Recette modifiée avec succès !
+                </div>
+            )}
 
             {/* Content */}
             {!editMode ? (
@@ -176,25 +246,53 @@ export default function RecipeDetail() {
                     <DefaultMode recipe={recipe} isMobile={isMobile} />
 
                     {/* Action Buttons Footer */}
-                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                        <ExportRecipeButton recipe={recipe} />
-                        <button
-                            onClick={async () => {
-                                if (confirm(`Êtes-vous sûr de vouloir supprimer "${recipe.name}" ?`)) {
-                                    await RecipeService.deleteRecipe(recipe.uuid);
-                                    navigate('/recettes');
-                                }
-                            }}
-                            className="flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-red-500/50 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all duration-200"
-                        >
-                            <TrashIcon className="w-5 h-5" />
-                            Supprimer la recette
-                        </button>
-                    </div>
+                    {recipe.isOwner && (
+                        <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                            <ExportRecipeButton recipe={recipe} />
+                            <button
+                                onClick={async () => {
+                                    if (confirm(`Êtes-vous sûr de vouloir supprimer "${recipe.name}" ?`)) {
+                                        await RecipeService.deleteRecipe(recipe.uuid);
+                                        navigate('/recettes');
+                                    }
+                                }}
+                                className="flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-red-500/50 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all duration-200"
+                            >
+                                <TrashIcon className="w-5 h-5" />
+                                Supprimer la recette
+                            </button>
+                        </div>
+                    )}
                 </>
             ) : (
                 <EditMode recipe={recipe} setRecipe={handleSetRecipe} saveRecipe={handleSaveRecipe} isMobile={isMobile} />
             )}
+
+            {/* Modals */}
+            <RecipeModificationModal
+                isOpen={showModificationModal}
+                onClose={() => setShowModificationModal(false)}
+                recipe={recipe}
+                onModificationComplete={handleModificationComplete}
+                onInsufficientCredits={() => setShowPurchaseCreditsModal(true)}
+            />
+
+            <PurchaseModificationCreditsModal
+                isOpen={showPurchaseCreditsModal}
+                onClose={() => setShowPurchaseCreditsModal(false)}
+                recipe={recipe}
+                userCredits={userCredits}
+                onPurchaseComplete={handlePurchaseComplete}
+                onInsufficientCredits={() => {
+                    setShowPurchaseCreditsModal(false);
+                    setShowCreditPaywallModal(true);
+                }}
+            />
+
+            <CreditPaywallModal
+                isOpen={showCreditPaywallModal}
+                onClose={() => setShowCreditPaywallModal(false)}
+            />
         </div>
     );
 }

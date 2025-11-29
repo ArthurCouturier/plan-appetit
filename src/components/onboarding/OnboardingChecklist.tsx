@@ -8,6 +8,7 @@ import confetti from 'canvas-confetti';
 
 interface OnboardingChecklistProps {
     isMobile?: boolean;
+    onCreditsUpdated?: () => void;
 }
 
 interface AchievementItem {
@@ -49,7 +50,7 @@ const ONBOARDING_ACHIEVEMENTS: AchievementItem[] = [
     }
 ];
 
-export default function OnboardingChecklist({ isMobile = false }: OnboardingChecklistProps) {
+export default function OnboardingChecklist({ isMobile = false, onCreditsUpdated }: OnboardingChecklistProps) {
     const [statistics, setStatistics] = useState<StatisticsInterface | null>(null);
     const [success, setSuccess] = useState<SuccessInterface | null>(null);
     const [claimingStates, setClaimingStates] = useState<Record<string, boolean>>({});
@@ -130,6 +131,10 @@ export default function OnboardingChecklist({ isMobile = false }: OnboardingChec
 
             if (response.success) {
                 setStrikingStates(prev => ({ ...prev, [achievement.id]: true }));
+
+                if (onCreditsUpdated) {
+                    onCreditsUpdated();
+                }
 
                 setTimeout(async () => {
                     await loadData();

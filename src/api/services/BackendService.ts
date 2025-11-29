@@ -289,4 +289,72 @@ export default class BackendService {
         return response.json();
     }
 
+    public static async modifyRecipe(
+        email: string,
+        token: string,
+        recipeUuid: string,
+        prompt: string
+    ): Promise<RecipeInterface> {
+        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/${recipeUuid}/modifications`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+            body: JSON.stringify({ prompt }),
+        });
+
+        if (response.status === 402) {
+            throw { type: "INSUFFICIENT_MODIFICATION_CREDITS" };
+        }
+
+        if (response.status === 403) {
+            throw { type: "FORBIDDEN" };
+        }
+
+        if (response.status === 404) {
+            throw { type: "NOT_FOUND" };
+        }
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la modification de la recette');
+        }
+
+        return response.json();
+    }
+
+    public static async purchaseModificationCredits(
+        email: string,
+        token: string,
+        recipeUuid: string
+    ): Promise<RecipeInterface> {
+        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/${recipeUuid}/modifications/purchase`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (response.status === 402) {
+            throw { type: "INSUFFICIENT_CREDITS" };
+        }
+
+        if (response.status === 403) {
+            throw { type: "FORBIDDEN" };
+        }
+
+        if (response.status === 404) {
+            throw { type: "NOT_FOUND" };
+        }
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de l\'achat des crédits de modification');
+        }
+
+        return response.json();
+    }
+
 }

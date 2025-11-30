@@ -10,6 +10,7 @@ import { TrashIcon, CheckIcon, UserGroupIcon, SparklesIcon, ArrowUpOnSquareIcon 
 import RecipeModificationModal from "../components/popups/RecipeModificationModal";
 import PurchaseModificationCreditsModal from "../components/popups/PurchaseModificationCreditsModal";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
+import RecipeImage from "../components/recipes/RecipeImage";
 
 export default function RecipeDetail() {
 
@@ -207,8 +208,53 @@ export default function RecipeDetail() {
                 </div>
             )}
 
-            {/* Content */}
-            <RecipeContent recipe={recipe} isMobile={isMobile} />
+            {/* Content - Mobile */}
+            {isMobile && (
+                <>
+                    <RecipeImage
+                        recipeUuid={recipe.uuid.toString()}
+                        isGenerated={recipe.isGenerated}
+                        className="mt-4"
+                    />
+                    <RecipeContent recipe={recipe} isMobile={isMobile} />
+                </>
+            )}
+
+            {/* Content - Desktop: Ingrédients à gauche (sticky), Image + Étapes à droite */}
+            {!isMobile && (
+                <div className="bg-primary rounded-xl shadow-lg border border-border-color p-6 mt-4">
+                    <div className="flex gap-6">
+                        {/* Colonne gauche : Ingrédients (sticky) */}
+                        <div className="w-1/3 flex-shrink-0">
+                            <div className="sticky top-6">
+                                <h2 className="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
+                                    <span className="text-2xl">🧄</span>
+                                    Ingrédients
+                                </h2>
+                                <IngredientsList ingredients={recipe.ingredients} isMobile={false} />
+                            </div>
+                        </div>
+
+                        {/* Colonne droite : Image + Étapes */}
+                        <div className="flex-1 space-y-6">
+                            {/* Image */}
+                            <RecipeImage
+                                recipeUuid={recipe.uuid.toString()}
+                                isGenerated={recipe.isGenerated}
+                            />
+
+                            {/* Étapes */}
+                            <div>
+                                <h2 className="text-xl font-bold text-text-primary mb-4 flex items-center gap-2">
+                                    <span className="text-2xl">👨‍🍳</span>
+                                    Étapes de préparation
+                                </h2>
+                                <RecipeStepsList steps={recipe.steps} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Action Buttons Footer */}
             {recipe.isOwner && (

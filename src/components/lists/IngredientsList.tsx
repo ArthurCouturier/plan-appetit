@@ -6,7 +6,7 @@ import { IngredientCategoryEnum } from "../../api/enums/IngredientCategoryEnum";
 import NumberField from "../fields/NumberField";
 import UnitSelector from "../selectors/UnitSelector";
 import SeasonSelector from "../selectors/SeasonSelector";
-import SeasonDisplayer, { SeasonDisplayerExplaination } from "../displayers/SeasonDisplayer";
+import SeasonDisplayer from "../displayers/SeasonDisplayer";
 // import { IngredientCategoryLabels } from "../../api/constants/IngredientCategoryLabels";
 import { UnitLabels } from "../../api/constants/UnitLabels";
 
@@ -51,7 +51,6 @@ export default function IngredientsList({
 
     return (
         <div className={`md:border-2 border-text-primary p-2 w-full rounded-md mb-4 text-text-primary ${recipeEditMode ? "border border-dashed" : null}`}>
-            <SeasonDisplayerExplaination isMobile={isMobile} />
             <div className="flex justify-center items-center gap-2 md:gap-0">
                 <h2 className="font-bold text-lg underline text-text-primary ">Ingredients</h2>
                 {!(recipeEditMode === undefined) &&
@@ -68,7 +67,7 @@ export default function IngredientsList({
                     </button>
                 }
             </div>
-            <div className="mx-auto flex-col md:w-min">
+            <div className="mx-auto flex-col">
                 {ingredients.map((ingredient, index) => (
                     <Ingredient
                         key={index}
@@ -161,12 +160,14 @@ function DefaultModeDesktop({
             <ul className="p-1">
                 <SeasonDisplayer seasons={ingredient.season} />
             </ul>
-            <ul className="p-1 w-max max-w-50 text-left">{ingredient.name}</ul>
-            {ingredient.quantity.value > 0 ? <ul className="p-1">{ingredient.quantity.value}</ul> : <></>}
-            <ul className="p-1">
-                {!(ingredient.quantity.unit == UnitEnum.NONE) ? UnitLabels[ingredient.quantity.unit] : ""}
-                {ingredient.quantity.value > 1 ? "s" : ""}
-            </ul>
+            <ul className="p-1 max-w-75 text-left break-word whitespace-normal w-full">{ingredient.name}</ul>
+            {ingredient.quantity.value > 0 ? <>
+                <ul className="p-1">{ingredient.quantity.value}</ul>
+                <ul className="p-1">
+                    {!(ingredient.quantity.unit == UnitEnum.NONE) ? UnitLabels[ingredient.quantity.unit] : ""}
+                    {ingredient.quantity.value > 1 ? "s" : ""}
+                </ul>
+            </> : <></>}
             {/* <p className="p-1">{IngredientCategoryLabels[ingredient.category]}</p> */}
         </li>
     );
@@ -182,11 +183,16 @@ function DefaultModeMobile({
             <p className="p-1">
                 <SeasonDisplayer seasons={ingredient.season} />
             </p>
-            <p className="p-1 w-max max-w-50 text-left ">
-                <span className="font-bold">{ingredient.name} : </span>
-                {ingredient.quantity.value} {" "}
-                <span className="lowercase">{!(ingredient.quantity.unit == UnitEnum.NONE) ? UnitLabels[ingredient.quantity.unit] : ""}</span>
-                {ingredient.quantity.value > 1 ? "s" : ""}
+
+            <p className="p-1 w-full text-left ">
+                <span className="font-bold">{ingredient.name}</span>
+                {ingredient.quantity.value > 0 ? <>:
+                    {ingredient.quantity.value} {" "}
+                    <span className="lowercase">{!(ingredient.quantity.unit == UnitEnum.NONE) ? UnitLabels[ingredient.quantity.unit] : ""}</span>
+                    {ingredient.quantity.value > 1 ? "s" : ""}
+                </>
+                    : <></>}
+
             </p>
             {/* <p className="p-1">{ingredient.category}</p> */}
         </div>

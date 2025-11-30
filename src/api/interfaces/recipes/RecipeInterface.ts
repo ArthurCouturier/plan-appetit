@@ -16,5 +16,6 @@ export default interface RecipeInterface {
     steps: StepInterface[];
     season: SeasonEnum;
     remainingModifications: number;
+    isGenerated: boolean;
     isOwner: boolean;
 }

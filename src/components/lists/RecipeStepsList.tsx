@@ -96,7 +96,7 @@ export function Step({
     }
 
     return (
-        <div className="flex items-center justify-center py-2 mb-2 mx-auto md:w-1/2">
+        <div className="flex items-center justify-start py-2 mb-2 mx-auto xl:w-1/2">
             {!editMode ? (
                 <DefaultMode step={step} />
             ) : (

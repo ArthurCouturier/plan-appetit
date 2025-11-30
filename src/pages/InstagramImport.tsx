@@ -95,8 +95,7 @@ export default function InstagramImport() {
     setShowEmbed(true);
 
     try {
-      const postInfo = await InstagramService.fetchPostInfo(url);
-      console.log("Post info from backend:", postInfo);
+      await InstagramService.fetchPostInfo(url);
     } catch (err: any) {
       console.error("Error fetching post info from backend:", err);
       setError(err.message || "Erreur lors de la récupération du post Instagram");

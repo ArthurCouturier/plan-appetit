@@ -5,6 +5,7 @@ import {
     createUserWithEmailAndPassword,
     signInWithPopup,
     GoogleAuthProvider,
+    OAuthProvider,
     sendPasswordResetEmail,
 } from 'firebase/auth';
 import {
@@ -336,6 +337,105 @@ export default function LoginPage() {
         setLoading(false);
     };
 
+    const handleAppleLogin = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            let userCredential;
+
+            if (Capacitor.isNativePlatform()) {
+                console.log('Starting native Apple Sign-In...');
+                const result = await FirebaseAuthentication.signInWithApple();
+                console.log('Native Apple sign-in result user:', result.user?.email);
+
+                if (result.user) {
+                    localStorage.removeItem('userLoggedOut');
+
+                    const idTokenResult = await FirebaseAuthentication.getIdToken();
+
+                    localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
+                    localStorage.setItem('email', result.user.email || "");
+                    localStorage.setItem('profilePhoto', result.user.photoUrl || "/no-pp.jpg");
+
+                    const userData = {
+                        uid: result.user.uid,
+                        email: result.user.email || "",
+                        displayName: result.user.displayName || result.user.email?.split('@')[0] || "Utilisateur",
+                        token: idTokenResult.token,
+                        provider: "apple" as const,
+                        role: "MEMBER" as any,
+                        isPremium: false,
+                        createdAt: new Date(),
+                        profilePhoto: result.user.photoUrl || "/no-pp.jpg"
+                    };
+
+                    try {
+                        const backendUser = await BackendService.connectUser(
+                            userData.email,
+                            idTokenResult.token || ""
+                        );
+                        userData.role = backendUser.role;
+                        userData.isPremium = backendUser.isPremium;
+                    } catch (err) {
+                        console.warn('Backend sync failed, using default values');
+                    }
+
+                    login(userData);
+
+                    identify(userData.uid, {
+                        email: userData.email,
+                        provider: 'apple',
+                        role: userData.role,
+                        isPremium: userData.isPremium,
+                    });
+
+                    trackEvent('user_logged_in', {
+                        method: 'apple',
+                        from: from,
+                    });
+
+                    navigate(from, { replace: true });
+                    setLoading(false);
+                    return;
+                } else {
+                    throw new Error('Échec de la connexion Apple');
+                }
+            } else {
+                const provider = new OAuthProvider('apple.com');
+                provider.addScope('email');
+                provider.addScope('name');
+                userCredential = await signInWithPopup(auth, provider);
+            }
+
+            localStorage.removeItem('userLoggedOut');
+
+            const userData = await convertFirebaseUser(userCredential.user);
+            localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
+            localStorage.setItem('email', userData.email ? userData.email : "");
+            localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
+
+            login(userData);
+
+            identify(userData.uid, {
+                email: userData.email,
+                provider: 'apple',
+                role: userData.role,
+                isPremium: userData.isPremium,
+            });
+
+            trackEvent('user_logged_in', {
+                method: 'apple',
+                from: from,
+            });
+
+            navigate(from, { replace: true });
+        } catch (err: unknown) {
+            setError(getFirebaseErrorMessage(err));
+        }
+        setLoading(false);
+    };
+
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -385,6 +485,16 @@ export default function LoginPage() {
                                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                     </svg>
                                     Se connecter avec Google
+                                </button>
+                                <button
+                                    onClick={handleAppleLogin}
+                                    disabled={loading}
+                                    className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-lg border-2 border-black transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                                    </svg>
+                                    Se connecter avec Apple
                                 </button>
                                 <Typography variant="small" className="text-center text-gray-500" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                                     ou

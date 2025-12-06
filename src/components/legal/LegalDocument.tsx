@@ -16,6 +16,16 @@ export default function LegalDocument({ documentPath, title }: LegalDocumentProp
     const [content, setContent] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         fetch(documentPath)
@@ -46,8 +56,8 @@ export default function LegalDocument({ documentPath, title }: LegalDocumentProp
     };
 
     return (
-        <div className="min-h-screen bg-bg-color">
-            <Header back={true} home={true} title={false} profile={false} />
+        <div className={`min-h-screen bg-bg-color ${isMobile ? 'mobile-content-with-header' : ''}`}>
+            {!isMobile && <Header back={true} home={true} title={false} profile={false} />}
 
             <div className="container mx-auto px-4 py-8 max-w-4xl">
                 <Card placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>

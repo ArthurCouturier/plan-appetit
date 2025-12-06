@@ -103,6 +103,23 @@ input[type="number"] {
 html, body {
   margin: 0;
   padding: 0;
+  min-height: 100%;
+  min-height: 100dvh;
+}
+
+/* Safe area padding pour les pages mobiles avec header */
+.mobile-content-with-header {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
+}
+
+html {
+  background-color: var(--cout-base);
+  /* Empêche le blanc visible lors du overscroll sur iOS */
+  overscroll-behavior: none;
+}
+
+body {
+  background-color: var(--bg-color);
 }
 
 @keyframes shimmer {

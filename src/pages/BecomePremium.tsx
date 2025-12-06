@@ -142,7 +142,7 @@ export default function BecomePremium() {
       )}
 
       {/* HERO SECTION */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-cout-base via-cout-purple to-cout-purple py-20 px-4 md:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-br from-cout-base via-cout-purple to-cout-purple pb-20 px-4 md:pb-32" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)" }}>
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-cout-yellow rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse delay-700"></div>

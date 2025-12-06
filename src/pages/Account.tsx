@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { updatePassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import Header from '../components/global/Header';
@@ -80,14 +82,40 @@ export default function Account() {
     }
 
     const handleLogout = async () => {
+        // Marquer que l'utilisateur s'est déconnecté volontairement AVANT tout
+        localStorage.setItem('userLoggedOut', 'true');
+
+        // Nettoyer le localStorage
         localStorage.removeItem('firebaseIdToken');
         localStorage.removeItem('profilePhoto');
         localStorage.removeItem('email');
         localStorage.removeItem('recipeGenerationDraft');
+        localStorage.removeItem('anonymousRecipeUuid');
         localStorage.setItem('recipes', JSON.stringify([]));
-        await auth.signOut();
+
+        // D'abord mettre à jour le state pour éviter les requêtes pendant la déconnexion
         logout();
-        navigate('/login');
+
+        // Déconnecter Firebase
+        if (Capacitor.isNativePlatform()) {
+            // Sur natif, utiliser uniquement le plugin Capacitor
+            try {
+                await FirebaseAuthentication.signOut();
+                console.log('Déconnexion Firebase native réussie');
+            } catch (error) {
+                console.error('Erreur lors de la déconnexion Firebase native:', error);
+            }
+        } else {
+            // Sur web, utiliser le SDK Firebase web
+            try {
+                await auth.signOut();
+            } catch (error) {
+                console.error('Erreur lors de la déconnexion Firebase web:', error);
+            }
+        }
+
+        // Naviguer vers login
+        navigate('/login', { replace: true });
     };
 
     const handleChangePassword = async (e: React.FormEvent) => {
@@ -112,7 +140,7 @@ export default function Account() {
 
     return (
         <div className='min-h-screen bg-bg-color flex flex-col'>
-            <div className={`flex-grow ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
+            <div className={`flex-grow ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
                 {isMobile ? null : <AccountHeader />}
 
                 <div className="max-w-2xl mx-auto mt-4 space-y-4">

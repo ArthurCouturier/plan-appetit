@@ -15,6 +15,8 @@ import {
     CardFooter,
     Typography,
 } from '@material-tailwind/react';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { Capacitor } from '@capacitor/core';
 import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import { convertFirebaseUser } from '../api/authentication/convertFirebaseUser';
@@ -33,7 +35,7 @@ export default function LoginPage() {
     const { login } = useAuth();
     const { trackEvent, identify } = usePostHog();
 
-    const from = (location.state as { from?: string })?.from || '/myrecipes';
+    const from = (location.state as { from?: string })?.from || '/profile';
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -67,6 +69,9 @@ export default function LoginPage() {
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+            // Supprimer le flag de déconnexion volontaire
+            localStorage.removeItem('userLoggedOut');
 
             const userData = await convertFirebaseUser(userCredential.user);
             localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
@@ -115,6 +120,9 @@ export default function LoginPage() {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const token = await userCredential.user.getIdToken();
+
+            // Supprimer le flag de déconnexion volontaire
+            localStorage.removeItem('userLoggedOut');
 
             localStorage.setItem('firebaseIdToken', token);
             localStorage.setItem('email', userCredential.user.email || "");
@@ -225,8 +233,82 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            const provider = new GoogleAuthProvider();
-            const userCredential = await signInWithPopup(auth, provider);
+            let userCredential;
+
+            if (Capacitor.isNativePlatform()) {
+                // Sur iOS/Android natif, utiliser le plugin Capacitor Firebase
+                console.log('Starting native Google Sign-In...');
+                const result = await FirebaseAuthentication.signInWithGoogle();
+                console.log('Native sign-in result user:', result.user?.email);
+                console.log('Native sign-in has credential:', !!result.credential);
+                console.log('Native sign-in has idToken:', !!result.credential?.idToken);
+
+                if (result.user) {
+                    // L'utilisateur est connecté via Firebase natif
+                    // Supprimer le flag de déconnexion volontaire
+                    localStorage.removeItem('userLoggedOut');
+
+                    // Récupérer le Firebase ID Token pour le backend
+                    const idTokenResult = await FirebaseAuthentication.getIdToken();
+
+                    // Stocker les infos pour le backend
+                    localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
+                    localStorage.setItem('email', result.user.email || "");
+                    localStorage.setItem('profilePhoto', result.user.photoUrl || "/no-pp.jpg");
+
+                    // Créer userData manuellement depuis le résultat natif
+                    const userData = {
+                        uid: result.user.uid,
+                        email: result.user.email || "",
+                        displayName: result.user.displayName || result.user.email?.split('@')[0] || "Utilisateur",
+                        token: idTokenResult.token,
+                        provider: "google" as const,
+                        role: "MEMBER" as any,
+                        isPremium: false,
+                        createdAt: new Date(),
+                        profilePhoto: result.user.photoUrl || "/no-pp.jpg"
+                    };
+
+                    // Appeler le backend pour synchroniser l'utilisateur
+                    try {
+                        const backendUser = await BackendService.connectUser(
+                            userData.email,
+                            idTokenResult.token || ""
+                        );
+                        userData.role = backendUser.role;
+                        userData.isPremium = backendUser.isPremium;
+                    } catch (err) {
+                        console.warn('Backend sync failed, using default values');
+                    }
+
+                    login(userData);
+
+                    identify(userData.uid, {
+                        email: userData.email,
+                        provider: 'google',
+                        role: userData.role,
+                        isPremium: userData.isPremium,
+                    });
+
+                    trackEvent('user_logged_in', {
+                        method: 'google',
+                        from: from,
+                    });
+
+                    navigate(from, { replace: true });
+                    setLoading(false);
+                    return;
+                } else {
+                    throw new Error('Échec de la connexion Google');
+                }
+            } else {
+                // Sur web, utiliser popup
+                const provider = new GoogleAuthProvider();
+                userCredential = await signInWithPopup(auth, provider);
+            }
+
+            // Supprimer le flag de déconnexion volontaire
+            localStorage.removeItem('userLoggedOut');
 
             const userData = await convertFirebaseUser(userCredential.user);
             localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
@@ -268,7 +350,7 @@ export default function LoginPage() {
     }, []);
 
     return (
-        <div className='mt-4 md:mt-0 flex flex-col bg-bg-color p-6 rounded-md'>
+        <div className={`flex flex-col bg-bg-color p-6 rounded-md ${isMobile ? 'mobile-content-with-header' : 'mt-4 md:mt-0'}`}>
             {isMobile ? null : <LoginHeader />}
             <div className="flex items-center justify-center mt-4">
                 <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>

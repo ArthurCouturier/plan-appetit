@@ -7,6 +7,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { convertFirebaseUser } from '../../api/authentication/convertFirebaseUser';
 import { auth } from '../../api/authentication/firebase';
 import BackendService from '../../api/services/BackendService';
+import NotificationService from '../../api/services/NotificationService';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserInterface | null | undefined>(undefined);
@@ -67,6 +68,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         }
 
                         setUser(userData);
+
+                        // Initialiser les notifications push si permission déjà accordée
+                        if (idTokenResult.token) {
+                            NotificationService.initializeNotifications(userData.email, idTokenResult.token)
+                                .catch(err => console.log('Notifications non initialisées:', err));
+                        }
                     } else {
                         console.log('Aucune session native trouvée');
                         setUser(null);

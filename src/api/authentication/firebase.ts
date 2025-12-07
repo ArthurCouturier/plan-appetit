@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
+import { getMessaging, isSupported, Messaging } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,
@@ -18,4 +19,16 @@ const analytics = getAnalytics(app);
 
 const auth = getAuth(app);
 
-export { app, analytics, auth };
+let messaging: Messaging | null = null;
+
+const initializeMessaging = async (): Promise<Messaging | null> => {
+  if (messaging) return messaging;
+
+  const supported = await isSupported();
+  if (supported) {
+    messaging = getMessaging(app);
+  }
+  return messaging;
+};
+
+export { app, analytics, auth, messaging, initializeMessaging };

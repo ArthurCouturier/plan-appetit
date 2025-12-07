@@ -8,9 +8,14 @@ import useAuth from '../api/hooks/useAuth';
 import Header from '../components/global/Header';
 import Footer from '../components/global/Footer';
 import BackendService from '../api/services/BackendService';
+import SubscriptionService from '../api/services/SubscriptionService';
 import CreditPaywallModal from '../components/popups/CreditPaywallModal';
+import CancelSubscriptionModal from '../components/popups/CancelSubscriptionModal';
+import PremiumStatusCard from '../components/account/PremiumStatusCard';
+import NotificationSettings from '../components/account/NotificationSettings';
 import { SunIcon, MoonIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { isPremiumUser } from '../api/interfaces/users/UserInterface';
+import { SubscriptionStatusInterface } from '../api/interfaces/subscription/SubscriptionStatusInterface';
 import CreditIcon from '../components/icons/CreditIcon';
 import OnboardingChecklist from '../components/onboarding/OnboardingChecklist';
 import UserAvatar from '../components/global/UserAvatar';
@@ -32,6 +37,9 @@ export default function Account() {
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
     const [credits, setCredits] = useState<number | null>(null);
     const [showCreditModal, setShowCreditModal] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatusInterface | null>(null);
+    const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
     const fetchAccountInfo = async () => {
         const token = localStorage.getItem('firebaseIdToken');
@@ -51,13 +59,30 @@ export default function Account() {
         }
     };
 
+    const fetchSubscriptionStatus = async () => {
+        const token = localStorage.getItem('firebaseIdToken');
+        const email = localStorage.getItem('email');
+        if (token && email && isUserPremium) {
+            setSubscriptionLoading(true);
+            try {
+                const status = await SubscriptionService.getSubscriptionStatus(email, token);
+                setSubscriptionStatus(status);
+            } catch (error) {
+                console.error('Erreur lors de la récupération du statut de l\'abonnement:', error);
+            } finally {
+                setSubscriptionLoading(false);
+            }
+        }
+    };
+
     useEffect(() => {
         if (user === null) {
             navigate('/login');
         } else if (user) {
             fetchAccountInfo();
+            fetchSubscriptionStatus();
         }
-    }, [user, navigate]);
+    }, [user, navigate, isUserPremium]);
 
     useEffect(() => {
         document.documentElement.classList.remove('theme1', 'theme2');
@@ -187,6 +212,27 @@ export default function Account() {
                         isOpen={showCreditModal}
                         onClose={() => setShowCreditModal(false)}
                     />
+
+                    {/* Modal d'annulation d'abonnement */}
+                    <CancelSubscriptionModal
+                        isOpen={showCancelModal}
+                        onClose={() => setShowCancelModal(false)}
+                        currentPeriodEnd={subscriptionStatus?.currentPeriodEnd ?? null}
+                        onCancelled={(status) => setSubscriptionStatus(status)}
+                    />
+
+                    {/* Carte de statut Premium pour les utilisateurs premium */}
+                    {isUserPremium && (
+                        <PremiumStatusCard
+                            subscriptionStatus={subscriptionStatus}
+                            onCancelClick={() => setShowCancelModal(true)}
+                            onStatusUpdated={setSubscriptionStatus}
+                            isLoading={subscriptionLoading}
+                        />
+                    )}
+
+                    {/* Paramètres de notifications pour les utilisateurs premium */}
+                    <NotificationSettings isPremium={isUserPremium} />
 
                     <OnboardingChecklist onCreditsUpdated={fetchAccountInfo} />
 

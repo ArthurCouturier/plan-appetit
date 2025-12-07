@@ -154,23 +154,30 @@ export default function Account() {
                             <p className="text-text-secondary text-sm mt-1">
                                 {user && user.email}
                             </p>
+                            {isUserPremium && (
+                                <p className="text-cout-yellow font-bold text-sm mt-2">
+                                    Plan Appétit Premium
+                                </p>
+                            )}
 
                             {/* Affichage des crédits */}
                             <div className="mt-4 flex items-center justify-center gap-2 bg-secondary border border-border-color rounded-lg px-4 py-2">
                                 <CreditIcon className="w-5 h-5 text-cout-yellow" />
                                 <span className="text-text-primary font-bold">
-                                    {credits !== null ? credits : '...'}
+                                    {isUserPremium ? '∞' : (credits !== null ? credits : '...')}
                                 </span>
                                 <span className="text-text-secondary text-sm">
-                                    crédit{credits !== 1 ? 's' : ''}
+                                    crédit{isUserPremium || credits !== 1 ? 's' : ''}
                                 </span>
-                                <button
-                                    onClick={() => setShowCreditModal(true)}
-                                    className="ml-2 p-1 bg-cout-yellow text-cout-purple rounded-full hover:bg-yellow-400 transition-colors"
-                                    title="Recharger des crédits"
-                                >
-                                    <PlusIcon className="w-4 h-4" />
-                                </button>
+                                {!isUserPremium && (
+                                    <button
+                                        onClick={() => setShowCreditModal(true)}
+                                        className="ml-2 p-1 bg-cout-yellow text-cout-purple rounded-full hover:bg-yellow-400 transition-colors"
+                                        title="Recharger des crédits"
+                                    >
+                                        <PlusIcon className="w-4 h-4" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

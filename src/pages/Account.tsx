@@ -11,9 +11,11 @@ import BackendService from '../api/services/BackendService';
 import SubscriptionService from '../api/services/SubscriptionService';
 import CreditPaywallModal from '../components/popups/CreditPaywallModal';
 import CancelSubscriptionModal from '../components/popups/CancelSubscriptionModal';
+import DeleteAccountModal from '../components/popups/DeleteAccountModal';
 import PremiumStatusCard from '../components/account/PremiumStatusCard';
 import NotificationSettings from '../components/account/NotificationSettings';
-import { SunIcon, MoonIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon } from "@heroicons/react/24/solid";
+import AccountDeletionService from '../api/services/AccountDeletionService';
+import { SunIcon, MoonIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, TrashIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { isPremiumUser } from '../api/interfaces/users/UserInterface';
 import { SubscriptionStatusInterface } from '../api/interfaces/subscription/SubscriptionStatusInterface';
 import CreditIcon from '../components/icons/CreditIcon';
@@ -38,8 +40,11 @@ export default function Account() {
     const [credits, setCredits] = useState<number | null>(null);
     const [showCreditModal, setShowCreditModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
+    const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
     const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatusInterface | null>(null);
     const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+    const [deletionScheduled, setDeletionScheduled] = useState<string | null>(null);
+    const [cancellingDeletion, setCancellingDeletion] = useState(false);
 
     const fetchAccountInfo = async () => {
         const token = localStorage.getItem('firebaseIdToken');
@@ -75,12 +80,46 @@ export default function Account() {
         }
     };
 
+    const fetchDeletionStatus = async () => {
+        const token = localStorage.getItem('firebaseIdToken');
+        const email = localStorage.getItem('email');
+        if (token && email) {
+            try {
+                const status = await AccountDeletionService.getAccountDeletionStatus(email, token);
+                if (status.isDeletionScheduled && status.scheduledDeletionDate) {
+                    setDeletionScheduled(status.scheduledDeletionDate);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération du statut de suppression:', error);
+            }
+        }
+    };
+
+    const handleCancelDeletion = async () => {
+        const token = localStorage.getItem('firebaseIdToken');
+        const email = localStorage.getItem('email');
+        if (!token || !email) return;
+
+        setCancellingDeletion(true);
+        try {
+            const response = await AccountDeletionService.cancelAccountDeletion(email, token);
+            if (response.success) {
+                setDeletionScheduled(null);
+            }
+        } catch (error) {
+            console.error('Erreur lors de l\'annulation de la suppression:', error);
+        } finally {
+            setCancellingDeletion(false);
+        }
+    };
+
     useEffect(() => {
         if (user === null) {
             navigate('/login');
         } else if (user) {
             fetchAccountInfo();
             fetchSubscriptionStatus();
+            fetchDeletionStatus();
         }
     }, [user, navigate, isUserPremium]);
 
@@ -221,6 +260,15 @@ export default function Account() {
                         onCancelled={(status) => setSubscriptionStatus(status)}
                     />
 
+                    {/* Modal de suppression de compte */}
+                    <DeleteAccountModal
+                        isOpen={showDeleteAccountModal}
+                        onClose={() => setShowDeleteAccountModal(false)}
+                        onDeleted={(scheduledDate) => setDeletionScheduled(scheduledDate)}
+                        hasActiveSubscription={subscriptionStatus?.isActive ?? false}
+                        subscriptionSource={subscriptionStatus?.subscriptionSource}
+                    />
+
                     {/* Carte de statut Premium pour les utilisateurs premium */}
                     {isUserPremium && (
                         <PremiumStatusCard
@@ -230,9 +278,6 @@ export default function Account() {
                             isLoading={subscriptionLoading}
                         />
                     )}
-
-                    {/* Paramètres de notifications pour les utilisateurs premium */}
-                    <NotificationSettings isPremium={isUserPremium} />
 
                     <OnboardingChecklist onCreditsUpdated={fetchAccountInfo} />
 
@@ -298,6 +343,38 @@ export default function Account() {
                         </div>
                     )}
 
+                    {/* Paramètres de notifications pour les utilisateurs premium */}
+                    <NotificationSettings isPremium={isUserPremium} />
+
+                    {/* Bannière de suppression programmée */}
+                    {deletionScheduled && (
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                            <div className="flex items-start gap-3">
+                                <XCircleIcon className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                                <div className="flex-1">
+                                    <p className="text-text-primary font-semibold">
+                                        Suppression programmée
+                                    </p>
+                                    <p className="text-text-secondary text-sm mt-1">
+                                        Votre compte sera supprimé le{" "}
+                                        {new Date(deletionScheduled).toLocaleDateString('fr-FR', {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric'
+                                        })}.
+                                    </p>
+                                    <button
+                                        onClick={handleCancelDeletion}
+                                        disabled={cancellingDeletion}
+                                        className="mt-3 px-4 py-2 bg-cout-yellow text-cout-purple font-semibold rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50"
+                                    >
+                                        {cancellingDeletion ? 'Annulation...' : 'Annuler la suppression'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Actions */}
                     <div className="space-y-3">
                         {/* Afficher le bouton "Devenir Premium" seulement si l'utilisateur n'est pas premium */}
@@ -318,6 +395,17 @@ export default function Account() {
                             <ArrowRightOnRectangleIcon className="w-5 h-5" />
                             Se déconnecter
                         </button>
+
+                        {/* Bouton de suppression de compte */}
+                        {!deletionScheduled && (
+                            <button
+                                onClick={() => setShowDeleteAccountModal(true)}
+                                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary border border-border-color text-text-secondary font-semibold rounded-xl hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-600 transition-all duration-200"
+                            >
+                                <TrashIcon className="w-5 h-5" />
+                                Supprimer mon compte
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

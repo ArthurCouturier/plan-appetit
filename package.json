@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
+    "mobile-build": "npm run build && npx cap sync ios && npx cap open ios",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
@@ -32,6 +33,7 @@
     "@capacitor/preferences": "^7.0.2",
     "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.3",
+    "@capgo/native-purchases": "^7.16.2",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

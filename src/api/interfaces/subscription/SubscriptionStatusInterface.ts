@@ -4,6 +4,8 @@ export interface SubscriptionStatusInterface {
     cancelAtPeriodEnd: boolean;
     currentPeriodEnd: string | null;
     stripeSubscriptionId: string | null;
+    appleOriginalTransactionId: string | null;
+    subscriptionSource: 'stripe' | 'apple' | 'unknown';
 }
 
 export interface CancelSubscriptionRequest {

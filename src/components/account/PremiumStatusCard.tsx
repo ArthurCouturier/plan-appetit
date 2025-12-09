@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { SparklesIcon, ArrowPathIcon, XCircleIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
+import { SparklesIcon, ArrowPathIcon, XCircleIcon, CheckCircleIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid";
 import { SubscriptionStatusInterface } from "../../api/interfaces/subscription/SubscriptionStatusInterface";
 import SubscriptionService from "../../api/services/SubscriptionService";
+import IAPService from "../../api/services/IAPService";
 
 interface PremiumStatusCardProps {
     subscriptionStatus: SubscriptionStatusInterface | null;
@@ -67,6 +68,15 @@ export default function PremiumStatusCard({
     };
 
     const isCancelled = subscriptionStatus.cancelAtPeriodEnd;
+    const isAppleSubscription = subscriptionStatus.subscriptionSource === 'apple';
+
+    const handleManageAppleSubscription = async () => {
+        try {
+            await IAPService.manageSubscriptions();
+        } catch (error) {
+            console.error('Failed to open subscription management:', error);
+        }
+    };
 
     return (
         <div className={`bg-primary rounded-xl p-6 shadow-lg border-2 ${isCancelled ? 'border-orange-400' : 'border-cout-yellow'}`}>
@@ -107,6 +117,14 @@ export default function PremiumStatusCard({
                         {formatDate(subscriptionStatus.currentPeriodEnd)}
                     </span>
                 </div>
+
+                {/* Show subscription source */}
+                <div className="flex items-center justify-between">
+                    <span className="text-text-secondary">Abonnement via</span>
+                    <span className="text-text-primary font-semibold">
+                        {isAppleSubscription ? 'App Store' : 'Stripe'}
+                    </span>
+                </div>
             </div>
 
             {isCancelled ? (
@@ -114,24 +132,42 @@ export default function PremiumStatusCard({
                     <p className="text-sm text-text-secondary text-center">
                         Vous conservez l'accès Premium jusqu'au {formatDate(subscriptionStatus.currentPeriodEnd)}.
                         <br />
-                        Vous pouvez réactiver votre abonnement à tout moment.
+                        {isAppleSubscription
+                            ? "Vous pouvez vous réabonner via l'App Store."
+                            : "Vous pouvez réactiver votre abonnement à tout moment."
+                        }
+                    </p>
+                    {!isAppleSubscription && (
+                        <button
+                            onClick={handleReactivate}
+                            disabled={reactivating}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-cout-yellow text-cout-purple font-bold rounded-xl hover:bg-yellow-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {reactivating ? (
+                                <>
+                                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                                    Réactivation...
+                                </>
+                            ) : (
+                                <>
+                                    <ArrowPathIcon className="w-5 h-5" />
+                                    Réactiver mon abonnement
+                                </>
+                            )}
+                        </button>
+                    )}
+                </div>
+            ) : isAppleSubscription ? (
+                <div className="space-y-3">
+                    <p className="text-sm text-text-secondary text-center">
+                        Pour gérer ou annuler votre abonnement, utilisez les paramètres de l'App Store.
                     </p>
                     <button
-                        onClick={handleReactivate}
-                        disabled={reactivating}
-                        className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-cout-yellow text-cout-purple font-bold rounded-xl hover:bg-yellow-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={handleManageAppleSubscription}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary border border-border-color text-text-primary font-semibold rounded-xl hover:bg-thirdary transition-all duration-200"
                     >
-                        {reactivating ? (
-                            <>
-                                <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                                Réactivation...
-                            </>
-                        ) : (
-                            <>
-                                <ArrowPathIcon className="w-5 h-5" />
-                                Réactiver mon abonnement
-                            </>
-                        )}
+                        <ArrowTopRightOnSquareIcon className="w-5 h-5" />
+                        Gérer mon abonnement
                     </button>
                 </div>
             ) : (

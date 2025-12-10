@@ -10,7 +10,7 @@ export default function HomeMobile() {
 
   return (
     <div>
-      <div className="flex flex-col items-center px-4 pt-20 pb-24 space-y-20">
+      <div className="flex flex-col items-center px-4 pb-24 space-y-20 mobile-content-with-header">
         <Button
           className="bg-primary text-text-primary w-full flex text-xl items-center justify-center gap-2"
           onClick={() => navigateTo("/recettes/generer")} placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>

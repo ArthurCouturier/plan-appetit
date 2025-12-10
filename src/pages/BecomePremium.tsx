@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
-import { HomeIcon } from "@heroicons/react/24/solid";
+import { HomeIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import StripeService from "../api/services/StripeService";
+import IAPService, { IAPProduct } from "../api/services/IAPService";
 import { Product } from "../api/interfaces/stripe/Product";
 import { CartItem } from "../api/interfaces/stripe/CartItem";
 import useAuth from "../api/hooks/useAuth";
@@ -11,17 +12,60 @@ export default function BecomePremium() {
   const navigate = useNavigate();
   const [premiumProduct, setPremiumProduct] = useState<Product | null>(null);
   const [credit20Product, setCredit20Product] = useState<Product | null>(null);
+  const [iapProduct, setIapProduct] = useState<IAPProduct | null>(null);
+  const [iapCreditsProduct, setIapCreditsProduct] = useState<IAPProduct | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isIAPAvailable, setIsIAPAvailable] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [isPurchasingCredits, setIsPurchasingCredits] = useState(false);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
 
   const user = useAuth().user;
   const { trackEvent } = usePostHog();
 
   useEffect(() => {
-    StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_MENSUAL)
-      .then(product => setPremiumProduct(product));
-    StripeService.fetchProduct(StripeService.CREDIT_TWENTY_RECIPES)
-      .then(product => setCredit20Product(product));
+    const initializeProducts = async () => {
+      // Debug logs for platform detection
+      const { Capacitor } = await import('@capacitor/core');
+      console.log('=== IAP Debug ===');
+      console.log('Platform:', Capacitor.getPlatform());
+      console.log('Is native platform:', Capacitor.isNativePlatform());
+      console.log('IAPService.isAvailable():', IAPService.isAvailable());
+      console.log('IAPService.isIOS():', IAPService.isIOS());
+
+      // Check if IAP is available (native iOS/Android)
+      if (IAPService.isAvailable()) {
+        console.log('IAP is available, initializing...');
+        const iapAvailable = await IAPService.initialize();
+        console.log('IAP initialized:', iapAvailable);
+        setIsIAPAvailable(iapAvailable);
+
+        if (iapAvailable) {
+          // Fetch IAP product info (price from Apple/Google)
+          console.log('Fetching subscription product...');
+          const product = await IAPService.getSubscriptionProduct();
+          console.log('Subscription product:', product);
+          setIapProduct(product);
+
+          // Fetch credits product
+          console.log('Fetching credits product...');
+          const creditsProduct = await IAPService.getCreditsProduct();
+          console.log('Credits product:', creditsProduct);
+          setIapCreditsProduct(creditsProduct);
+        }
+      } else {
+        console.log('IAP not available, using Stripe');
+      }
+
+      // Always fetch Stripe products for web and credits
+      StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_MENSUAL)
+        .then(product => setPremiumProduct(product));
+      StripeService.fetchProduct(StripeService.CREDIT_TWENTY_RECIPES)
+        .then(product => setCredit20Product(product));
+    };
+
+    initializeProducts();
   }, []);
 
   useEffect(() => {
@@ -35,11 +79,62 @@ export default function BecomePremium() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
+    setPurchaseError(null);
+
+    // Use IAP on native platforms (iOS/Android)
+    if (isIAPAvailable && iapProduct) {
+      setIsPurchasing(true);
+
+      trackEvent('checkout_started', {
+        product_type: 'premium_subscription',
+        payment_method: 'iap',
+        platform: IAPService.isIOS() ? 'ios' : 'android',
+        price: iapProduct.price,
+        currency: iapProduct.currencyCode,
+      });
+
+      try {
+        const result = await IAPService.purchaseSubscription();
+
+        if (result.success && result.transactionId) {
+          // Verify purchase with backend
+          if (user && user.token) {
+            const verified = await IAPService.verifySubscriptionPurchase(
+              result.transactionId,
+              user.email,
+              user.token
+            );
+
+            if (verified) {
+              trackEvent('purchase_completed', {
+                product_type: 'premium_subscription',
+                payment_method: 'iap',
+              });
+              navigate('/recettes');
+            } else {
+              setPurchaseError('Erreur de validation. Contactez le support.');
+            }
+          }
+        } else if (result.error === 'cancelled') {
+          // User cancelled, no error to show
+        } else {
+          setPurchaseError(result.error || 'Erreur lors de l\'achat');
+        }
+      } catch (error) {
+        setPurchaseError('Une erreur est survenue');
+      } finally {
+        setIsPurchasing(false);
+      }
+      return;
+    }
+
+    // Use Stripe on web
     if (!premiumProduct) return;
 
     trackEvent('checkout_started', {
       product_type: 'premium_subscription',
+      payment_method: 'stripe',
       price: premiumProduct.prices[0].unitAmount,
       currency: 'EUR',
     });
@@ -51,11 +146,64 @@ export default function BecomePremium() {
     user && StripeService.checkout([cart], user)
   }
 
-  const handleBuyCredits = () => {
+  const handleBuyCredits = async () => {
+    setPurchaseError(null);
+
+    // Use IAP on native platforms (iOS/Android)
+    if (isIAPAvailable && iapCreditsProduct) {
+      setIsPurchasingCredits(true);
+
+      trackEvent('checkout_started', {
+        product_type: 'credits',
+        payment_method: 'iap',
+        platform: IAPService.isIOS() ? 'ios' : 'android',
+        credit_amount: 20,
+        price: iapCreditsProduct.price,
+        currency: iapCreditsProduct.currencyCode,
+      });
+
+      try {
+        const result = await IAPService.purchaseCredits();
+
+        if (result.success && result.transactionId) {
+          // Verify purchase with backend
+          if (user && user.token) {
+            const verified = await IAPService.verifyCreditsPurchase(
+              result.transactionId,
+              user.email,
+              user.token
+            );
+
+            if (verified) {
+              trackEvent('purchase_completed', {
+                product_type: 'credits',
+                payment_method: 'iap',
+                credit_amount: 20,
+              });
+              navigate('/recettes');
+            } else {
+              setPurchaseError('Erreur de validation. Contactez le support.');
+            }
+          }
+        } else if (result.error === 'cancelled') {
+          // User cancelled, no error to show
+        } else {
+          setPurchaseError(result.error || 'Erreur lors de l\'achat');
+        }
+      } catch (error) {
+        setPurchaseError('Une erreur est survenue');
+      } finally {
+        setIsPurchasingCredits(false);
+      }
+      return;
+    }
+
+    // Use Stripe on web
     if (!credit20Product) return;
 
     trackEvent('checkout_started', {
       product_type: 'credits',
+      payment_method: 'stripe',
       credit_amount: 20,
       price: credit20Product.prices[0].unitAmount,
       currency: 'EUR',
@@ -142,7 +290,7 @@ export default function BecomePremium() {
       )}
 
       {/* HERO SECTION */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-cout-base via-cout-purple to-cout-purple py-20 px-4 md:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-br from-cout-base via-cout-purple to-cout-purple pb-20 px-4 md:pb-32" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 80px)" }}>
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-cout-yellow rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse delay-700"></div>
@@ -290,7 +438,12 @@ export default function BecomePremium() {
               <div className="text-white">
                 <h3 className="text-2xl font-bold mb-2">Premium</h3>
                 <div className="text-4xl font-bold mb-4">
-                  {premiumProduct ? `${(premiumProduct.prices[0].unitAmount).toFixed(2)}€` : '...'}
+                  {/* Display IAP price on native, Stripe price on web */}
+                  {isIAPAvailable && iapProduct
+                    ? iapProduct.priceString
+                    : premiumProduct
+                      ? `${(premiumProduct.prices[0].unitAmount).toFixed(2)}€`
+                      : '...'}
                   <span className="text-lg font-normal">/mois</span>
                 </div>
                 <p className="text-white/90 mb-6">Accès illimité à toutes les fonctionnalités</p>
@@ -311,12 +464,25 @@ export default function BecomePremium() {
                   ))}
                 </ul>
 
+                {purchaseError && (
+                  <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-sm">
+                    {purchaseError}
+                  </div>
+                )}
+
                 <button
                   onClick={() => handleSubscribe()}
-                  className="w-full py-4 bg-cout-yellow text-cout-purple font-bold rounded-lg text-lg hover:bg-yellow-400 transition-all duration-300 shadow-xl"
-                  disabled={!premiumProduct}
+                  className="w-full py-4 bg-cout-yellow text-cout-purple font-bold rounded-lg text-lg hover:bg-yellow-400 transition-all duration-300 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  disabled={isPurchasing || (!premiumProduct && !iapProduct)}
                 >
-                  S'abonner maintenant
+                  {isPurchasing ? (
+                    <>
+                      <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                      Achat en cours...
+                    </>
+                  ) : (
+                    "S'abonner maintenant"
+                  )}
                 </button>
               </div>
             </div>
@@ -325,7 +491,12 @@ export default function BecomePremium() {
             <div className="bg-secondary p-8 rounded-2xl border-2 border-border-color shadow-lg hover:shadow-xl transition-all duration-300">
               <h3 className="text-2xl font-bold text-text-primary mb-2">Pack Crédits</h3>
               <div className="text-4xl font-bold text-text-primary mb-4">
-                {credit20Product ? `${(credit20Product.prices[0].unitAmount).toFixed(2)}€` : '...'}
+                {/* Display IAP price on native, Stripe price on web */}
+                {isIAPAvailable && iapCreditsProduct
+                  ? iapCreditsProduct.priceString
+                  : credit20Product
+                    ? `${(credit20Product.prices[0].unitAmount).toFixed(2)}€`
+                    : '...'}
               </div>
               <p className="text-text-secondary mb-6">20 générations de recettes</p>
 
@@ -346,17 +517,71 @@ export default function BecomePremium() {
 
               <button
                 onClick={handleBuyCredits}
-                className="w-full py-4 bg-cout-base text-white font-bold rounded-lg text-lg hover:bg-indigo-500 transition-all duration-300"
-                disabled={!credit20Product}
+                className="w-full py-4 bg-cout-base text-white font-bold rounded-lg text-lg hover:bg-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={isPurchasingCredits || (!credit20Product && !iapCreditsProduct)}
               >
-                Acheter des crédits
+                {isPurchasingCredits ? (
+                  <>
+                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                    Achat en cours...
+                  </>
+                ) : (
+                  "Acheter des crédits"
+                )}
               </button>
             </div>
           </div>
 
           <p className="text-center text-text-secondary mt-8 text-sm">
-            💳 Paiement 100% sécurisé par Stripe • Annulation à tout moment
+            💳 Paiement 100% sécurisé {isIAPAvailable ? (IAPService.isIOS() ? 'via App Store' : 'via Google Play') : 'par Stripe'} • Annulation à tout moment
           </p>
+
+          {/* Apple legal text - required for App Store compliance (Guideline 3.1.2) */}
+          {isIAPAvailable && IAPService.isIOS() && (
+            <div className="mt-8 max-w-2xl mx-auto text-center">
+              <p className="text-text-secondary text-xs leading-relaxed">
+                Abonnement à renouvellement automatique. Le paiement sera débité de votre compte Apple ID
+                lors de la confirmation de l'achat. L'abonnement se renouvelle automatiquement sauf
+                annulation au moins 24 heures avant la fin de la période en cours. Votre compte sera
+                débité pour le renouvellement dans les 24 heures précédant la fin de la période en cours.
+                Vous pouvez gérer et annuler vos abonnements dans les réglages de votre compte App Store
+                après l'achat.
+              </p>
+              <div className="mt-4 flex justify-center gap-4 text-xs">
+                <button
+                  onClick={() => navigate('/legal/cgv')}
+                  className="text-cout-base hover:underline"
+                >
+                  Conditions Générales de Vente
+                </button>
+                <span className="text-text-secondary">•</span>
+                <button
+                  onClick={() => navigate('/legal/politique-de-confidentialite')}
+                  className="text-cout-base hover:underline"
+                >
+                  Politique de Confidentialité
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Restore purchases button - only on native platforms */}
+          {isIAPAvailable && (
+            <div className="text-center mt-6">
+              <button
+                onClick={async () => {
+                  const restored = await IAPService.restorePurchases();
+                  if (restored) {
+                    // Refresh user status after restore
+                    window.location.reload();
+                  }
+                }}
+                className="text-cout-base hover:text-cout-purple underline text-sm transition-colors"
+              >
+                Restaurer mes achats
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -410,10 +635,17 @@ export default function BecomePremium() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => handleSubscribe()}
-              className="px-10 py-5 bg-cout-yellow text-cout-purple font-bold rounded-lg text-xl shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300"
-              disabled={!premiumProduct}
+              className="px-10 py-5 bg-cout-yellow text-cout-purple font-bold rounded-lg text-xl shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              disabled={isPurchasing || (!premiumProduct && !iapProduct)}
             >
-              Devenir Premium maintenant
+              {isPurchasing ? (
+                <>
+                  <ArrowPathIcon className="w-6 h-6 animate-spin" />
+                  Achat en cours...
+                </>
+              ) : (
+                "Devenir Premium maintenant"
+              )}
             </button>
             <button
               onClick={handleBuyCredits}

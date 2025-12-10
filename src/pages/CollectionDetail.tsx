@@ -357,7 +357,7 @@ export default function CollectionDetail() {
 
 function CollectionDetailSkeleton({ isMobile }: { isMobile: boolean }) {
     return (
-        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
+        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
             {!isMobile && (
                 <Header back={true} home={true} title={true} profile={true} pageName="Collection" />
             )}
@@ -378,7 +378,7 @@ function CollectionNotFound({ error, isMobile }: { error: string | null; isMobil
     const navigate = useNavigate();
 
     return (
-        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
+        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
             {!isMobile && (
                 <Header back={true} home={true} title={true} profile={true} pageName="Collection" />
             )}
@@ -419,7 +419,7 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
     const hasParent = !!collection.parentCollectionUuid;
 
     return (
-        <div className="min-h-screen bg-bg-color px-4 pt-20 pb-8">
+        <div className="min-h-screen bg-bg-color px-4 pb-8 mobile-content-with-header">
             <div className="mb-6">
                 <EditableCollectionTitle
                     collectionUuid={collection.uuid!}

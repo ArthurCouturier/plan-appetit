@@ -3,7 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useNavigate } from "react-router-dom";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeSummaryInterface from "../../api/interfaces/recipes/RecipeSummaryInterface";
-import { ChevronRightIcon, UserGroupIcon, CurrencyEuroIcon, DocumentTextIcon } from "@heroicons/react/24/solid";
+import { ChevronRightIcon, UserGroupIcon, CurrencyEuroIcon, DocumentTextIcon, Bars3Icon } from "@heroicons/react/24/solid";
 import { DraggableAttributes } from "@dnd-kit/core";
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import DropPlaceholder from "./DropPlaceholder";
@@ -94,38 +94,47 @@ function DraggableRecipeCardMobile({
         <div
             ref={setNodeRef}
             style={style}
-            {...attributes}
-            {...listeners}
-            onClick={handleClick}
-            className="w-full bg-primary rounded-xl shadow-md border border-border-color p-4 hover:shadow-lg hover:border-cout-base transition-all duration-200 active:scale-[0.98] cursor-grab active:cursor-grabbing touch-none"
+            className="w-full bg-primary rounded-xl shadow-md border border-border-color p-4 hover:shadow-lg hover:border-cout-base transition-all duration-200 select-none flex items-center gap-3"
         >
-            <div className="flex items-center justify-between">
-                <div className="flex-1 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                        <DocumentTextIcon className="w-5 h-5 text-cout-base flex-shrink-0" />
-                        <h3 className="text-lg font-bold text-text-primary line-clamp-1">
-                            {recipe.name}
-                        </h3>
-                    </div>
+            {/* Drag handle */}
+            <div
+                {...attributes}
+                {...listeners}
+                className="flex-shrink-0 p-2 -m-2 cursor-grab active:cursor-grabbing touch-none"
+            >
+                <Bars3Icon className="w-5 h-5 text-text-secondary" />
+            </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary">
-                        <div className="flex items-center gap-1">
-                            <UserGroupIcon className="w-4 h-4 text-cout-base" />
-                            <span>{recipe.covers} pers</span>
+            {/* Clickable content */}
+            <div onClick={handleClick} className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                    <div className="flex-1 text-left min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                            <DocumentTextIcon className="w-5 h-5 text-cout-base flex-shrink-0" />
+                            <h3 className="text-lg font-bold text-text-primary line-clamp-1">
+                                {recipe.name}
+                            </h3>
                         </div>
 
-                        <span>{stepsCount} étape{stepsCount > 1 ? 's' : ''}</span>
-
-                        {recipe.buyPrice > 0 && (
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary">
                             <div className="flex items-center gap-1">
-                                <CurrencyEuroIcon className="w-4 h-4 text-cout-yellow" />
-                                <span>{Number(recipe.buyPrice).toFixed(2)}€/pers</span>
+                                <UserGroupIcon className="w-4 h-4 text-cout-base" />
+                                <span>{recipe.covers} pers</span>
                             </div>
-                        )}
-                    </div>
-                </div>
 
-                <ChevronRightIcon className="w-6 h-6 text-cout-base flex-shrink-0 ml-2" />
+                            <span>{stepsCount} étape{stepsCount > 1 ? 's' : ''}</span>
+
+                            {recipe.buyPrice > 0 && (
+                                <div className="flex items-center gap-1">
+                                    <CurrencyEuroIcon className="w-4 h-4 text-cout-yellow" />
+                                    <span>{Number(recipe.buyPrice).toFixed(2)}€/pers</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <ChevronRightIcon className="w-6 h-6 text-cout-base flex-shrink-0 ml-2" />
+                </div>
             </div>
         </div>
     );

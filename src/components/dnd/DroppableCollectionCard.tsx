@@ -3,7 +3,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useNavigate } from "react-router-dom";
 import RecipeCollectionInterface from "../../api/interfaces/collections/RecipeCollectionInterface";
-import { FolderIcon, DocumentTextIcon, ChevronRightIcon, LockClosedIcon, GlobeAltIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
+import { FolderIcon, DocumentTextIcon, ChevronRightIcon, LockClosedIcon, GlobeAltIcon, ArrowDownTrayIcon, Bars3Icon } from "@heroicons/react/24/solid";
 import { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import DropPlaceholder from "./DropPlaceholder";
 
@@ -108,7 +108,7 @@ function DroppableCollectionCardMobile({
             <div
                 ref={setNodeRef}
                 style={style}
-                className="w-full bg-cout-base/20 rounded-xl border-2 border-cout-base p-4 transition-all duration-200 scale-105"
+                className="w-full bg-cout-base/20 rounded-xl border-2 border-cout-base p-4 transition-all duration-200 scale-105 select-none"
             >
                 <div className="flex items-center justify-center gap-2">
                     <ArrowDownTrayIcon className="w-5 h-5 text-cout-base" />
@@ -124,41 +124,50 @@ function DroppableCollectionCardMobile({
         <div
             ref={setNodeRef}
             style={style}
-            {...attributes}
-            {...listeners}
-            onClick={handleClick}
-            className="w-full bg-primary rounded-xl shadow-md border border-border-color p-4 hover:shadow-lg hover:border-cout-base transition-all duration-200 active:scale-[0.98] cursor-grab active:cursor-grabbing touch-none"
+            className="w-full bg-primary rounded-xl shadow-md border border-border-color p-4 hover:shadow-lg hover:border-cout-base transition-all duration-200 select-none flex items-center gap-3"
         >
-            <div className="flex items-center justify-between">
-                <div className="flex-1 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                        <FolderIcon className="w-5 h-5 text-cout-base" />
-                        <h3 className="text-lg font-bold text-text-primary line-clamp-1">
-                            {collection.name}
-                        </h3>
-                        {collection.isPublic ? (
-                            <GlobeAltIcon className="w-4 h-4 text-green-500" />
-                        ) : (
-                            <LockClosedIcon className="w-4 h-4 text-text-secondary" />
-                        )}
-                    </div>
+            {/* Drag handle */}
+            <div
+                {...attributes}
+                {...listeners}
+                className="flex-shrink-0 p-2 -m-2 cursor-grab active:cursor-grabbing touch-none"
+            >
+                <Bars3Icon className="w-5 h-5 text-text-secondary" />
+            </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary">
-                        <div className="flex items-center gap-1">
-                            <DocumentTextIcon className="w-4 h-4 text-cout-base" />
-                            <span>{recipeCount} recette{recipeCount > 1 ? 's' : ''}</span>
+            {/* Clickable content */}
+            <div onClick={handleClick} className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                    <div className="flex-1 text-left min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                            <FolderIcon className="w-5 h-5 text-cout-base" />
+                            <h3 className="text-lg font-bold text-text-primary line-clamp-1">
+                                {collection.name}
+                            </h3>
+                            {collection.isPublic ? (
+                                <GlobeAltIcon className="w-4 h-4 text-green-500" />
+                            ) : (
+                                <LockClosedIcon className="w-4 h-4 text-text-secondary" />
+                            )}
                         </div>
 
-                        {subCollectionCount > 0 && (
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-text-secondary">
                             <div className="flex items-center gap-1">
-                                <FolderIcon className="w-4 h-4 text-cout-yellow" />
-                                <span>{subCollectionCount} sous-collection{subCollectionCount > 1 ? 's' : ''}</span>
+                                <DocumentTextIcon className="w-4 h-4 text-cout-base" />
+                                <span>{recipeCount} recette{recipeCount > 1 ? 's' : ''}</span>
                             </div>
-                        )}
-                    </div>
-                </div>
 
-                <ChevronRightIcon className="w-6 h-6 text-cout-base flex-shrink-0 ml-2" />
+                            {subCollectionCount > 0 && (
+                                <div className="flex items-center gap-1">
+                                    <FolderIcon className="w-4 h-4 text-cout-yellow" />
+                                    <span>{subCollectionCount} sous-collection{subCollectionCount > 1 ? 's' : ''}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <ChevronRightIcon className="w-6 h-6 text-cout-base flex-shrink-0 ml-2" />
+                </div>
             </div>
         </div>
     );

@@ -17,6 +17,8 @@ export default function Layout() {
   useEffect(() => {
     document.documentElement.classList.remove('theme1', 'theme2');
     document.documentElement.classList.add(theme);
+    document.body.classList.remove('theme1', 'theme2');
+    document.body.classList.add(theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
@@ -30,7 +32,7 @@ export default function Layout() {
   };
 
   return (
-    <div className={`w-full h-full ${theme}`}>
+    <div className={`w-full min-h-screen min-h-dvh bg-bg-color ${theme}`}>
       {!isMobile && <DarkModeButton mode={theme} changeMode={changeTheme} />}
       {isMobile && <HeaderMobile />}
       <Outlet />

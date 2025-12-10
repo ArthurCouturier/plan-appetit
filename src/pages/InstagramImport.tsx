@@ -198,7 +198,7 @@ export default function InstagramImport() {
         )}
 
         {/* Hero Section */}
-        <section className={`relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple ${user && !isMobile ? 'pt-12' : 'pt-12'} pb-32 px-4`}>
+        <section className="relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple pb-32 px-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}>
           <div className="absolute inset-0 overflow-hidden opacity-20">
             <div className="absolute top-20 left-10 w-64 h-64 bg-cout-yellow rounded-full blur-3xl animate-pulse"></div>
             <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>

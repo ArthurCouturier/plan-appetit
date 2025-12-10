@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signInWithPopup,
     GoogleAuthProvider,
+    OAuthProvider,
+    FacebookAuthProvider,
     sendPasswordResetEmail,
 } from 'firebase/auth';
 import {
@@ -15,6 +17,8 @@ import {
     CardFooter,
     Typography,
 } from '@material-tailwind/react';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { Capacitor } from '@capacitor/core';
 import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import { convertFirebaseUser } from '../api/authentication/convertFirebaseUser';
@@ -33,7 +37,7 @@ export default function LoginPage() {
     const { login } = useAuth();
     const { trackEvent, identify } = usePostHog();
 
-    const from = (location.state as { from?: string })?.from || '/myrecipes';
+    const from = (location.state as { from?: string })?.from || '/profile';
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -48,6 +52,26 @@ export default function LoginPage() {
 
     const passwordStrength = validatePassword(password);
     const passwordsMatch = password === confirmPassword;
+
+    const linkAnonymousRecipeIfExists = async () => {
+        const anonymousRecipeUuid = localStorage.getItem('anonymousRecipeUuid');
+        if (anonymousRecipeUuid) {
+            try {
+                const result = await SandboxService.linkAnonymousRecipe(anonymousRecipeUuid);
+                if (result.success) {
+                    localStorage.removeItem('anonymousRecipeUuid');
+                    console.log('Recette liée avec succès');
+                } else if (result.error === 'INSUFFICIENT_CREDITS') {
+                    console.warn('Quota insuffisant pour associer cette recette');
+                } else if (result.alreadyLinked) {
+                    localStorage.removeItem('anonymousRecipeUuid');
+                    console.log('Recette déjà liée');
+                }
+            } catch (err) {
+                console.error('Erreur lors de la liaison de la recette:', err);
+            }
+        }
+    };
 
     const handleModeSwitch = (newMode: boolean) => {
         setRegisterMode(newMode);
@@ -66,14 +90,61 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            let userData;
 
-            const userData = await convertFirebaseUser(userCredential.user);
-            localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
-            localStorage.setItem('email', userData.email ? userData.email : "");
-            localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
+            if (Capacitor.isNativePlatform()) {
+                console.log('Starting native Email Sign-In...');
+                const result = await FirebaseAuthentication.signInWithEmailAndPassword({ email, password });
+                console.log('Native email sign-in result user:', result.user?.email);
+
+                if (result.user) {
+                    localStorage.removeItem('userLoggedOut');
+
+                    const idTokenResult = await FirebaseAuthentication.getIdToken();
+
+                    localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
+                    localStorage.setItem('email', result.user.email || "");
+                    localStorage.setItem('profilePhoto', result.user.photoUrl || "/no-pp.jpg");
+
+                    userData = {
+                        uid: result.user.uid,
+                        email: result.user.email || "",
+                        displayName: result.user.displayName || result.user.email?.split('@')[0] || "Utilisateur",
+                        token: idTokenResult.token,
+                        provider: "email" as const,
+                        role: "MEMBER" as any,
+                        isPremium: false,
+                        createdAt: new Date(),
+                        profilePhoto: result.user.photoUrl || "/no-pp.jpg"
+                    };
+
+                    try {
+                        const backendUser = await BackendService.connectUser(
+                            userData.email,
+                            idTokenResult.token || ""
+                        );
+                        userData.role = backendUser.role;
+                        userData.isPremium = backendUser.isPremium;
+                    } catch (err) {
+                        console.warn('Backend sync failed, using default values');
+                    }
+                } else {
+                    throw new Error('Échec de la connexion par email');
+                }
+            } else {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+                localStorage.removeItem('userLoggedOut');
+
+                userData = await convertFirebaseUser(userCredential.user);
+                localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
+                localStorage.setItem('email', userData.email ? userData.email : "");
+                localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
+            }
 
             login(userData);
+
+            await linkAnonymousRecipeIfExists();
 
             identify(userData.uid, {
                 email: userData.email,
@@ -115,6 +186,9 @@ export default function LoginPage() {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const token = await userCredential.user.getIdToken();
+
+            // Supprimer le flag de déconnexion volontaire
+            localStorage.removeItem('userLoggedOut');
 
             localStorage.setItem('firebaseIdToken', token);
             localStorage.setItem('email', userCredential.user.email || "");
@@ -159,24 +233,7 @@ export default function LoginPage() {
 
             login(userData);
 
-            const anonymousRecipeUuid = localStorage.getItem('anonymousRecipeUuid');
-            if (anonymousRecipeUuid) {
-                try {
-                    const result = await SandboxService.linkAnonymousRecipe(anonymousRecipeUuid);
-
-                    if (result.success) {
-                        localStorage.removeItem('anonymousRecipeUuid');
-                        console.log('Recette liée avec succès');
-                    } else if (result.error === 'INSUFFICIENT_CREDITS') {
-                        console.warn('Quota insuffisant pour associer cette recette');
-                    } else if (result.alreadyLinked) {
-                        localStorage.removeItem('anonymousRecipeUuid');
-                        console.log('Recette déjà liée');
-                    }
-                } catch (err) {
-                    console.error('Erreur lors de la liaison de la recette:', err);
-                }
-            }
+            await linkAnonymousRecipeIfExists();
 
             identify(userData!.uid, {
                 email: userData!.email,
@@ -225,8 +282,84 @@ export default function LoginPage() {
         setError(null);
 
         try {
-            const provider = new GoogleAuthProvider();
-            const userCredential = await signInWithPopup(auth, provider);
+            let userCredential;
+
+            if (Capacitor.isNativePlatform()) {
+                // Sur iOS/Android natif, utiliser le plugin Capacitor Firebase
+                console.log('Starting native Google Sign-In...');
+                const result = await FirebaseAuthentication.signInWithGoogle();
+                console.log('Native sign-in result user:', result.user?.email);
+                console.log('Native sign-in has credential:', !!result.credential);
+                console.log('Native sign-in has idToken:', !!result.credential?.idToken);
+
+                if (result.user) {
+                    // L'utilisateur est connecté via Firebase natif
+                    // Supprimer le flag de déconnexion volontaire
+                    localStorage.removeItem('userLoggedOut');
+
+                    // Récupérer le Firebase ID Token pour le backend
+                    const idTokenResult = await FirebaseAuthentication.getIdToken();
+
+                    // Stocker les infos pour le backend
+                    localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
+                    localStorage.setItem('email', result.user.email || "");
+                    localStorage.setItem('profilePhoto', result.user.photoUrl || "/no-pp.jpg");
+
+                    // Créer userData manuellement depuis le résultat natif
+                    const userData = {
+                        uid: result.user.uid,
+                        email: result.user.email || "",
+                        displayName: result.user.displayName || result.user.email?.split('@')[0] || "Utilisateur",
+                        token: idTokenResult.token,
+                        provider: "google" as const,
+                        role: "MEMBER" as any,
+                        isPremium: false,
+                        createdAt: new Date(),
+                        profilePhoto: result.user.photoUrl || "/no-pp.jpg"
+                    };
+
+                    // Appeler le backend pour synchroniser l'utilisateur
+                    try {
+                        const backendUser = await BackendService.connectUser(
+                            userData.email,
+                            idTokenResult.token || ""
+                        );
+                        userData.role = backendUser.role;
+                        userData.isPremium = backendUser.isPremium;
+                    } catch (err) {
+                        console.warn('Backend sync failed, using default values');
+                    }
+
+                    login(userData);
+
+                    await linkAnonymousRecipeIfExists();
+
+                    identify(userData.uid, {
+                        email: userData.email,
+                        provider: 'google',
+                        role: userData.role,
+                        isPremium: userData.isPremium,
+                    });
+
+                    trackEvent('user_logged_in', {
+                        method: 'google',
+                        from: from,
+                    });
+
+                    navigate(from, { replace: true });
+                    setLoading(false);
+                    return;
+                } else {
+                    throw new Error('Échec de la connexion Google');
+                }
+            } else {
+                // Sur web, utiliser popup
+                const provider = new GoogleAuthProvider();
+                userCredential = await signInWithPopup(auth, provider);
+            }
+
+            // Supprimer le flag de déconnexion volontaire
+            localStorage.removeItem('userLoggedOut');
 
             const userData = await convertFirebaseUser(userCredential.user);
             localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
@@ -234,6 +367,8 @@ export default function LoginPage() {
             localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
 
             login(userData);
+
+            await linkAnonymousRecipeIfExists();
 
             identify(userData.uid, {
                 email: userData.email,
@@ -254,7 +389,247 @@ export default function LoginPage() {
         setLoading(false);
     };
 
+    const handleAppleLogin = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            let userCredential;
+
+            if (Capacitor.isNativePlatform()) {
+                console.log('Starting native Apple Sign-In...');
+                const result = await FirebaseAuthentication.signInWithApple();
+                console.log('Native Apple sign-in result user:', result.user?.email);
+
+                if (result.user) {
+                    localStorage.removeItem('userLoggedOut');
+
+                    const idTokenResult = await FirebaseAuthentication.getIdToken();
+
+                    localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
+                    localStorage.setItem('email', result.user.email || "");
+                    localStorage.setItem('profilePhoto', result.user.photoUrl || "/no-pp.jpg");
+
+                    const userData = {
+                        uid: result.user.uid,
+                        email: result.user.email || "",
+                        displayName: result.user.displayName || result.user.email?.split('@')[0] || "Utilisateur",
+                        token: idTokenResult.token,
+                        provider: "apple" as const,
+                        role: "MEMBER" as any,
+                        isPremium: false,
+                        createdAt: new Date(),
+                        profilePhoto: result.user.photoUrl || "/no-pp.jpg"
+                    };
+
+                    try {
+                        const backendUser = await BackendService.connectUser(
+                            userData.email,
+                            idTokenResult.token || ""
+                        );
+                        userData.role = backendUser.role;
+                        userData.isPremium = backendUser.isPremium;
+                    } catch (err) {
+                        console.warn('Backend sync failed, using default values');
+                    }
+
+                    login(userData);
+
+                    await linkAnonymousRecipeIfExists();
+
+                    identify(userData.uid, {
+                        email: userData.email,
+                        provider: 'apple',
+                        role: userData.role,
+                        isPremium: userData.isPremium,
+                    });
+
+                    trackEvent('user_logged_in', {
+                        method: 'apple',
+                        from: from,
+                    });
+
+                    navigate(from, { replace: true });
+                    setLoading(false);
+                    return;
+                } else {
+                    throw new Error('Échec de la connexion Apple');
+                }
+            } else {
+                const provider = new OAuthProvider('apple.com');
+                provider.addScope('email');
+                provider.addScope('name');
+                userCredential = await signInWithPopup(auth, provider);
+            }
+
+            localStorage.removeItem('userLoggedOut');
+
+            const userData = await convertFirebaseUser(userCredential.user);
+            localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
+            localStorage.setItem('email', userData.email ? userData.email : "");
+            localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
+
+            login(userData);
+
+            await linkAnonymousRecipeIfExists();
+
+            identify(userData.uid, {
+                email: userData.email,
+                provider: 'apple',
+                role: userData.role,
+                isPremium: userData.isPremium,
+            });
+
+            trackEvent('user_logged_in', {
+                method: 'apple',
+                from: from,
+            });
+
+            navigate(from, { replace: true });
+        } catch (err: unknown) {
+            setError(getFirebaseErrorMessage(err));
+        }
+        setLoading(false);
+    };
+
+    const handleFacebookLogin = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            let userCredential;
+
+            if (Capacitor.isNativePlatform()) {
+                console.log('Starting native Facebook Sign-In...');
+                const result = await FirebaseAuthentication.signInWithFacebook();
+                console.log('Native Facebook sign-in result user:', result.user?.email);
+
+                if (result.user) {
+                    localStorage.removeItem('userLoggedOut');
+
+                    const idTokenResult = await FirebaseAuthentication.getIdToken();
+
+                    localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
+                    localStorage.setItem('email', result.user.email || "");
+                    localStorage.setItem('profilePhoto', result.user.photoUrl || "/no-pp.jpg");
+
+                    const userData = {
+                        uid: result.user.uid,
+                        email: result.user.email || "",
+                        displayName: result.user.displayName || result.user.email?.split('@')[0] || "Utilisateur",
+                        token: idTokenResult.token,
+                        provider: "facebook" as const,
+                        role: "MEMBER" as any,
+                        isPremium: false,
+                        createdAt: new Date(),
+                        profilePhoto: result.user.photoUrl || "/no-pp.jpg"
+                    };
+
+                    try {
+                        const backendUser = await BackendService.connectUser(
+                            userData.email,
+                            idTokenResult.token || ""
+                        );
+                        userData.role = backendUser.role;
+                        userData.isPremium = backendUser.isPremium;
+                    } catch (err) {
+                        console.warn('Backend sync failed, using default values');
+                    }
+
+                    login(userData);
+
+                    await linkAnonymousRecipeIfExists();
+
+                    identify(userData.uid, {
+                        email: userData.email,
+                        provider: 'facebook',
+                        role: userData.role,
+                        isPremium: userData.isPremium,
+                    });
+
+                    trackEvent('user_logged_in', {
+                        method: 'facebook',
+                        from: from,
+                    });
+
+                    navigate(from, { replace: true });
+                    setLoading(false);
+                    return;
+                } else {
+                    throw new Error('Échec de la connexion Facebook');
+                }
+            } else {
+                const provider = new FacebookAuthProvider();
+                provider.addScope('email');
+                provider.addScope('public_profile');
+                userCredential = await signInWithPopup(auth, provider);
+            }
+
+            localStorage.removeItem('userLoggedOut');
+
+            const userData = await convertFirebaseUser(userCredential.user);
+            localStorage.setItem('firebaseIdToken', userData.token ? userData.token : "");
+            localStorage.setItem('email', userData.email ? userData.email : "");
+            localStorage.setItem('profilePhoto', userData.profilePhoto ? userData.profilePhoto : "/no-pp.jpg");
+
+            login(userData);
+
+            await linkAnonymousRecipeIfExists();
+
+            identify(userData.uid, {
+                email: userData.email,
+                provider: 'facebook',
+                role: userData.role,
+                isPremium: userData.isPremium,
+            });
+
+            trackEvent('user_logged_in', {
+                method: 'facebook',
+                from: from,
+            });
+
+            navigate(from, { replace: true });
+        } catch (err: unknown) {
+            setError(getFirebaseErrorMessage(err));
+        }
+        setLoading(false);
+    };
+
     const [isMobile, setIsMobile] = useState(false);
+    const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+    // Refs pour les inputs (navigation clavier et scroll)
+    const emailInputRef = useRef<HTMLInputElement>(null);
+    const passwordInputRef = useRef<HTMLInputElement>(null);
+    const confirmPasswordInputRef = useRef<HTMLInputElement>(null);
+
+    // Fonction pour scroller l'input au-dessus du clavier
+    const handleInputFocus = (element: HTMLElement | null) => {
+        setIsKeyboardOpen(true);
+        if (element && Capacitor.isNativePlatform()) {
+            setTimeout(() => {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
+    };
+
+    const handleInputBlur = () => {
+        // Petit délai pour éviter le clignotement lors du passage d'un input à l'autre
+        setTimeout(() => {
+            if (document.activeElement?.tagName !== 'INPUT') {
+                setIsKeyboardOpen(false);
+            }
+        }, 100);
+    };
+
+    // Navigation entre les champs
+    const focusNextInput = (currentField: 'email' | 'password' | 'confirmPassword') => {
+        if (currentField === 'email') {
+            passwordInputRef.current?.focus();
+        } else if (currentField === 'password' && registerMode) {
+            confirmPasswordInputRef.current?.focus();
+        }
+    };
 
     useEffect(() => {
         const handleResize = () => {
@@ -268,10 +643,11 @@ export default function LoginPage() {
     }, []);
 
     return (
-        <div className='mt-4 md:mt-0 flex flex-col bg-bg-color p-6 rounded-md'>
-            {isMobile ? null : <LoginHeader />}
-            <div className="flex items-center justify-center mt-4">
-                <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
+        <div className={`flex flex-col bg-bg-color ${isMobile ? 'mobile-content-with-header' : 'mt-4 md:mt-0 p-6 rounded-md'}`}>
+            <LoginHeader isMobile={isMobile} />
+            <div className={`flex-1 ${isMobile ? `overflow-y-auto px-4 ${isKeyboardOpen ? 'pb-[300px]' : 'pb-8'}` : ''}`}>
+                <div className={`flex items-center justify-center ${isMobile ? 'min-h-full py-4' : 'mt-4'}`}>
+                    <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                     <CardBody className="flex flex-col gap-4" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                         <Typography variant="h4" className="text-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                             {registerMode ? "Inscription" : "Connexion"}
@@ -304,6 +680,26 @@ export default function LoginPage() {
                                     </svg>
                                     Se connecter avec Google
                                 </button>
+                                <button
+                                    onClick={handleAppleLogin}
+                                    disabled={loading}
+                                    className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-black hover:bg-gray-900 text-white font-semibold rounded-lg border-2 border-black transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                                    </svg>
+                                    Se connecter avec Apple
+                                </button>
+                                <button
+                                    onClick={handleFacebookLogin}
+                                    disabled={loading}
+                                    className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#1877F2] hover:bg-[#166FE5] text-white font-semibold rounded-lg border-2 border-[#1877F2] hover:border-[#166FE5] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                    </svg>
+                                    Se connecter avec Facebook
+                                </button>
                                 <Typography variant="small" className="text-center text-gray-500" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                                     ou
                                 </Typography>
@@ -316,6 +712,18 @@ export default function LoginPage() {
                                 label="Email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                onFocus={(e) => handleInputFocus(e.target)}
+                                onBlur={handleInputBlur}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        focusNextInput('email');
+                                    }
+                                }}
+                                inputRef={emailInputRef}
+                                inputMode="email"
+                                autoComplete="email"
+                                enterKeyHint="next"
                                 required
                                 onPointerEnterCapture={undefined}
                                 onPointerLeaveCapture={undefined}
@@ -333,6 +741,19 @@ export default function LoginPage() {
                                             setPasswordTouched(true);
                                         }
                                     }}
+                                    onFocus={(e) => handleInputFocus(e.target)}
+                                    onBlur={handleInputBlur}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            if (registerMode) {
+                                                e.preventDefault();
+                                                focusNextInput('password');
+                                            }
+                                        }
+                                    }}
+                                    inputRef={passwordInputRef}
+                                    autoComplete={registerMode ? "new-password" : "current-password"}
+                                    enterKeyHint={registerMode ? "next" : "done"}
                                     required
                                     onPointerEnterCapture={undefined}
                                     onPointerLeaveCapture={undefined}
@@ -360,6 +781,11 @@ export default function LoginPage() {
                                             label="Confirmer le mot de passe"
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
+                                            onFocus={(e) => handleInputFocus(e.target)}
+                                            onBlur={handleInputBlur}
+                                            inputRef={confirmPasswordInputRef}
+                                            autoComplete="new-password"
+                                            enterKeyHint="done"
                                             required
                                             onPointerEnterCapture={undefined}
                                             onPointerLeaveCapture={undefined}
@@ -477,19 +903,21 @@ export default function LoginPage() {
                             </Typography>
                         </CardFooter>
                     )}
-                </Card>
+                    </Card>
+                </div>
             </div>
         </div>
     );
 };
 
-function LoginHeader() {
+function LoginHeader({ isMobile }: { isMobile: boolean }) {
     return (
         <Header
             back={true}
             home={true}
-            title={true}
+            title={!isMobile}
             profile={false}
+            pageName={isMobile ? "Connexion" : undefined}
         />
     )
 }

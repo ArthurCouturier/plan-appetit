@@ -9,7 +9,14 @@ export default function Recipes() {
 
     useEffect(() => {
         const redirectToDefaultCollection = async () => {
-            if (!user) return;
+            // Attendre que le statut d'authentification soit déterminé
+            if (user === undefined) return;
+
+            // Si l'utilisateur n'est pas connecté, rediriger vers login
+            if (user === null) {
+                navigate('/login', { replace: true });
+                return;
+            }
 
             try {
                 const defaultCollection = await CollectionService.getDefaultCollection();

@@ -1,7 +1,7 @@
 # CONDITIONS GÉNÉRALES DE VENTE
 # Plan Appetit - Abonnement Premium
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 10/12/2025**
 
 ---
 
@@ -154,6 +154,30 @@ Vous recevrez un email de rappel au moins 7 jours avant chaque renouvellement.
 
 **Résiliation :**
 Vous pouvez résilier à tout moment avant la date de renouvellement (voir section 10).
+
+### 6.5 Achats via l'App Store (Apple)
+
+Pour les achats effectués via l'application iOS depuis l'App Store d'Apple :
+
+**Processus de paiement :**
+- Le paiement est traité directement par Apple via votre compte Apple ID
+- Plan Appetit ne collecte pas vos informations de paiement pour ces transactions
+
+**Abonnement à renouvellement automatique :**
+- Le paiement sera débité de votre compte Apple ID lors de la confirmation de l'achat
+- L'abonnement se renouvelle automatiquement sauf annulation au moins 24 heures avant la fin de la période en cours
+- Votre compte sera débité pour le renouvellement dans les 24 heures précédant la fin de la période en cours
+
+**Gestion et annulation :**
+- Vous pouvez gérer et annuler vos abonnements dans les réglages de votre compte App Store après l'achat
+- Allez dans Réglages > [Votre nom] > Abonnements sur votre appareil iOS
+
+**Remboursements :**
+- Les demandes de remboursement pour les achats effectués via l'App Store doivent être adressées directement à Apple
+- Consultez la politique de remboursement d'Apple : https://support.apple.com/fr-fr/HT204084
+
+**Conditions applicables :**
+- Les achats via l'App Store sont également soumis aux conditions d'utilisation d'Apple : https://www.apple.com/legal/internet-services/itunes/
 
 ---
 
@@ -392,6 +416,6 @@ Le consommateur peut choisir entre la résolution de la vente ou une réduction 
 
 ---
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 10/12/2025**
 
-**Version : 1.0**
+**Version : 1.1**

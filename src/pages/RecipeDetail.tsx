@@ -129,7 +129,7 @@ export default function RecipeDetail() {
 
     if (loading) {
         return (
-            <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
+            <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
                 {!isMobile && <RecipeHeader />}
                 <div className="bg-primary rounded-xl shadow-lg border border-border-color p-12 mt-4 text-center">
                     <div className="animate-spin w-12 h-12 border-4 border-cout-base border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -141,7 +141,7 @@ export default function RecipeDetail() {
 
     if (notFound || !recipe) {
         return (
-            <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
+            <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
                 {!isMobile && <RecipeHeader />}
                 <RecipeNotFound />
             </div>
@@ -149,7 +149,7 @@ export default function RecipeDetail() {
     }
 
     return (
-        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pt-20 pb-24' : 'p-6'}`}>
+        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
             {!isMobile && <RecipeHeader />}
 
             {/* Recipe Title Card */}

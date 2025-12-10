@@ -12,10 +12,11 @@ import SubscriptionService from '../api/services/SubscriptionService';
 import CreditPaywallModal from '../components/popups/CreditPaywallModal';
 import CancelSubscriptionModal from '../components/popups/CancelSubscriptionModal';
 import DeleteAccountModal from '../components/popups/DeleteAccountModal';
+import ExportDataModal from '../components/popups/ExportDataModal';
 import PremiumStatusCard from '../components/account/PremiumStatusCard';
 import NotificationSettings from '../components/account/NotificationSettings';
 import AccountDeletionService from '../api/services/AccountDeletionService';
-import { SunIcon, MoonIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, TrashIcon, XCircleIcon } from "@heroicons/react/24/solid";
+import { SunIcon, MoonIcon, KeyIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, TrashIcon, XCircleIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
 import { isPremiumUser } from '../api/interfaces/users/UserInterface';
 import { SubscriptionStatusInterface } from '../api/interfaces/subscription/SubscriptionStatusInterface';
 import CreditIcon from '../components/icons/CreditIcon';
@@ -45,6 +46,7 @@ export default function Account() {
     const [subscriptionLoading, setSubscriptionLoading] = useState(false);
     const [deletionScheduled, setDeletionScheduled] = useState<string | null>(null);
     const [cancellingDeletion, setCancellingDeletion] = useState(false);
+    const [showExportModal, setShowExportModal] = useState(false);
 
     const fetchAccountInfo = async () => {
         const token = localStorage.getItem('firebaseIdToken');
@@ -269,6 +271,13 @@ export default function Account() {
                         subscriptionSource={subscriptionStatus?.subscriptionSource}
                     />
 
+                    {/* Modal d'export des données */}
+                    <ExportDataModal
+                        isOpen={showExportModal}
+                        onClose={() => setShowExportModal(false)}
+                        userEmail={user?.email || ''}
+                    />
+
                     {/* Carte de statut Premium pour les utilisateurs premium */}
                     {isUserPremium && (
                         <PremiumStatusCard
@@ -394,6 +403,15 @@ export default function Account() {
                         >
                             <ArrowRightOnRectangleIcon className="w-5 h-5" />
                             Se déconnecter
+                        </button>
+
+                        {/* Bouton d'export des données */}
+                        <button
+                            onClick={() => setShowExportModal(true)}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary border border-border-color text-text-primary font-semibold rounded-xl hover:bg-cout-base/10 hover:border-cout-base/50 transition-all duration-200"
+                        >
+                            <ArrowDownTrayIcon className="w-5 h-5" />
+                            Exporter mes données
                         </button>
 
                         {/* Bouton de suppression de compte */}

@@ -536,6 +536,35 @@ export default function BecomePremium() {
             💳 Paiement 100% sécurisé {isIAPAvailable ? (IAPService.isIOS() ? 'via App Store' : 'via Google Play') : 'par Stripe'} • Annulation à tout moment
           </p>
 
+          {/* Apple legal text - required for App Store compliance (Guideline 3.1.2) */}
+          {isIAPAvailable && IAPService.isIOS() && (
+            <div className="mt-8 max-w-2xl mx-auto text-center">
+              <p className="text-text-secondary text-xs leading-relaxed">
+                Abonnement à renouvellement automatique. Le paiement sera débité de votre compte Apple ID
+                lors de la confirmation de l'achat. L'abonnement se renouvelle automatiquement sauf
+                annulation au moins 24 heures avant la fin de la période en cours. Votre compte sera
+                débité pour le renouvellement dans les 24 heures précédant la fin de la période en cours.
+                Vous pouvez gérer et annuler vos abonnements dans les réglages de votre compte App Store
+                après l'achat.
+              </p>
+              <div className="mt-4 flex justify-center gap-4 text-xs">
+                <button
+                  onClick={() => navigate('/legal/cgv')}
+                  className="text-cout-base hover:underline"
+                >
+                  Conditions Générales de Vente
+                </button>
+                <span className="text-text-secondary">•</span>
+                <button
+                  onClick={() => navigate('/legal/politique-de-confidentialite')}
+                  className="text-cout-base hover:underline"
+                >
+                  Politique de Confidentialité
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Restore purchases button - only on native platforms */}
           {isIAPAvailable && (
             <div className="text-center mt-6">

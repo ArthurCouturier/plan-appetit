@@ -4,12 +4,13 @@ import BackendService from "../../api/services/BackendService";
 interface RecipeImageProps {
     recipeUuid: string;
     isGenerated: boolean;
+    isOwner: boolean;
     className?: string;
 }
 
 type ImageState = "idle" | "loading" | "generating" | "no-image" | "error" | "ready";
 
-export default function RecipeImage({ recipeUuid, isGenerated, className = "" }: RecipeImageProps) {
+export default function RecipeImage({ recipeUuid, isGenerated, isOwner, className = "" }: RecipeImageProps) {
 
     const [imageData, setImageData] = useState<string | null>(null);
     const [state, setState] = useState<ImageState>("idle");
@@ -20,15 +21,10 @@ export default function RecipeImage({ recipeUuid, isGenerated, className = "" }:
         setState("loading");
 
         try {
-            const email = localStorage.getItem("email") as string;
-            const token = localStorage.getItem("firebaseIdToken") as string;
+            const email = localStorage.getItem("email");
+            const token = localStorage.getItem("firebaseIdToken");
 
-            if (!email || !token) {
-                setState("error");
-                return;
-            }
-
-            const response = await BackendService.getRecipeImage(email, token, recipeUuid);
+            const response = await BackendService.getRecipeImage(recipeUuid, email, token);
 
             if (response === null) {
                 setState("no-image");
@@ -125,12 +121,18 @@ export default function RecipeImage({ recipeUuid, isGenerated, className = "" }:
                         <p className="text-text-secondary mb-4">
                             Aucune image pour cette recette
                         </p>
-                        <button
-                            onClick={handleGenerateImage}
-                            className="px-4 py-2 bg-cout-base text-white rounded-lg hover:bg-cout-base/80 transition-colors font-medium"
-                        >
-                            Générer le visuel
-                        </button>
+                        {isOwner ? (
+                            <button
+                                onClick={handleGenerateImage}
+                                className="px-4 py-2 bg-cout-base text-white rounded-lg hover:bg-cout-base/80 transition-colors font-medium"
+                            >
+                                Générer le visuel
+                            </button>
+                        ) : (
+                            <p className="text-text-secondary text-sm italic">
+                                Le propriétaire de la recette peut générer l'image
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

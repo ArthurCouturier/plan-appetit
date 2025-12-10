@@ -30,16 +30,21 @@ export default class BackendService {
 
     public static async getRecipeByUuid(
         uuid: string,
-        email: string,
-        token: string
+        email?: string | null,
+        token?: string | null
     ): Promise<RecipeInterface | null> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/${uuid}`, {
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+
+        if (email && token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            headers['Email'] = email;
+        }
+
+        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/${uuid}`, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Email': email,
-            },
+            headers,
         });
 
         if (response.status === 404) {
@@ -378,17 +383,22 @@ export default class BackendService {
     }
 
     public static async getRecipeImage(
-        email: string,
-        token: string,
-        recipeUuid: string
+        recipeUuid: string,
+        email?: string | null,
+        token?: string | null
     ): Promise<{ recipeUuid: string; imageData: string; generated: boolean } | null> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/${recipeUuid}/image`, {
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+
+        if (email && token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            headers['Email'] = email;
+        }
+
+        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/${recipeUuid}/image`, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Email': email
-            },
+            headers,
         });
 
         if (response.status === 400) {

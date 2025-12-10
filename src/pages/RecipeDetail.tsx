@@ -68,9 +68,12 @@ export default function RecipeDetail() {
 
     useEffect(() => {
         const fetchUserCredits = async () => {
+            const email = localStorage.getItem("email");
+            const token = localStorage.getItem("firebaseIdToken");
+
+            if (!email || !token) return;
+
             try {
-                const email = localStorage.getItem("email") as string;
-                const token = localStorage.getItem("firebaseIdToken") as string;
                 const credits = await BackendService.getUserCredits(email, token);
                 setUserCredits(credits);
             } catch (error) {
@@ -214,6 +217,7 @@ export default function RecipeDetail() {
                     <RecipeImage
                         recipeUuid={recipe.uuid.toString()}
                         isGenerated={recipe.isGenerated}
+                        isOwner={recipe.isOwner}
                         className="mt-4"
                     />
                     <RecipeContent recipe={recipe} isMobile={isMobile} />
@@ -241,6 +245,7 @@ export default function RecipeDetail() {
                             <RecipeImage
                                 recipeUuid={recipe.uuid.toString()}
                                 isGenerated={recipe.isGenerated}
+                                isOwner={recipe.isOwner}
                             />
 
                             {/* Étapes */}

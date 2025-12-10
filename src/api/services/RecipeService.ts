@@ -5,12 +5,8 @@ import BackendService from "./BackendService";
 export default class RecipeService {
 
     static async fetchRecipeByUuid(uuid: string): Promise<RecipeInterface | null> {
-        const email: string = localStorage.getItem('email') as string;
-        const token: string = localStorage.getItem('firebaseIdToken') as string;
-
-        if (!email || !token) {
-            throw new Error('User not logged in');
-        }
+        const email = localStorage.getItem('email');
+        const token = localStorage.getItem('firebaseIdToken');
 
         return BackendService.getRecipeByUuid(uuid, email, token);
     }

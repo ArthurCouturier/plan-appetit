@@ -9,6 +9,7 @@ import RecipeLocationGeneration from "./pages/RecipeLocationGeneration";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
 import Account from "./pages/Account";
+import AccountSettings from "./pages/AccountSettings";
 import MyRecipes from "./pages/MyRecipes";
 import Layout from "./components/global/Layout";
 import BecomePremium from "./pages/BecomePremium";
@@ -66,6 +67,10 @@ const router = createBrowserRouter([
                     {
                         path: "profile",
                         element: <Account />,
+                    },
+                    {
+                        path: "profile/settings",
+                        element: <AccountSettings />,
                     },
                     {
                         path: "recettes/generer/localisation",

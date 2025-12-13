@@ -9,6 +9,7 @@ import { PostHogProvider } from './contexts/PostHogContext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <meta name="facebook-domain-verification" content="8cwoijjv8z0tzhs29lmydvgv939dos" />
     <PostHogProvider>
       <RecipeProvider>
         <ThemeProvider>

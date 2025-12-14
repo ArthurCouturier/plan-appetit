@@ -1,7 +1,7 @@
 # CONDITIONS GÉNÉRALES D'UTILISATION
 # Plan Appetit
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 14/12/2024**
 
 ---
 
@@ -93,7 +93,7 @@ Le compte Premium offre :
 
 ### 4.3 Génération de recettes par IA
 
-Plan Appetit utilise l'API OpenAI (GPT-5) pour générer des recettes personnalisées en fonction de :
+Plan Appetit utilise l'API OpenAI (GPT-4o) pour générer des recettes personnalisées en fonction de :
 - La localisation géographique
 - La saison
 - Les ingrédients disponibles
@@ -271,6 +271,6 @@ Pour toute question concernant les présentes CGU, vous pouvez nous contacter :
 
 ---
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 14/12/2024**
 
-**Version : 1.0**
+**Version : 1.1**

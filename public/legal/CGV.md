@@ -1,7 +1,7 @@
 # CONDITIONS GÉNÉRALES DE VENTE
 # Plan Appetit - Abonnement Premium
 
-**Date de dernière mise à jour : 10/12/2025**
+**Date de dernière mise à jour : 14/12/2024**
 
 ---
 
@@ -34,7 +34,7 @@ L'acheteur reconnaît avoir pris connaissance des présentes CGV et les avoir ac
 
 L'abonnement **Plan Appetit Premium** est un service numérique permettant :
 
-✅ **Génération illimitée de recettes** par intelligence artificielle (OpenAI GPT-4)
+✅ **Génération illimitée de recettes** par intelligence artificielle (OpenAI GPT-4o)
 ✅ Toutes les fonctionnalités du compte gratuit
 ✅ Accès prioritaire aux nouvelles fonctionnalités
 ✅ Support client prioritaire
@@ -178,6 +178,11 @@ Pour les achats effectués via l'application iOS depuis l'App Store d'Apple :
 
 **Conditions applicables :**
 - Les achats via l'App Store sont également soumis aux conditions d'utilisation d'Apple : https://www.apple.com/legal/internet-services/itunes/
+
+**Restauration des achats :**
+- Si vous changez d'appareil ou réinstallez l'application, vous pouvez restaurer vos achats précédents
+- Allez dans Réglages > [Votre nom] > Abonnements sur votre appareil iOS
+- Vos achats sont liés à votre identifiant Apple et seront automatiquement restaurés lors de la connexion avec le même compte
 
 ---
 
@@ -392,12 +397,14 @@ Les contrats en cours restent soumis aux CGV en vigueur au moment de la souscrip
 
 ---
 
-## 16. CONTACT
+## 16. CONTACT ET SUPPORT
 
-Pour toute question concernant les présentes CGV ou votre abonnement :
+Pour toute question concernant les présentes CGV, votre abonnement, ou pour obtenir de l'aide :
 
-**Email :** arthur.couturier@plan-appetit.fr
+**Support client :** arthur.couturier@plan-appetit.fr
 **Téléphone :** +33 7 83 70 28 62
+**Délai de réponse :** 48h ouvrées maximum
+
 **Adresse :**
 Couturier Arthur
 20 port Saint Sauveur, 31400, Toulouse, France
@@ -416,6 +423,6 @@ Le consommateur peut choisir entre la résolution de la vente ou une réduction 
 
 ---
 
-**Date de dernière mise à jour : 10/12/2025**
+**Date de dernière mise à jour : 14/12/2024**
 
-**Version : 1.1**
+**Version : 1.2**

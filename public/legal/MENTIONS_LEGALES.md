@@ -1,7 +1,7 @@
 # MENTIONS LÉGALES
 # Plan Appetit
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 14/12/2024**
 
 ---
 
@@ -185,6 +185,6 @@ Couturier Arthur
 
 ---
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 14/12/2024**
 
-**Version : 1.0**
+**Version : 1.1**

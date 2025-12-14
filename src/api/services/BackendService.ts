@@ -11,8 +11,15 @@ export default class BackendService {
     static baseUrl: string = import.meta.env.VITE_API_URL;
     static port: string = import.meta.env.VITE_API_PORT;
 
+    private static getApiUrl(): string {
+        if (this.port) {
+            return `${this.baseUrl}:${this.port}`;
+        }
+        return this.baseUrl;
+    }
+
     public static async registerNewUser(user: UserInterface, token: string): Promise<UserInterface> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/register`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -42,7 +49,7 @@ export default class BackendService {
             headers['Email'] = email;
         }
 
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/${uuid}`, {
+        const response = await fetch(`${this.getApiUrl()}/api/v1/recipes/${uuid}`, {
             method: 'GET',
             headers,
         });
@@ -62,7 +69,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/create`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/recipes/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -83,7 +90,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/import`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/recipes/import`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -105,7 +112,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<RecipeInterface | null> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/generate`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/recipes/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -137,7 +144,7 @@ export default class BackendService {
         token: string,
         recipeUuid: string
     ): Promise<void> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/delete/${recipeUuid}`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/recipes/delete/${recipeUuid}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -156,7 +163,7 @@ export default class BackendService {
         token: string,
         recipe: RecipeInterface
     ): Promise<RecipeInterface> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/update`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/recipes/update`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -177,7 +184,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<number> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/credits`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/credits`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -197,7 +204,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<UserAccountInfoInterface> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/account-info`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/account-info`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -217,7 +224,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<UserInterface> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/connect`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/connect`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -237,7 +244,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<StatisticsInterface> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/statistics`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/statistics`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -257,7 +264,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<SuccessInterface> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/success`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/success`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -278,7 +285,7 @@ export default class BackendService {
         token: string,
         successType: string
     ): Promise<SuccessClaimResponse> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/success/claim/${successType}`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/success/claim/${successType}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -298,7 +305,7 @@ export default class BackendService {
         email: string,
         token: string
     ): Promise<{ success: boolean }> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/users/track-export`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/track-export`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -320,7 +327,7 @@ export default class BackendService {
         recipeUuid: string,
         prompt: string
     ): Promise<RecipeInterface> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/${recipeUuid}/modifications`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/recipes/${recipeUuid}/modifications`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -354,7 +361,7 @@ export default class BackendService {
         token: string,
         recipeUuid: string
     ): Promise<RecipeInterface> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/${recipeUuid}/modifications/purchase`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/recipes/${recipeUuid}/modifications/purchase`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -396,7 +403,7 @@ export default class BackendService {
             headers['Email'] = email;
         }
 
-        const response = await fetch(`${this.baseUrl}:${this.port}/api/v1/recipes/${recipeUuid}/image`, {
+        const response = await fetch(`${this.getApiUrl()}/api/v1/recipes/${recipeUuid}/image`, {
             method: 'GET',
             headers,
         });
@@ -425,7 +432,7 @@ export default class BackendService {
         token: string,
         recipeUuid: string
     ): Promise<{ recipeUuid: string; imageData: string; generated: boolean } | null> {
-        const response = await fetchWithTokenRefresh(`${this.baseUrl}:${this.port}/api/v1/recipes/${recipeUuid}/image/generate`, {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/recipes/${recipeUuid}/image/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

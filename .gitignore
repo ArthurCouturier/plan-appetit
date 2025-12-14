@@ -31,6 +31,10 @@ dist-ssr
 ios/App/Pods
 ios/App/App/public
 ios/App/App/capacitor.config.json
+
+# Firebase config (contient des API keys)
+ios/App/App/GoogleService-Info.plist
+android/app/google-services.json
 ios/App/build
 ios/App/Pods
 ios/App/output

@@ -1,7 +1,7 @@
 # POLITIQUE DE CONFIDENTIALITÉ
 # Plan Appetit
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 14/12/2024**
 
 ---
 
@@ -40,26 +40,51 @@ Lorsque vous créez un compte sur Plan Appetit, nous collectons :
 
 Lors de votre utilisation de Plan Appetit, nous collectons :
 - Les recettes que vous générez ou créez
-- Les paramètres de génération (localisation, saison, ingrédients, allergènes, budget, préférences végan)
+- Les paramètres de génération (localisation géographique déclarée, saison, ingrédients, allergènes, budget, préférences végan)
 - Le nombre de recettes générées
 - Le statut de votre compte (MEMBER ou PREMIUM)
 - Les avantages premium (quota de recettes restant)
 - L'historique de vos connexions
-- Les données de navigation (via Firebase Analytics)
 
-### 2.3 Données de paiement
+### 2.3 Données de localisation
+
+Plan Appetit collecte une **localisation géographique déclarée** (région, pays) que vous saisissez manuellement lors de la génération de recettes. Cette donnée est utilisée pour personnaliser les recettes selon les spécialités culinaires locales.
+
+**Important :** Plan Appetit **ne collecte pas** votre position GPS ni votre géolocalisation automatique. La localisation est uniquement celle que vous choisissez de saisir.
+
+### 2.4 Données de paiement
 
 Si vous souscrivez à un abonnement Premium :
 - Les données de paiement sont **collectées et traitées exclusivement par Stripe** (notre prestataire de paiement)
 - Plan Appetit **ne stocke jamais** vos coordonnées bancaires
 - Nous recevons uniquement une confirmation de paiement et un identifiant de transaction
 
-### 2.4 Cookies et technologies similaires
+### 2.5 Cookies et technologies similaires
 
 Plan Appetit utilise :
 - **Firebase Authentication** : tokens de session pour vous maintenir connecté
-- **Firebase Analytics** : statistiques d'utilisation anonymisées
 - **LocalStorage** : stockage local de vos préférences et token d'authentification
+
+### 2.6 Outils d'analyse et de mesure d'audience
+
+Plan Appetit utilise **PostHog** (hébergé dans l'Union Européenne) pour analyser l'utilisation du service :
+
+**Données collectées par PostHog :**
+- Pages visitées et parcours de navigation
+- Actions effectuées (clics, interactions)
+- Événements personnalisés (génération de recettes, inscription, paiement)
+- Enregistrements de session (replay des interactions à l'écran)
+- Données techniques (type d'appareil, navigateur, résolution d'écran)
+
+**Finalité :** Améliorer l'expérience utilisateur, identifier les bugs, optimiser les parcours.
+
+**Base légale :** Intérêt légitime (amélioration du service)
+
+**Hébergeur :** PostHog EU (https://eu.i.posthog.com) - Données hébergées dans l'Union Européenne, conformément au RGPD.
+
+**Durée de conservation :** 12 mois
+
+**Opt-out :** Vous pouvez désactiver le suivi PostHog en utilisant un bloqueur de trackers ou en nous contactant à arthur.couturier@plan-appetit.fr.
 
 ---
 
@@ -118,6 +143,7 @@ Vos données personnelles sont transmises aux destinataires suivants :
 | **Firebase (Google)** | Authentification, base de données | Email, nom, photo de profil, UID | USA (Privacy Shield) |
 | **OpenAI** | Génération de recettes par IA | Paramètres de recettes (pas de données personnelles identifiantes) | USA |
 | **Stripe** | Paiements | Nom, email, données de paiement | UE / USA |
+| **PostHog** | Analyse d'utilisation, enregistrement de sessions | Parcours utilisateur, interactions, données techniques | UE (Irlande) |
 
 ### 4.2 Transferts hors UE
 
@@ -219,35 +245,55 @@ Couturier Arthur
 
 ---
 
-## 8. COOKIES
+## 8. COOKIES ET TRACEURS
 
-### 8.1 Cookies utilisés
+### 8.1 Cookies essentiels (obligatoires)
 
-Plan Appetit utilise uniquement des **cookies techniques essentiels** :
+Ces cookies sont nécessaires au fonctionnement du service :
 
-| Cookie | Finalité | Durée |
-|--------|---------|-------|
+| Cookie/Stockage | Finalité | Durée |
+|-----------------|---------|-------|
 | Firebase Authentication Token | Maintenir votre session | Session |
-| LocalStorage data | Préférences et recettes en cache | Permanent (jusqu'à suppression) |
+| LocalStorage | Préférences et cache local | Permanent (jusqu'à suppression) |
 
-### 8.2 Firebase Analytics
+### 8.2 Cookies d'analyse (PostHog)
 
-Nous utilisons Firebase Analytics pour collecter des statistiques d'usage anonymisées :
-- Pages visitées
-- Temps passé sur l'application
-- Actions effectuées (génération de recettes, etc.)
+Nous utilisons PostHog pour analyser l'utilisation du service :
 
-Ces données sont **anonymisées** et ne permettent pas de vous identifier personnellement.
+| Cookie/Technologie | Finalité | Durée |
+|--------------------|---------|-------|
+| PostHog distinct_id | Identifier votre session | 12 mois |
+| PostHog session_id | Enregistrement de session | Session |
 
-### 8.3 Désactivation des cookies
+**Données collectées :**
+- Pages visitées et temps passé
+- Clics et interactions
+- Enregistrements de session (replay visuel de votre navigation)
+- Type d'appareil et navigateur
 
-Vous pouvez désactiver les cookies via les paramètres de votre navigateur, mais cela empêchera le fonctionnement de Plan Appetit (impossible de rester connecté).
+**Ces données sont hébergées dans l'UE** (PostHog EU, Irlande) et ne sont pas revendues à des tiers.
+
+### 8.3 Désactivation des traceurs
+
+**Cookies essentiels :** Ne peuvent pas être désactivés (nécessaires au fonctionnement).
+
+**Cookies d'analyse PostHog :** Vous pouvez les bloquer via :
+- Un bloqueur de publicités/trackers (uBlock Origin, etc.)
+- Les paramètres de votre navigateur
+- En nous contactant à arthur.couturier@plan-appetit.fr
+
+La désactivation des cookies d'analyse n'affecte pas le fonctionnement de l'application.
 
 ---
 
 ## 9. DROITS SPÉCIFIQUES AUX MINEURS
 
-Plan Appetit n'est pas destiné aux enfants de moins de 15 ans.
+Plan Appetit n'est pas destiné aux mineurs :
+- **Union Européenne** : moins de 16 ans (ou 15 ans en France conformément à la loi Informatique et Libertés)
+- **États-Unis** : moins de 13 ans (conformément à la loi COPPA)
+- **Autres pays** : selon la législation locale applicable
+
+Les mineurs doivent obtenir le consentement de leurs parents ou tuteurs légaux avant d'utiliser le service.
 
 Si vous êtes un parent et que vous découvrez que votre enfant nous a fourni des informations personnelles sans votre consentement, contactez-nous immédiatement à arthur.couturier@plan-appetit.fr pour que nous supprimions ces données.
 
@@ -294,6 +340,6 @@ Couturier Arthur
 
 ---
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 14/12/2024**
 
-**Version : 1.0**
+**Version : 1.1**

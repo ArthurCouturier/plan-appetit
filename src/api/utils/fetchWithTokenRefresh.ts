@@ -1,4 +1,27 @@
 import { auth } from "../authentication/firebase";
+import { Capacitor } from "@capacitor/core";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
+
+async function getNewToken(): Promise<string | null> {
+    if (Capacitor.isNativePlatform()) {
+        try {
+            const result = await FirebaseAuthentication.getCurrentUser();
+            if (result.user) {
+                const idTokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: true });
+                return idTokenResult.token;
+            }
+        } catch (error) {
+            console.error('Erreur lors du refresh du token natif:', error);
+        }
+        return null;
+    } else {
+        const user = auth.currentUser;
+        if (user) {
+            return await user.getIdToken(true);
+        }
+        return null;
+    }
+}
 
 export async function fetchWithTokenRefresh(
     url: string,
@@ -13,10 +36,9 @@ export async function fetchWithTokenRefresh(
             if (errorData.error === 'TOKEN_EXPIRED') {
                 console.log('Token expiré, rafraîchissement automatique...');
 
-                const user = auth.currentUser;
+                const newToken = await getNewToken();
 
-                if (user) {
-                    const newToken = await user.getIdToken(true);
+                if (newToken) {
                     localStorage.setItem('firebaseIdToken', newToken);
 
                     const newHeaders = new Headers(options.headers);

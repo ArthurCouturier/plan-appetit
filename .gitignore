@@ -27,10 +27,20 @@ dist-ssr
 **/**.p8
 
 # Capacitor
-ios/*
+**/*.lock
 ios/App/Pods
 ios/App/App/public
 ios/App/App/capacitor.config.json
+ios/App/build
+ios/App/Pods
+ios/App/output
+ios/App/App/public
+ios/DerivedData
+ios/xcuserdata
+ios/capacitor-cordova-ios-plugins
+ios/App/App/capacitor.config.json
+ios/App/App/config.xml
+
 android/*
 android/app/src/main/assets/public
 android/app/src/main/assets/capacitor.config.json

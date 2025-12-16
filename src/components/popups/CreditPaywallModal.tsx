@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import StripeService from "../../api/services/StripeService";
+import IAPService, { IAPProduct } from "../../api/services/IAPService";
 import { Product } from "../../api/interfaces/stripe/Product";
 import { CartItem } from "../../api/interfaces/stripe/CartItem";
-import { XMarkIcon, SparklesIcon, CreditCardIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon, SparklesIcon, CreditCardIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import useAuth from "../../api/hooks/useAuth";
 
 interface CreditPaywallModalProps {
@@ -14,20 +16,89 @@ interface CreditPaywallModalProps {
 export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallModalProps) {
     const [premiumProduct, setPremiumProduct] = useState<Product | null>(null);
     const [credit20Product, setCredit20Product] = useState<Product | null>(null);
+    const [iapPremiumProduct, setIapPremiumProduct] = useState<IAPProduct | null>(null);
+    const [iapCreditsProduct, setIapCreditsProduct] = useState<IAPProduct | null>(null);
+    const [isNativeIOS, setIsNativeIOS] = useState(false);
+    const [isIAPAvailable, setIsIAPAvailable] = useState(false);
+    const [isPurchasing, setIsPurchasing] = useState(false);
+    const [isPurchasingCredits, setIsPurchasingCredits] = useState(false);
+    const [purchaseError, setPurchaseError] = useState<string | null>(null);
     const user = useAuth().user;
     const navigate = useNavigate();
 
     // Load products for modal
     useEffect(() => {
         if (isOpen) {
-            StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_MENSUAL)
-                .then(product => setPremiumProduct(product));
-            StripeService.fetchProduct(StripeService.CREDIT_TWENTY_RECIPES)
-                .then(product => setCredit20Product(product));
+            const initProducts = async () => {
+                // Detect platform
+                const isIOS = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios';
+                setIsNativeIOS(isIOS);
+
+                // Initialize IAP on native platforms
+                if (IAPService.isAvailable()) {
+                    const iapAvailable = await IAPService.initialize();
+                    setIsIAPAvailable(iapAvailable);
+
+                    if (iapAvailable) {
+                        const subProduct = await IAPService.getSubscriptionProduct();
+                        setIapPremiumProduct(subProduct);
+
+                        const creditsProduct = await IAPService.getCreditsProduct();
+                        setIapCreditsProduct(creditsProduct);
+                    }
+                }
+
+                // Fetch Stripe products for web only
+                if (!isIOS) {
+                    StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_MENSUAL)
+                        .then(product => setPremiumProduct(product));
+                    StripeService.fetchProduct(StripeService.CREDIT_TWENTY_RECIPES)
+                        .then(product => setCredit20Product(product));
+                }
+            };
+
+            initProducts();
         }
     }, [isOpen]);
 
-    const handleSubscribe = () => {
+    const handleSubscribe = async () => {
+        setPurchaseError(null);
+
+        // Use IAP on iOS
+        if (isNativeIOS && isIAPAvailable && iapPremiumProduct) {
+            setIsPurchasing(true);
+            try {
+                const result = await IAPService.purchaseSubscription();
+                if (result.success && result.transactionId && user) {
+                    const verified = await IAPService.verifySubscriptionPurchase(
+                        result.transactionId,
+                        user.email,
+                        user.token || ""
+                    );
+                    if (verified) {
+                        onClose();
+                        navigate('/recettes');
+                    } else {
+                        setPurchaseError('Erreur de validation. Contactez le support.');
+                    }
+                } else if (result.error !== 'cancelled') {
+                    setPurchaseError(result.error || 'Erreur lors de l\'achat');
+                }
+            } catch {
+                setPurchaseError('Une erreur est survenue');
+            } finally {
+                setIsPurchasing(false);
+            }
+            return;
+        }
+
+        // Block Stripe on iOS
+        if (isNativeIOS) {
+            setPurchaseError('Achat non disponible');
+            return;
+        }
+
+        // Use Stripe on web
         if (!premiumProduct) return;
         const cart: CartItem = {
             priceId: premiumProduct.prices[0].stripePriceId,
@@ -36,7 +107,44 @@ export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallMod
         user && StripeService.checkout([cart], user);
     };
 
-    const handleBuyCredits = () => {
+    const handleBuyCredits = async () => {
+        setPurchaseError(null);
+
+        // Use IAP on iOS
+        if (isNativeIOS && isIAPAvailable && iapCreditsProduct) {
+            setIsPurchasingCredits(true);
+            try {
+                const result = await IAPService.purchaseCredits();
+                if (result.success && result.transactionId && user) {
+                    const verified = await IAPService.verifyCreditsPurchase(
+                        result.transactionId,
+                        user.email,
+                        user.token || ""
+                    );
+                    if (verified) {
+                        onClose();
+                        navigate('/recettes');
+                    } else {
+                        setPurchaseError('Erreur de validation. Contactez le support.');
+                    }
+                } else if (result.error !== 'cancelled') {
+                    setPurchaseError(result.error || 'Erreur lors de l\'achat');
+                }
+            } catch {
+                setPurchaseError('Une erreur est survenue');
+            } finally {
+                setIsPurchasingCredits(false);
+            }
+            return;
+        }
+
+        // Block Stripe on iOS
+        if (isNativeIOS) {
+            setPurchaseError('Achat non disponible');
+            return;
+        }
+
+        // Use Stripe on web
         if (!credit20Product) return;
         const cart: CartItem = {
             priceId: credit20Product.prices[0].stripePriceId,
@@ -82,7 +190,9 @@ export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallMod
                                     <h3 className="text-xl font-bold">Premium</h3>
                                 </div>
                                 <div className="text-3xl font-bold mb-3">
-                                    {premiumProduct ? `${(premiumProduct.prices[0].unitAmount).toFixed(2)}€` : '...'}
+                                    {isNativeIOS
+                                        ? (iapPremiumProduct ? iapPremiumProduct.priceString : '...')
+                                        : (premiumProduct ? `${(premiumProduct.prices[0].unitAmount).toFixed(2)}€` : '...')}
                                     <span className="text-base font-normal">/mois</span>
                                 </div>
                                 <ul className="space-y-2 mb-6 text-sm">
@@ -98,12 +208,24 @@ export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallMod
                                         </li>
                                     ))}
                                 </ul>
+                                {purchaseError && (
+                                    <div className="mb-3 p-2 bg-red-500/20 border border-red-500/30 rounded-lg text-xs">
+                                        {purchaseError}
+                                    </div>
+                                )}
                                 <button
                                     onClick={handleSubscribe}
-                                    className="w-full py-3 bg-cout-yellow text-cout-purple font-bold rounded-lg hover:bg-yellow-400 transition-all duration-300 shadow-lg"
-                                    disabled={!premiumProduct}
+                                    className="w-full py-3 bg-cout-yellow text-cout-purple font-bold rounded-lg hover:bg-yellow-400 transition-all duration-300 shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+                                    disabled={isPurchasing || (isNativeIOS ? !iapPremiumProduct : !premiumProduct)}
                                 >
-                                    S'abonner
+                                    {isPurchasing ? (
+                                        <>
+                                            <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                                            Achat...
+                                        </>
+                                    ) : (
+                                        "S'abonner"
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -115,7 +237,9 @@ export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallMod
                                 <h3 className="text-xl font-bold text-text-primary">Pack Crédits</h3>
                             </div>
                             <div className="text-3xl font-bold text-text-primary mb-3">
-                                {credit20Product ? `${(credit20Product.prices[0].unitAmount).toFixed(2)}€` : '...'}
+                                {isNativeIOS
+                                    ? (iapCreditsProduct ? iapCreditsProduct.priceString : '...')
+                                    : (credit20Product ? `${(credit20Product.prices[0].unitAmount).toFixed(2)}€` : '...')}
                             </div>
                             <ul className="space-y-2 mb-6 text-sm text-text-secondary">
                                 {[
@@ -132,10 +256,17 @@ export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallMod
                             </ul>
                             <button
                                 onClick={handleBuyCredits}
-                                className="w-full py-3 bg-cout-base text-white font-bold rounded-lg hover:bg-indigo-500 transition-all duration-300"
-                                disabled={!credit20Product}
+                                className="w-full py-3 bg-cout-base text-white font-bold rounded-lg hover:bg-indigo-500 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+                                disabled={isPurchasingCredits || (isNativeIOS ? !iapCreditsProduct : !credit20Product)}
                             >
-                                Acheter
+                                {isPurchasingCredits ? (
+                                    <>
+                                        <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                                        Achat...
+                                    </>
+                                ) : (
+                                    "Acheter"
+                                )}
                             </button>
                         </div>
                     </div>

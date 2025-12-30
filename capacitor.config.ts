@@ -20,6 +20,7 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     iosScheme: 'capacitor',
+    hostname: 'localhost',
     // Décommenter pour le dev local avec live reload:
     // url: 'http://192.168.1.124:5173',
     // cleartext: true
@@ -31,8 +32,8 @@ const config: CapacitorConfig = {
       launchAutoHide: true,
       backgroundColor: '#eda391',
       showSpinner: false,
-      splashFullScreen: true,
-      splashImmersive: true
+      splashFullScreen: false,
+      splashImmersive: false
     },
     StatusBar: {
       style: 'DARK',
@@ -44,10 +45,17 @@ const config: CapacitorConfig = {
     },
     FirebaseAuthentication: {
       skipNativeAuth: false,
-      providers: ['google.com', 'apple.com', 'facebook.com']
+      providers: ['google.com', 'apple.com']
     },
     FirebaseMessaging: {
       presentationOptions: ['badge', 'sound', 'alert']
+    },
+    FacebookLogin: {
+      appId: '1195950565200662',
+      autoLogAppEvents: true,
+      xfbml: true,
+      version: 'v18.0',
+      enableAdvertiserTracking: true
     }
   }
 };

@@ -15,6 +15,12 @@ export default class PlatformService {
         return 'web';
     }
 
+    public static setPlatformClass(): void {
+        const platform = this.getPlatform();
+        document.body.classList.remove('platform-ios', 'platform-android', 'platform-web');
+        document.body.classList.add(`platform-${platform}`);
+    }
+
     public static isNative(): boolean {
         return Capacitor.isNativePlatform();
     }
@@ -94,6 +100,17 @@ export default class PlatformService {
                 callback();
             });
         }
+    }
+
+    public static async initializeStatusBar(): Promise<void> {
+        if (!this.isNative()) return;
+
+        // Désactive l'overlay pour que la WebView ne passe pas sous la status bar
+        if (this.isAndroid()) {
+            await StatusBar.setOverlaysWebView({ overlay: false });
+            await StatusBar.setBackgroundColor({ color: '#eda391' });
+        }
+        await StatusBar.setStyle({ style: Style.Dark });
     }
 
     public static async setStatusBarStyle(style: 'light' | 'dark'): Promise<void> {

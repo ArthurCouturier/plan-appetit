@@ -2,11 +2,20 @@ import { Outlet, useLocation } from "react-router-dom";
 import DarkModeButton from "../buttons/DarkModeButton";
 import { useEffect, useState } from "react";
 import HeaderMobile from "./HeaderMobile";
+import PlatformService from "../../api/services/PlatformService";
+import { TrackingService } from "../../api/services/TrackingService";
 
 export default function Layout() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const location = useLocation();
+
+  // Initialise la plateforme, le StatusBar pour Android et le tracking pour iOS
+  useEffect(() => {
+    PlatformService.setPlatformClass();
+    PlatformService.initializeStatusBar();
+    TrackingService.initialize();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);

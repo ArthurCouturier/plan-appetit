@@ -1,7 +1,7 @@
 # POLITIQUE DE CONFIDENTIALITÉ
 # Plan Appetit
 
-**Date de dernière mise à jour : 14/12/2024**
+**Date de dernière mise à jour : 28/12/2024**
 
 ---
 
@@ -86,6 +86,38 @@ Plan Appetit utilise **PostHog** (hébergé dans l'Union Européenne) pour analy
 
 **Opt-out :** Vous pouvez désactiver le suivi PostHog en utilisant un bloqueur de trackers ou en nous contactant à arthur.couturier@plan-appetit.fr.
 
+### 2.7 Suivi publicitaire et mesure de performance (Meta/Facebook SDK)
+
+Plan Appetit utilise le **SDK Meta/Facebook** pour mesurer l'efficacité de nos campagnes publicitaires et optimiser nos actions marketing.
+
+**Données collectées par Meta/Facebook :**
+- Identifiant publicitaire de l'appareil (IDFA sur iOS, GAID sur Android)
+- Événements d'utilisation (ouverture de l'application, inscriptions, achats)
+- Informations techniques (modèle d'appareil, version du système d'exploitation)
+
+**Finalités :**
+- Mesurer les performances des campagnes publicitaires Meta
+- Optimiser le ciblage publicitaire
+- Analyser les conversions (inscriptions, abonnements)
+
+**Base légale :** Consentement (via App Tracking Transparency sur iOS) / Intérêt légitime (sur Android)
+
+**Hébergeur :** Meta Platforms, Inc. (USA) - Transferts encadrés par les Clauses Contractuelles Types.
+
+**Durée de conservation :** Selon la politique de Meta (https://www.facebook.com/privacy/policy)
+
+### 2.8 App Tracking Transparency (iOS uniquement)
+
+Sur les appareils iOS (version 14.5 et ultérieures), Plan Appetit vous demande votre **consentement explicite** avant de collecter des données à des fins de suivi publicitaire, conformément au framework **App Tracking Transparency (ATT)** d'Apple.
+
+**Ce que signifie votre choix :**
+- **Si vous autorisez le suivi :** Nous pouvons utiliser votre identifiant publicitaire (IDFA) pour mesurer l'efficacité de nos publicités et vous proposer des annonces personnalisées sur les plateformes Meta.
+- **Si vous refusez le suivi :** Aucun identifiant publicitaire n'est collecté. Vous verrez toujours des publicités, mais elles ne seront pas personnalisées en fonction de votre activité.
+
+**Comment modifier votre choix :**
+- Allez dans **Réglages > Confidentialité et sécurité > Suivi** sur votre iPhone/iPad
+- Désactivez ou activez l'autorisation pour Plan Appetit
+
 ---
 
 ## 3. FINALITÉS DU TRAITEMENT
@@ -144,10 +176,11 @@ Vos données personnelles sont transmises aux destinataires suivants :
 | **OpenAI** | Génération de recettes par IA | Paramètres de recettes (pas de données personnelles identifiantes) | USA |
 | **Stripe** | Paiements | Nom, email, données de paiement | UE / USA |
 | **PostHog** | Analyse d'utilisation, enregistrement de sessions | Parcours utilisateur, interactions, données techniques | UE (Irlande) |
+| **Meta/Facebook** | Mesure publicitaire, analytics | Identifiant publicitaire (IDFA/GAID), événements d'utilisation | USA |
 
 ### 4.2 Transferts hors UE
 
-Certains de nos prestataires (Firebase, OpenAI, Stripe) sont situés aux États-Unis.
+Certains de nos prestataires (Firebase, OpenAI, Stripe, Meta) sont situés aux États-Unis.
 
 Ces transferts sont encadrés par :
 - **Clauses contractuelles types** de la Commission européenne
@@ -273,16 +306,31 @@ Nous utilisons PostHog pour analyser l'utilisation du service :
 
 **Ces données sont hébergées dans l'UE** (PostHog EU, Irlande) et ne sont pas revendues à des tiers.
 
-### 8.3 Désactivation des traceurs
+### 8.3 Traceurs sur application mobile
+
+Sur les applications mobiles (iOS et Android), nous utilisons les technologies suivantes :
+
+| Technologie | Finalité | Contrôle utilisateur |
+|-------------|----------|---------------------|
+| **IDFA (iOS)** | Identifiant publicitaire Apple | Réglages > Confidentialité > Suivi |
+| **GAID (Android)** | Identifiant publicitaire Google | Paramètres > Google > Publicités |
+| **Meta SDK** | Mesure publicitaire | ATT sur iOS / Paramètres Android |
+| **Firebase Analytics** | Analyse d'utilisation | Désactivable via les paramètres de l'app |
+
+### 8.4 Désactivation des traceurs
 
 **Cookies essentiels :** Ne peuvent pas être désactivés (nécessaires au fonctionnement).
 
-**Cookies d'analyse PostHog :** Vous pouvez les bloquer via :
+**Cookies d'analyse PostHog (web) :** Vous pouvez les bloquer via :
 - Un bloqueur de publicités/trackers (uBlock Origin, etc.)
 - Les paramètres de votre navigateur
 - En nous contactant à arthur.couturier@plan-appetit.fr
 
-La désactivation des cookies d'analyse n'affecte pas le fonctionnement de l'application.
+**Suivi publicitaire (mobile) :**
+- **iOS :** Réglages > Confidentialité et sécurité > Suivi > Désactiver pour Plan Appetit
+- **Android :** Paramètres > Google > Publicités > Désactiver la personnalisation des annonces
+
+La désactivation des traceurs n'affecte pas le fonctionnement de l'application, mais limite la personnalisation des publicités.
 
 ---
 
@@ -340,6 +388,6 @@ Couturier Arthur
 
 ---
 
-**Date de dernière mise à jour : 14/12/2024**
+**Date de dernière mise à jour : 28/12/2024**
 
-**Version : 1.1**
+**Version : 1.2**

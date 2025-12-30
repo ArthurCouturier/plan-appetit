@@ -7,6 +7,8 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "build-prod": "tsc -b && vite build --mode production && npx cap sync ios && npx cap open ios",
+    "build-android-local": "tsc -b && vite build --mode dev && npx cap sync android",
+    "build-android-prod": "tsc -b && vite build --mode production && npx cap sync android",
     "mobile-build": "npm run build && npx cap sync ios && npx cap open ios",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -21,6 +23,7 @@
     "cap:build": "npm run build && npx cap sync"
   },
   "dependencies": {
+    "@capacitor-community/facebook-login": "^8.0.0",
     "@capacitor-firebase/authentication": "^7.5.0",
     "@capacitor-firebase/messaging": "^7.5.0",
     "@capacitor/android": "^7.4.4",
@@ -45,6 +48,7 @@
     "@tailwindcss/vite": "^4.0.0",
     "@vercel/analytics": "^1.4.1",
     "canvas-confetti": "^1.9.4",
+    "capacitor-plugin-app-tracking-transparency": "^3.0.0",
     "firebase": "^11.10.0",
     "openai": "^4.81.0",
     "posthog-js": "^1.281.0",

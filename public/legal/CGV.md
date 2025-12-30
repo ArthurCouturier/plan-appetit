@@ -1,7 +1,7 @@
 # CONDITIONS GÉNÉRALES DE VENTE
 # Plan Appetit - Abonnement Premium
 
-**Date de dernière mise à jour : 14/12/2024**
+**Date de dernière mise à jour : 28/12/2024**
 
 ---
 
@@ -423,6 +423,6 @@ Le consommateur peut choisir entre la résolution de la vente ou une réduction 
 
 ---
 
-**Date de dernière mise à jour : 14/12/2024**
+**Date de dernière mise à jour : 28/12/2024**
 
 **Version : 1.2**

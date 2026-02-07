@@ -7,6 +7,7 @@ import { Product } from "../api/interfaces/stripe/Product";
 import { CartItem } from "../api/interfaces/stripe/CartItem";
 import useAuth from "../api/hooks/useAuth";
 import { usePostHog } from "../contexts/PostHogContext";
+import { TrackingService } from "../api/services/TrackingService";
 
 export default function BecomePremium() {
   const navigate = useNavigate();
@@ -73,6 +74,7 @@ export default function BecomePremium() {
     };
 
     initializeProducts();
+    TrackingService.logCreditPackViewed('premium_page');
   }, []);
 
   useEffect(() => {
@@ -100,6 +102,7 @@ export default function BecomePremium() {
         price: iapProduct.price,
         currency: iapProduct.currencyCode,
       });
+      TrackingService.logInitiateCheckout('premium_subscription', iapProduct.price, iapProduct.currencyCode);
 
       try {
         const result = await IAPService.purchaseSubscription();
@@ -118,6 +121,7 @@ export default function BecomePremium() {
                 product_type: 'premium_subscription',
                 payment_method: 'iap',
               });
+              TrackingService.logSubscribe(iapProduct.price, iapProduct.currencyCode);
               navigate('/recettes');
             } else {
               setPurchaseError('Erreur de validation. Contactez le support.');
@@ -150,6 +154,7 @@ export default function BecomePremium() {
       price: premiumProduct.prices[0].unitAmount,
       currency: 'EUR',
     });
+    TrackingService.logInitiateCheckout('premium_subscription', premiumProduct.prices[0].unitAmount / 100, 'EUR');
 
     const cart: CartItem = {
       priceId: premiumProduct.prices[0].stripePriceId,
@@ -173,6 +178,7 @@ export default function BecomePremium() {
         price: iapCreditsProduct.price,
         currency: iapCreditsProduct.currencyCode,
       });
+      TrackingService.logInitiateCheckout('credits', iapCreditsProduct.price, iapCreditsProduct.currencyCode);
 
       try {
         const result = await IAPService.purchaseCredits();
@@ -192,6 +198,7 @@ export default function BecomePremium() {
                 payment_method: 'iap',
                 credit_amount: 20,
               });
+              TrackingService.logPurchase(iapCreditsProduct.price, iapCreditsProduct.currencyCode, 'credits');
               navigate('/recettes');
             } else {
               setPurchaseError('Erreur de validation. Contactez le support.');
@@ -225,6 +232,7 @@ export default function BecomePremium() {
       price: credit20Product.prices[0].unitAmount,
       currency: 'EUR',
     });
+    TrackingService.logInitiateCheckout('credits', credit20Product.prices[0].unitAmount / 100, 'EUR');
 
     const cart: CartItem = {
       priceId: credit20Product.prices[0].stripePriceId,

@@ -10,11 +10,17 @@ export default function Layout() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const location = useLocation();
 
-  // Initialise la plateforme, le StatusBar pour Android et le tracking pour iOS
+  // Initialise la plateforme, le StatusBar pour Android et le tracking
   useEffect(() => {
     PlatformService.setPlatformClass();
     PlatformService.initializeStatusBar();
     TrackingService.initialize();
+
+    // Sur iOS, demande ATT après un court délai pour laisser l'app se charger
+    const timer = setTimeout(() => {
+      TrackingService.promptATTIfNeeded();
+    }, 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -31,9 +37,10 @@ export default function Layout() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Scroll to top on route change
+  // Scroll to top + PageView tracking on route change
   useEffect(() => {
     window.scrollTo(0, 0);
+    TrackingService.trackPageView();
   }, [location.pathname]);
 
   const changeTheme = () => {

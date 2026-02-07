@@ -7,6 +7,7 @@ import { Product } from "../../api/interfaces/stripe/Product";
 import { CartItem } from "../../api/interfaces/stripe/CartItem";
 import { XMarkIcon, SparklesIcon, CreditCardIcon, ArrowPathIcon } from "@heroicons/react/24/solid";
 import useAuth from "../../api/hooks/useAuth";
+import { TrackingService } from "../../api/services/TrackingService";
 
 interface CreditPaywallModalProps {
     isOpen: boolean;
@@ -59,9 +60,11 @@ export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallMod
 
             initProducts();
         }
+        TrackingService.logCreditPackViewed('paywall');
     }, [isOpen]);
 
     const handleSubscribe = async () => {
+        TrackingService.logInitiateCheckout('premium_subscription', 0, 'EUR');
         setPurchaseError(null);
 
         // Use IAP on iOS
@@ -76,6 +79,7 @@ export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallMod
                         user.token || ""
                     );
                     if (verified) {
+                        TrackingService.logSubscribe(iapPremiumProduct.price, iapPremiumProduct.currencyCode);
                         onClose();
                         navigate('/recettes');
                     } else {
@@ -109,6 +113,7 @@ export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallMod
 
     const handleBuyCredits = async () => {
         setPurchaseError(null);
+        TrackingService.logInitiateCheckout('credits', 0, 'EUR');
 
         // Use IAP on iOS
         if (isNativeIOS && isIAPAvailable && iapCreditsProduct) {
@@ -122,6 +127,7 @@ export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallMod
                         user.token || ""
                     );
                     if (verified) {
+                        TrackingService.logPurchase(iapCreditsProduct.price, iapCreditsProduct.currencyCode, 'credits');
                         onClose();
                         navigate('/recettes');
                     } else {

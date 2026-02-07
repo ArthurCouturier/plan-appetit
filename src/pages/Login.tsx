@@ -29,6 +29,7 @@ import { validatePassword, getPasswordStrengthText } from '../utils/passwordVali
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { UserRole } from '../api/interfaces/users/UserInterface';
 import { usePostHog } from '../contexts/PostHogContext';
+import { TrackingService } from '../api/services/TrackingService';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -244,6 +245,7 @@ export default function LoginPage() {
             trackEvent('user_signed_up', {
                 method: 'email',
             });
+            TrackingService.logCompleteRegistration('email');
 
             trackEvent('user_logged_in', {
                 method: 'email',

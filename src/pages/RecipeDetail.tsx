@@ -11,6 +11,7 @@ import RecipeModificationModal from "../components/popups/RecipeModificationModa
 import PurchaseModificationCreditsModal from "../components/popups/PurchaseModificationCreditsModal";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import RecipeImage from "../components/recipes/RecipeImage";
+import { TrackingService } from "../api/services/TrackingService";
 
 export default function RecipeDetail() {
 
@@ -41,6 +42,7 @@ export default function RecipeDetail() {
                 const fetchedRecipe = await RecipeService.fetchRecipeByUuid(uuid);
                 if (fetchedRecipe) {
                     setRecipe(fetchedRecipe);
+                    TrackingService.logViewContent(uuid);
                 } else {
                     setNotFound(true);
                 }

@@ -1,5 +1,6 @@
-import { createContext, useContext, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import posthog, { PostHog } from 'posthog-js';
+import ConsentService from '../api/services/ConsentService';
 
 interface PostHogContextValue {
   posthog: PostHog | null;
@@ -17,41 +18,67 @@ interface PostHogProviderProps {
 export const PostHogProvider = ({ children }: PostHogProviderProps) => {
   const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
   const posthogHost = import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
+  const [initialized, setInitialized] = useState(false);
+
+  const initPostHog = () => {
+    if (initialized || !posthogKey || !posthogHost) return;
+    posthog.init(posthogKey, {
+      api_host: posthogHost,
+      capture_pageview: true,
+      capture_pageleave: true,
+      autocapture: true,
+      session_recording: {
+        recordCrossOriginIframes: true,
+      },
+    });
+    setInitialized(true);
+  };
+
+  const disablePostHog = () => {
+    if (initialized) {
+      posthog.opt_out_capturing();
+    }
+  };
 
   useEffect(() => {
-    if (posthogKey && posthogHost) {
-      posthog.init(posthogKey, {
-        api_host: posthogHost,
-        capture_pageview: true,
-        capture_pageleave: true,
-        autocapture: true,
-        session_recording: {
-          recordCrossOriginIframes: true,
-        },
-      });
-    }
-  }, [posthogKey, posthogHost]);
+    ConsentService.hasAnalyticsConsent().then(hasConsent => {
+      if (hasConsent) {
+        initPostHog();
+      }
+    });
+
+    const unsubscribe = ConsentService.onConsentChange(consent => {
+      if (consent.analytics) {
+        initPostHog();
+        if (initialized) posthog.opt_in_capturing();
+      } else {
+        disablePostHog();
+      }
+    });
+
+    return unsubscribe;
+  }, [posthogKey, posthogHost, initialized]);
 
   const trackEvent = (eventName: string, properties?: Record<string, any>) => {
-    if (posthog) {
+    if (initialized && posthog) {
       posthog.capture(eventName, properties);
     }
   };
 
   const identify = (userId: string, properties?: Record<string, any>) => {
-    if (posthog) {
+    if (initialized && posthog) {
       posthog.identify(userId, properties);
     }
   };
 
   const reset = () => {
-    if (posthog) {
+    if (initialized && posthog) {
       posthog.reset();
     }
   };
 
   const value: PostHogContextValue = {
-    posthog,
+    posthog: initialized ? posthog : null,
     trackEvent,
     identify,
     reset,

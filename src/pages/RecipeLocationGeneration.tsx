@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
 import { usePostHog } from "../contexts/PostHogContext";
+import { TrackingService } from "../api/services/TrackingService";
 
 const DRAFT_STORAGE_KEY = "recipeGenerationDraft";
 
@@ -102,6 +103,8 @@ export default function RecipeLocationGeneration() {
                     localisation,
                     vegan,
                 });
+                TrackingService.logRecipeGenerated('localisation');
+                TrackingService.promptATTIfNeeded();
 
                 navigate(`/recettes/${newRecipe.uuid}`);
             }
@@ -111,6 +114,8 @@ export default function RecipeLocationGeneration() {
                     localisation,
                     vegan,
                 });
+                TrackingService.logQuotaLimitReached('localisation');
+                TrackingService.logLead('localisation');
                 showModalRechargerCredits();
                 setIsLoading(false);
                 return;
@@ -119,6 +124,7 @@ export default function RecipeLocationGeneration() {
                 error: error.message || 'Unknown error',
                 localisation,
             });
+            TrackingService.logRecipeGenerationFailed('localisation');
             console.error(error);
             alert("une erreur est surevenue")
             navigate('/myrecipes');

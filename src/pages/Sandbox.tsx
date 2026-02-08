@@ -16,6 +16,7 @@ import { SandboxRecipe } from "../api/interfaces/sandbox/SandboxRecipe";
 import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 import useAuth from "../api/hooks/useAuth";
 import { usePostHog } from "../contexts/PostHogContext";
+import { TrackingService } from "../api/services/TrackingService";
 
 export default function Sandbox() {
   const navigate = useNavigate();
@@ -148,12 +149,13 @@ export default function Sandbox() {
 
     trackEvent('recipe_generation_started', {
       source: 'sandbox',
-      prompt: prompt.trim().substring(0, 100), // Limiter à 100 caractères pour PostHog
+      prompt: prompt.trim().substring(0, 100),
       recipeCount: requestedRecipeCount,
       isAuthenticated: !!user,
       isPremium: quotaInfo?.isSubscriber || false,
       remainingCredits: quotaInfo?.remainingFree || 0,
     });
+    TrackingService.logSearch(prompt.trim());
 
     try {
       setSearchParams({ q: prompt });
@@ -180,6 +182,8 @@ export default function Sandbox() {
         remainingCredits: response.quota?.remainingFree || 0,
         recipeUuids: response.recipes.map(r => r.uuid).filter(Boolean),
       });
+      TrackingService.logRecipeGenerated('sandbox');
+      TrackingService.promptATTIfNeeded();
 
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -199,6 +203,8 @@ export default function Sandbox() {
           isPremium: err.quota?.isSubscriber || false,
           remainingCredits: err.quota?.remainingFree || 0,
         });
+        TrackingService.logQuotaLimitReached('sandbox');
+        TrackingService.logLead('sandbox');
 
         if (!user || (quotaInfo && !quotaInfo.isSubscriber)) {
           setShowPaywall(true);
@@ -213,6 +219,7 @@ export default function Sandbox() {
           recipesRequested: requestedRecipeCount,
           isAuthenticated: !!user,
         });
+        TrackingService.logRecipeGenerationFailed('sandbox');
       } else {
         setError("Une erreur est survenue lors de la génération. Veuillez réessayer.");
 
@@ -223,6 +230,7 @@ export default function Sandbox() {
           recipesRequested: requestedRecipeCount,
           isAuthenticated: !!user,
         });
+        TrackingService.logRecipeGenerationFailed('sandbox');
       }
     } finally {
       setIsLoading(false);

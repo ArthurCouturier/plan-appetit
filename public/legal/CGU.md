@@ -1,7 +1,7 @@
 # CONDITIONS GÉNÉRALES D'UTILISATION
 # Plan Appetit
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 28/12/2024**
 
 ---
 
@@ -93,7 +93,7 @@ Le compte Premium offre :
 
 ### 4.3 Génération de recettes par IA
 
-Plan Appetit utilise l'API OpenAI (GPT-5) pour générer des recettes personnalisées en fonction de :
+Plan Appetit utilise l'API OpenAI (GPT-4o) pour générer des recettes personnalisées en fonction de :
 - La localisation géographique
 - La saison
 - Les ingrédients disponibles
@@ -181,9 +181,37 @@ Pour exercer ces droits, contactez-nous à : arthur.couturier@plan-appetit.fr
 
 ---
 
-## 9. LIMITATION DE RESPONSABILITÉ
+## 9. SERVICES TIERS
 
-### 9.1 Contenu généré par IA
+Plan Appetit utilise des services tiers pour son fonctionnement. En utilisant l'application, vous acceptez les conditions d'utilisation de ces services :
+
+### 9.1 Services d'infrastructure
+- **Firebase (Google)** : Authentification et notifications push
+- **Stripe** : Traitement des paiements
+- **OpenAI** : Génération de recettes par intelligence artificielle
+
+### 9.2 Services d'analyse et de mesure
+- **PostHog** : Analyse d'utilisation et amélioration du service
+- **Meta/Facebook SDK** : Mesure de performance des campagnes publicitaires
+
+### 9.3 Suivi publicitaire (iOS)
+
+Sur les appareils iOS (version 14.5 et ultérieures), l'application vous demandera votre consentement avant de collecter des données à des fins publicitaires via le framework **App Tracking Transparency (ATT)** d'Apple.
+
+Vous pouvez modifier ce choix à tout moment dans les réglages de votre appareil (Réglages > Confidentialité > Suivi).
+
+**Liens vers les conditions des services tiers :**
+- Firebase : https://firebase.google.com/terms
+- Stripe : https://stripe.com/fr/legal
+- OpenAI : https://openai.com/policies/terms-of-use
+- PostHog : https://posthog.com/terms
+- Meta : https://www.facebook.com/legal/terms
+
+---
+
+## 10. LIMITATION DE RESPONSABILITÉ
+
+### 10.1 Contenu généré par IA
 
 Plan Appetit utilise l'intelligence artificielle pour générer des recettes. L'éditeur ne peut être tenu responsable :
 - De la qualité gustative des recettes
@@ -194,7 +222,7 @@ Plan Appetit utilise l'intelligence artificielle pour générer des recettes. L'
 
 **Il est de votre responsabilité de vérifier les ingrédients, les allergènes et la sécurité des recettes avant de les réaliser.**
 
-### 9.2 Perte de données
+### 10.2 Perte de données
 
 Bien que Plan Appetit mette en œuvre des mesures de sécurité, l'éditeur ne peut être tenu responsable en cas de :
 - Perte de données suite à un problème technique
@@ -203,11 +231,11 @@ Bien que Plan Appetit mette en œuvre des mesures de sécurité, l'éditeur ne p
 
 Il est recommandé de conserver une copie de vos recettes importantes (via des fonctions comme l'export par exemple).
 
-### 9.3 Liens externes
+### 10.3 Liens externes
 
 Plan Appetit peut contenir des liens vers des sites tiers. L'éditeur n'est pas responsable du contenu de ces sites externes.
 
-### 9.4 Dysfonctionnements
+### 10.4 Dysfonctionnements
 
 Plan Appetit ne peut être tenu responsable des dommages directs ou indirects résultant de :
 - L'impossibilité d'accéder au service
@@ -216,7 +244,7 @@ Plan Appetit ne peut être tenu responsable des dommages directs ou indirects r�
 
 ---
 
-## 10. MODIFICATION DES CGU
+## 11. MODIFICATION DES CGU
 
 Plan Appetit se réserve le droit de modifier les présentes CGU à tout moment.
 
@@ -228,9 +256,9 @@ L'utilisation continue du service après modification vaut acceptation des nouve
 
 ---
 
-## 11. RÉSILIATION
+## 12. RÉSILIATION
 
-### 11.1 Résiliation par l'utilisateur
+### 12.1 Résiliation par l'utilisateur
 
 Vous pouvez supprimer votre compte à tout moment depuis les paramètres de votre profil ou en contactant le support.
 
@@ -239,7 +267,7 @@ La suppression du compte entraîne :
 - La perte de vos recettes sauvegardées
 - L'annulation de votre abonnement Premium (sans remboursement sauf dispositions CGV)
 
-### 11.2 Résiliation par Plan Appetit
+### 12.2 Résiliation par Plan Appetit
 
 Plan Appetit se réserve le droit de résilier votre compte en cas de :
 - Non-respect des présentes CGU
@@ -248,7 +276,7 @@ Plan Appetit se réserve le droit de résilier votre compte en cas de :
 
 ---
 
-## 12. DROIT APPLICABLE ET JURIDICTION
+## 13. DROIT APPLICABLE ET JURIDICTION
 
 Les présentes CGU sont régies par le droit français.
 
@@ -261,7 +289,7 @@ Conformément aux articles L.611-1 et R.612-1 du Code de la consommation, vous a
 
 ---
 
-## 13. CONTACT
+## 14. CONTACT
 
 Pour toute question concernant les présentes CGU, vous pouvez nous contacter :
 
@@ -271,6 +299,6 @@ Pour toute question concernant les présentes CGU, vous pouvez nous contacter :
 
 ---
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 28/12/2024**
 
-**Version : 1.0**
+**Version : 1.2**

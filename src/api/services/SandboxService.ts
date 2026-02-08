@@ -2,6 +2,8 @@ import { SandboxGenerateRequest } from "../interfaces/sandbox/SandboxGenerateReq
 import { SandboxGenerateResponse } from "../interfaces/sandbox/SandboxGenerateResponse";
 import { QuotaInfo } from "../interfaces/sandbox/QuotaInfo";
 import { auth } from "../authentication/firebase";
+import { Capacitor } from "@capacitor/core";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 
 export default class SandboxService {
     private static baseUrl: string = import.meta.env.VITE_API_URL;
@@ -11,22 +13,41 @@ export default class SandboxService {
         url: string,
         options: RequestInit
     ): Promise<Response> {
-        const user = auth.currentUser;
+        let token: string | null = null;
+        let email: string | null = null;
 
-        if (user) {
+        if (Capacitor.isNativePlatform()) {
             try {
-                const token = await user.getIdToken();
-                const headers = new Headers(options.headers);
-                headers.set('Authorization', `Bearer ${token}`);
-                headers.set('Email', user.email || '');
-
-                return fetch(url, {
-                    ...options,
-                    headers
-                });
+                const result = await FirebaseAuthentication.getCurrentUser();
+                if (result.user) {
+                    const idTokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: false });
+                    token = idTokenResult.token;
+                    email = result.user.email || null;
+                }
             } catch (error) {
-                console.warn('Erreur lors de l\'authentification, continuation en mode anonyme:', error);
+                console.warn('Erreur lors de l\'authentification native, continuation en mode anonyme:', error);
             }
+        } else {
+            const user = auth.currentUser;
+            if (user) {
+                try {
+                    token = await user.getIdToken();
+                    email = user.email;
+                } catch (error) {
+                    console.warn('Erreur lors de l\'authentification web, continuation en mode anonyme:', error);
+                }
+            }
+        }
+
+        if (token && email) {
+            const headers = new Headers(options.headers);
+            headers.set('Authorization', `Bearer ${token}`);
+            headers.set('Email', email);
+
+            return fetch(url, {
+                ...options,
+                headers
+            });
         }
 
         return fetch(url, options);
@@ -136,12 +157,31 @@ export default class SandboxService {
         quota?: QuotaInfo;
         alreadyLinked?: boolean;
     }> {
-        const user = auth.currentUser;
-        if (!user) {
-            throw new Error('Utilisateur non connecté');
+        let token: string | null = null;
+        let email: string | null = null;
+
+        if (Capacitor.isNativePlatform()) {
+            try {
+                const result = await FirebaseAuthentication.getCurrentUser();
+                if (result.user) {
+                    const idTokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: false });
+                    token = idTokenResult.token;
+                    email = result.user.email || null;
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'authentification native:', error);
+            }
+        } else {
+            const user = auth.currentUser;
+            if (user) {
+                token = await user.getIdToken();
+                email = user.email;
+            }
         }
 
-        const token = await user.getIdToken();
+        if (!token || !email) {
+            throw new Error('Utilisateur non connecté');
+        }
 
         const response = await fetch(
             `${this.baseUrl}:${this.port}/api/v1/sandbox/link-recipe`,
@@ -150,7 +190,7 @@ export default class SandboxService {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
-                    'Email': user.email || '',
+                    'Email': email,
                 },
                 body: JSON.stringify({ recipeUuid }),
             }

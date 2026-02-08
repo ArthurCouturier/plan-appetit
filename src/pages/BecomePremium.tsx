@@ -7,6 +7,7 @@ import { Product } from "../api/interfaces/stripe/Product";
 import { CartItem } from "../api/interfaces/stripe/CartItem";
 import useAuth from "../api/hooks/useAuth";
 import { usePostHog } from "../contexts/PostHogContext";
+import { TrackingService } from "../api/services/TrackingService";
 
 export default function BecomePremium() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function BecomePremium() {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isPurchasingCredits, setIsPurchasingCredits] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [isNativeIOS, setIsNativeIOS] = useState(false);
 
   const user = useAuth().user;
   const { trackEvent } = usePostHog();
@@ -33,6 +35,10 @@ export default function BecomePremium() {
       console.log('Is native platform:', Capacitor.isNativePlatform());
       console.log('IAPService.isAvailable():', IAPService.isAvailable());
       console.log('IAPService.isIOS():', IAPService.isIOS());
+
+      // Detect if we're on native iOS (for hiding Stripe references)
+      const isIOS = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios';
+      setIsNativeIOS(isIOS);
 
       // Check if IAP is available (native iOS/Android)
       if (IAPService.isAvailable()) {
@@ -58,14 +64,17 @@ export default function BecomePremium() {
         console.log('IAP not available, using Stripe');
       }
 
-      // Always fetch Stripe products for web and credits
-      StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_MENSUAL)
-        .then(product => setPremiumProduct(product));
-      StripeService.fetchProduct(StripeService.CREDIT_TWENTY_RECIPES)
-        .then(product => setCredit20Product(product));
+      // Fetch Stripe products only on web (NOT on iOS)
+      if (!isIOS) {
+        StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_MENSUAL)
+          .then(product => setPremiumProduct(product));
+        StripeService.fetchProduct(StripeService.CREDIT_TWENTY_RECIPES)
+          .then(product => setCredit20Product(product));
+      }
     };
 
     initializeProducts();
+    TrackingService.logCreditPackViewed('premium_page');
   }, []);
 
   useEffect(() => {
@@ -93,6 +102,7 @@ export default function BecomePremium() {
         price: iapProduct.price,
         currency: iapProduct.currencyCode,
       });
+      TrackingService.logInitiateCheckout('premium_subscription', iapProduct.price, iapProduct.currencyCode);
 
       try {
         const result = await IAPService.purchaseSubscription();
@@ -111,6 +121,7 @@ export default function BecomePremium() {
                 product_type: 'premium_subscription',
                 payment_method: 'iap',
               });
+              TrackingService.logSubscribe(iapProduct.price, iapProduct.currencyCode);
               navigate('/recettes');
             } else {
               setPurchaseError('Erreur de validation. Contactez le support.');
@@ -129,7 +140,12 @@ export default function BecomePremium() {
       return;
     }
 
-    // Use Stripe on web
+    // Use Stripe on web only (NOT on iOS)
+    if (isNativeIOS) {
+      setPurchaseError('Achat non disponible. Veuillez réessayer.');
+      return;
+    }
+
     if (!premiumProduct) return;
 
     trackEvent('checkout_started', {
@@ -138,6 +154,7 @@ export default function BecomePremium() {
       price: premiumProduct.prices[0].unitAmount,
       currency: 'EUR',
     });
+    TrackingService.logInitiateCheckout('premium_subscription', premiumProduct.prices[0].unitAmount / 100, 'EUR');
 
     const cart: CartItem = {
       priceId: premiumProduct.prices[0].stripePriceId,
@@ -161,6 +178,7 @@ export default function BecomePremium() {
         price: iapCreditsProduct.price,
         currency: iapCreditsProduct.currencyCode,
       });
+      TrackingService.logInitiateCheckout('credits', iapCreditsProduct.price, iapCreditsProduct.currencyCode);
 
       try {
         const result = await IAPService.purchaseCredits();
@@ -180,6 +198,7 @@ export default function BecomePremium() {
                 payment_method: 'iap',
                 credit_amount: 20,
               });
+              TrackingService.logPurchase(iapCreditsProduct.price, iapCreditsProduct.currencyCode, 'credits');
               navigate('/recettes');
             } else {
               setPurchaseError('Erreur de validation. Contactez le support.');
@@ -198,7 +217,12 @@ export default function BecomePremium() {
       return;
     }
 
-    // Use Stripe on web
+    // Use Stripe on web only (NOT on iOS)
+    if (isNativeIOS) {
+      setPurchaseError('Achat non disponible. Veuillez réessayer.');
+      return;
+    }
+
     if (!credit20Product) return;
 
     trackEvent('checkout_started', {
@@ -208,6 +232,7 @@ export default function BecomePremium() {
       price: credit20Product.prices[0].unitAmount,
       currency: 'EUR',
     });
+    TrackingService.logInitiateCheckout('credits', credit20Product.prices[0].unitAmount / 100, 'EUR');
 
     const cart: CartItem = {
       priceId: credit20Product.prices[0].stripePriceId,
@@ -227,7 +252,9 @@ export default function BecomePremium() {
     },
     {
       question: "Comment fonctionne la facturation ?",
-      answer: "Nous utilisons Stripe pour des paiements 100% sécurisés. Votre abonnement se renouvelle automatiquement, mais vous pouvez annuler à tout moment depuis votre profil."
+      answer: isNativeIOS
+        ? "Votre abonnement se renouvelle automatiquement via l'App Store. Vous pouvez annuler à tout moment depuis les réglages de votre compte Apple."
+        : "Nous utilisons des paiements 100% sécurisés. Votre abonnement se renouvelle automatiquement, mais vous pouvez annuler à tout moment depuis votre profil."
     },
     {
       question: "Puis-je annuler mon abonnement ?",
@@ -473,7 +500,7 @@ export default function BecomePremium() {
                 <button
                   onClick={() => handleSubscribe()}
                   className="w-full py-4 bg-cout-yellow text-cout-purple font-bold rounded-lg text-lg hover:bg-yellow-400 transition-all duration-300 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  disabled={isPurchasing || (!premiumProduct && !iapProduct)}
+                  disabled={isPurchasing || (isNativeIOS ? !iapProduct : !premiumProduct)}
                 >
                   {isPurchasing ? (
                     <>
@@ -518,7 +545,7 @@ export default function BecomePremium() {
               <button
                 onClick={handleBuyCredits}
                 className="w-full py-4 bg-cout-base text-white font-bold rounded-lg text-lg hover:bg-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                disabled={isPurchasingCredits || (!credit20Product && !iapCreditsProduct)}
+                disabled={isPurchasingCredits || (isNativeIOS ? !iapCreditsProduct : !credit20Product)}
               >
                 {isPurchasingCredits ? (
                   <>
@@ -533,7 +560,7 @@ export default function BecomePremium() {
           </div>
 
           <p className="text-center text-text-secondary mt-8 text-sm">
-            💳 Paiement 100% sécurisé {isIAPAvailable ? (IAPService.isIOS() ? 'via App Store' : 'via Google Play') : 'par Stripe'} • Annulation à tout moment
+            💳 Paiement 100% sécurisé {isNativeIOS ? 'via App Store' : (isIAPAvailable ? 'via Google Play' : '')} • Annulation à tout moment
           </p>
 
           {/* Apple legal text - required for App Store compliance (Guideline 3.1.2) */}
@@ -547,7 +574,14 @@ export default function BecomePremium() {
                 Vous pouvez gérer et annuler vos abonnements dans les réglages de votre compte App Store
                 après l'achat.
               </p>
-              <div className="mt-4 flex justify-center gap-4 text-xs">
+              <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs">
+                <button
+                  onClick={() => navigate('/legal/cgu')}
+                  className="text-cout-base hover:underline"
+                >
+                  Conditions d'Utilisation (EULA)
+                </button>
+                <span className="text-text-secondary">•</span>
                 <button
                   onClick={() => navigate('/legal/cgv')}
                   className="text-cout-base hover:underline"
@@ -636,7 +670,7 @@ export default function BecomePremium() {
             <button
               onClick={() => handleSubscribe()}
               className="px-10 py-5 bg-cout-yellow text-cout-purple font-bold rounded-lg text-xl shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              disabled={isPurchasing || (!premiumProduct && !iapProduct)}
+              disabled={isPurchasing || (isNativeIOS ? !iapProduct : !premiumProduct)}
             >
               {isPurchasing ? (
                 <>
@@ -650,7 +684,7 @@ export default function BecomePremium() {
             <button
               onClick={handleBuyCredits}
               className="px-10 py-5 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-lg text-xl border-2 border-white/30 hover:bg-white/20 transition-all duration-300"
-              disabled={!credit20Product}
+              disabled={isNativeIOS ? !iapCreditsProduct : !credit20Product}
             >
               Ou acheter des crédits
             </button>

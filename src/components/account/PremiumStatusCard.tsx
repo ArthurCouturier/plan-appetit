@@ -122,7 +122,7 @@ export default function PremiumStatusCard({
                 <div className="flex items-center justify-between">
                     <span className="text-text-secondary">Abonnement via</span>
                     <span className="text-text-primary font-semibold">
-                        {isAppleSubscription ? 'App Store' : 'Stripe'}
+                        {isAppleSubscription ? 'App Store' : 'Plan Appétit Web'}
                     </span>
                 </div>
             </div>

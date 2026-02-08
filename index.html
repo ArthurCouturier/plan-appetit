@@ -1,12 +1,44 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="theme1">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg" href="/logo/actual/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Plan'Appétit</title>
+    <style>
+      /* Thème par défaut inline pour éviter le flash sans style */
+      .theme1 {
+        --cout-yellow: #edc79e;
+        --cout-purple: #f17c63;
+        --cout-base: #eda391;
+        --bg-color: #F6E3CF;
+        --primary: #FBF1E7;
+        --text-primary: #1f2937;
+        --secondary: #f9fafb;
+        --text-secondary: #374151;
+        --thirdary: #d1d5db;
+        --border-color: #e5e7eb;
+        --confirmation-1: #E9B986;
+        --cancel-1: #EE6344;
+        --confirmation-2: #CF7D26;
+        --cancel-2: #E03A15;
+        --premium-background: #fef3c7;
+        --premium-text: #f17c63;
+      }
+      html {
+        background-color: var(--cout-base);
+      }
+      body {
+        background-color: var(--bg-color);
+        margin: 0;
+        padding: 0;
+        /* Le body s'étend sous les barres système */
+        min-height: 100vh;
+        min-height: 100dvh;
+      }
+    </style>
   </head>
-  <body>
+  <body class="theme1">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -12,7 +12,9 @@ import ExportDataModal from '../components/popups/ExportDataModal';
 import PremiumStatusCard from '../components/account/PremiumStatusCard';
 import NotificationSettings from '../components/account/NotificationSettings';
 import AccountDeletionService from '../api/services/AccountDeletionService';
-import { KeyIcon, TrashIcon, XCircleIcon, ArrowDownTrayIcon } from "@heroicons/react/24/solid";
+import { KeyIcon, TrashIcon, XCircleIcon, ArrowDownTrayIcon, ShieldCheckIcon } from "@heroicons/react/24/solid";
+import Modal from '../components/popups/Modal';
+import { CookieConsentManager } from '../components/global/CookieConsentBanner';
 import { isPremiumUser } from '../api/interfaces/users/UserInterface';
 import { SubscriptionStatusInterface } from '../api/interfaces/subscription/SubscriptionStatusInterface';
 
@@ -34,6 +36,7 @@ export default function AccountSettings() {
     const [subscriptionLoading, setSubscriptionLoading] = useState(false);
     const [deletionScheduled, setDeletionScheduled] = useState<string | null>(null);
     const [cancellingDeletion, setCancellingDeletion] = useState(false);
+    const [showCookieModal, setShowCookieModal] = useState(false);
 
     const fetchSubscriptionStatus = async () => {
         const token = localStorage.getItem('firebaseIdToken');
@@ -234,8 +237,27 @@ export default function AccountSettings() {
                         </div>
                     )}
 
+                    {/* Modal de gestion des cookies */}
+                    <Modal
+                        isOpen={showCookieModal}
+                        onClose={() => setShowCookieModal(false)}
+                        title="Gérer mes cookies"
+                        size="sm"
+                    >
+                        <CookieConsentManager onClose={() => setShowCookieModal(false)} />
+                    </Modal>
+
                     {/* Actions */}
                     <div className="space-y-3">
+                        {/* Bouton de gestion des cookies */}
+                        <button
+                            onClick={() => setShowCookieModal(true)}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-cout-base/50 text-cout-base font-semibold rounded-xl hover:bg-cout-base/10 transition-all duration-200"
+                        >
+                            <ShieldCheckIcon className="w-5 h-5" />
+                            Gérer mes cookies
+                        </button>
+
                         {/* Bouton d'export des données */}
                         <button
                             onClick={() => setShowExportModal(true)}

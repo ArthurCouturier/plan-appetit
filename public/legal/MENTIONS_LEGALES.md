@@ -1,7 +1,7 @@
 # MENTIONS LÉGALES
 # Plan Appetit
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 28/12/2024**
 
 ---
 
@@ -84,13 +84,25 @@ https://www.cnil.fr
 
 ---
 
-## 5. COOKIES
+## 5. COOKIES ET TRACEURS
 
-Plan Appetit utilise des cookies techniques essentiels au fonctionnement du site (authentification, session).
+### 5.1 Sur le site web
+
+Plan Appetit utilise des cookies techniques essentiels au fonctionnement du site (authentification, session) ainsi que des cookies d'analyse (PostHog).
+
+### 5.2 Sur les applications mobiles
+
+Les applications iOS et Android utilisent :
+- **Firebase Analytics** : analyse d'utilisation
+- **Meta/Facebook SDK** : mesure des campagnes publicitaires (avec consentement ATT sur iOS)
+
+### 5.3 App Tracking Transparency (iOS)
+
+Sur iOS 14.5+, nous demandons votre consentement avant de collecter des données à des fins publicitaires via le framework App Tracking Transparency d'Apple.
 
 Pour plus d'informations, consultez notre Politique de Confidentialité : www.plan-appetit.fr/legal/politique-de-confidentialite
 
-Vous pouvez gérer vos préférences de cookies via les paramètres de votre navigateur.
+Vous pouvez gérer vos préférences de cookies via les paramètres de votre navigateur ou de votre appareil mobile.
 
 ---
 
@@ -185,6 +197,6 @@ Couturier Arthur
 
 ---
 
-**Date de dernière mise à jour : 22/10/2025**
+**Date de dernière mise à jour : 28/12/2024**
 
-**Version : 1.0**
+**Version : 1.2**

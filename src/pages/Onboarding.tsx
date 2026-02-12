@@ -6,7 +6,7 @@ const SPEED_LEFT = 0.5;
 const SPEED_CENTER = -0.3;
 const SPEED_RIGHT = 0.9;
 
-const RESUME_DELAY = 1500;
+const RESUME_DELAY = 300;
 const SPEEDS = [SPEED_LEFT, SPEED_CENTER, SPEED_RIGHT];
 
 const imageFiles = Object.keys(

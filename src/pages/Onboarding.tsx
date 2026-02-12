@@ -1,5 +1,6 @@
 import { useEffect, useRef, useMemo, useCallback } from "react";
 import OnboardingImageCard from "../components/onboarding/OnboardingImageCard";
+import LiquidGlassModal from "../components/onboarding/LiquidGlassModal";
 
 const SPEED_LEFT = 0.5;
 const SPEED_CENTER = -0.3;
@@ -105,7 +106,8 @@ export default function Onboarding() {
   }, [pauseColumn]);
 
   return (
-    <div className="w-full h-screen h-dvh bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple flex overflow-hidden">
+    <div className="relative w-full h-screen h-dvh bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple flex overflow-hidden">
+      <LiquidGlassModal />
       {columnImages.map((images, colIndex) => {
         const tripled = [...images, ...images, ...images];
         return (

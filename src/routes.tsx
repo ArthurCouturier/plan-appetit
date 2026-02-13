@@ -23,15 +23,15 @@ const router = createBrowserRouter([
         children: [
             {
                 index: true,
+                element: <Home />,
+            },
+            {
+                path: "onboarding",
                 element: <Onboarding />,
             },
             {
                 element: <Layout />,
                 children: [
-                    {
-                        path: "home",
-                        element: <Home />,
-                    },
                     {
                         path: "sandbox",
                         element: <Sandbox />,

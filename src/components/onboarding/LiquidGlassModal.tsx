@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 const screenshots = Object.keys(
   import.meta.glob("/public/onboarding/modal_screenshots/*", { eager: false })
@@ -38,6 +39,7 @@ function GlassProgressDots({ total, current }: { total: number; current: number 
 }
 
 export default function LiquidGlassModal() {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeOffset, setSwipeOffset] = useState(0);
@@ -86,6 +88,8 @@ export default function LiquidGlassModal() {
     }
     setSwipeOffset(0);
   }, [swipeOffset, goNext, goPrev]);
+
+  const isLast = currentIndex === screenshots.length - 1;
 
   const handleOpen = useCallback(() => {
     if (!isOpen) {
@@ -159,13 +163,27 @@ export default function LiquidGlassModal() {
 
           {/* Navigation buttons */}
           <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-            <GlassButton onClick={(e) => { e.stopPropagation(); goPrev(); }}>
-              ‹
-            </GlassButton>
-            <GlassProgressDots total={screenshots.length} current={currentIndex} />
-            <GlassButton onClick={(e) => { e.stopPropagation(); goNext(); }}>
-              ›
-            </GlassButton>
+            <div className={`transition-all duration-[400ms] ${isLast ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+              <GlassButton onClick={(e) => { e.stopPropagation(); goPrev(); }}>
+                ‹
+              </GlassButton>
+            </div>
+            <div className="relative flex items-center justify-center">
+              <div className={`transition-all duration-[400ms] ${isLast ? "opacity-0 scale-90" : "opacity-100 scale-100"}`}>
+                <GlassProgressDots total={screenshots.length} current={currentIndex} />
+              </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate("/profile"); }}
+                className={`absolute h-[4vh] px-6 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold whitespace-nowrap cursor-pointer hover:bg-white/30 transition-all duration-[400ms] ${isLast ? "opacity-100 scale-100" : "opacity-0 scale-90 pointer-events-none"}`}
+              >
+                Débuter
+              </button>
+            </div>
+            <div className={`transition-all duration-[400ms] ${isLast ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+              <GlassButton onClick={(e) => { e.stopPropagation(); goNext(); }}>
+                ›
+              </GlassButton>
+            </div>
           </div>
         </div>
       </div>

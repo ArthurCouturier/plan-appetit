@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "7QZJ4989Y6.fr.planappetit.app",
+        "paths": [
+          "/recettes/*",
+          "/collections/*",
+          "/sandbox",
+          "/login",
+          "/premium"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "fr.planappetit.app",
+      "sha256_cert_fingerprints": ["E4:2F:73:68:34:1E:BC:41:32:BB:68:89:86:16:44:35:1C:B7:67:9F:25:AF:2D:C7:D5:04:F2:31:01:58:A5:6E"]
+    }
+  }
+]

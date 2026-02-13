@@ -1,6 +1,7 @@
 // routes.tsx
 import { createBrowserRouter } from "react-router-dom";
 import Home from "./pages/Home";
+import Onboarding from "./pages/Onboarding";
 import Sandbox from "./pages/Sandbox";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
@@ -19,79 +20,87 @@ import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } f
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Layout />,
         children: [
             {
-                path: "",
+                index: true,
                 element: <Home />,
             },
             {
-                path: "sandbox",
-                element: <Sandbox />,
+                path: "onboarding",
+                element: <Onboarding />,
             },
             {
-                path: "instagram",
-                element: <InstagramImport />,
-            },
-            {
-                path: "login",
-                element: <LoginPage />,
-            },
-            {
-                path: "recettes",
-                element: <Recipes />,
-            },
-            {
-                path: "recettes/:uuid",
-                element: <RecipeDetail />,
-            },
-            {
-                path: "legal/cgu",
-                element: <CGUPage />,
-            },
-            {
-                path: "legal/cgv",
-                element: <CGVPage />,
-            },
-            {
-                path: "legal/politique-de-confidentialite",
-                element: <PolitiqueConfidentialitePage />,
-            },
-            {
-                path: "legal/mentions-legales",
-                element: <MentionsLegalesPage />,
-            },
-            {
-                element: <ProtectedRoute />,
+                element: <Layout />,
                 children: [
                     {
-                        path: "profile",
-                        element: <Account />,
-                    },
-                    {
-                        path: "profile/settings",
-                        element: <AccountSettings />,
-                    },
-                    {
-                        path: "recettes/generer/localisation",
-                        element: <RecipeLocationGeneration />,
-                    },
-                    {
-                        path: "recettes/generer/sandbox",
+                        path: "sandbox",
                         element: <Sandbox />,
                     },
                     {
-                        path: "myrecipes",
-                        element: <MyRecipes />,
+                        path: "instagram",
+                        element: <InstagramImport />,
                     },
                     {
-                        path: "collections/:uuid",
-                        element: <CollectionDetail />,
+                        path: "login",
+                        element: <LoginPage />,
                     },
                     {
-                        path: "premium",
-                        element: <BecomePremium />
-                    }
+                        path: "recettes",
+                        element: <Recipes />,
+                    },
+                    {
+                        path: "recettes/:uuid",
+                        element: <RecipeDetail />,
+                    },
+                    {
+                        path: "legal/cgu",
+                        element: <CGUPage />,
+                    },
+                    {
+                        path: "legal/cgv",
+                        element: <CGVPage />,
+                    },
+                    {
+                        path: "legal/politique-de-confidentialite",
+                        element: <PolitiqueConfidentialitePage />,
+                    },
+                    {
+                        path: "legal/mentions-legales",
+                        element: <MentionsLegalesPage />,
+                    },
+                    {
+                        element: <ProtectedRoute />,
+                        children: [
+                            {
+                                path: "profile",
+                                element: <Account />,
+                            },
+                            {
+                                path: "profile/settings",
+                                element: <AccountSettings />,
+                            },
+                            {
+                                path: "recettes/generer/localisation",
+                                element: <RecipeLocationGeneration />,
+                            },
+                            {
+                                path: "recettes/generer/sandbox",
+                                element: <Sandbox />,
+                            },
+                            {
+                                path: "myrecipes",
+                                element: <MyRecipes />,
+                            },
+                            {
+                                path: "collections/:uuid",
+                                element: <CollectionDetail />,
+                            },
+                            {
+                                path: "premium",
+                                element: <BecomePremium />
+                            }
+                        ],
+                    },
                 ],
             },
         ],

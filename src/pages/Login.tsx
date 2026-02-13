@@ -37,7 +37,7 @@ export default function LoginPage() {
     const { login } = useAuth();
     const { trackEvent, identify } = usePostHog();
 
-    const from = (location.state as { from?: string })?.from || '/profile';
+    const from = (location.state as { from?: string })?.from || '/';
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');

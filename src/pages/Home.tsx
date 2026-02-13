@@ -18,7 +18,7 @@ export default function Home() {
 
   // Si l'utilisateur est NON connecté, rediriger vers /sandbox
   if (user === null) {
-    return <Navigate to="/sandbox" replace />;
+    return <Navigate to="/onboarding" replace />;
   }
 
   // Si connecté, rediriger vers ses recettes

@@ -35,6 +35,7 @@
     "@capacitor/keyboard": "^7.0.3",
     "@capacitor/network": "^7.0.2",
     "@capacitor/preferences": "^7.0.2",
+    "@capacitor/share": "^7.0.4",
     "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.3",
     "@capgo/native-purchases": "^7.16.2",

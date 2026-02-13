@@ -12,6 +12,8 @@ import PurchaseModificationCreditsModal from "../components/popups/PurchaseModif
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import RecipeImage from "../components/recipes/RecipeImage";
 import { TrackingService } from "../api/services/TrackingService";
+import { Capacitor } from "@capacitor/core";
+import { Share } from "@capacitor/share";
 
 export default function RecipeDetail() {
 
@@ -110,17 +112,45 @@ export default function RecipeDetail() {
         setShowModificationModal(true);
     };
 
-    const handleShare = async () => {
-        const shareUrl = window.location.href;
-        const shareData = {
-            title: recipe?.name || 'Recette Plan Appetit',
-            text: `Découvrez cette recette : ${recipe?.name}`,
-            url: shareUrl,
-        };
-
-        if (navigator.share) {
+    const trackExport = async () => {
+        const email = localStorage.getItem("email");
+        const token = localStorage.getItem("firebaseIdToken");
+        if (email && token) {
             try {
-                await navigator.share(shareData);
+                await BackendService.trackRecipeExport(email, token);
+            } catch (error) {
+                console.error('Erreur lors du tracking export:', error);
+            }
+        }
+    };
+
+    const handleShare = async () => {
+        const shareUrl = Capacitor.isNativePlatform()
+            ? `https://plan-appetit.fr${window.location.pathname}`
+            : window.location.href;
+
+        if (Capacitor.isNativePlatform()) {
+            try {
+                await Share.share({
+                    title: recipe?.name || 'Recette Plan Appetit',
+                    text: `Découvrez cette recette : ${recipe?.name}`,
+                    url: shareUrl,
+                    dialogTitle: 'Partager cette recette',
+                });
+                await trackExport();
+            } catch (error) {
+                if ((error as Error).message !== 'Share canceled') {
+                    console.error('Erreur lors du partage:', error);
+                }
+            }
+        } else if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: recipe?.name || 'Recette Plan Appetit',
+                    text: `Découvrez cette recette : ${recipe?.name}`,
+                    url: shareUrl,
+                });
+                await trackExport();
             } catch (error) {
                 if ((error as Error).name !== 'AbortError') {
                     console.error('Erreur lors du partage:', error);
@@ -129,6 +159,7 @@ export default function RecipeDetail() {
         } else {
             await navigator.clipboard.writeText(shareUrl);
             alert('Lien copié dans le presse-papier !');
+            await trackExport();
         }
     };
 

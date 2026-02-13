@@ -129,6 +129,22 @@ export default class PlatformService {
         }
     }
 
+    public static onDeepLink(navigate: (path: string) => void): void {
+        if (!this.isNative()) return;
+
+        App.addListener('appUrlOpen', ({ url }) => {
+            try {
+                const parsed = new URL(url);
+                const path = parsed.pathname;
+                if (path && path !== '/') {
+                    navigate(path);
+                }
+            } catch {
+                // URL invalide, on ignore
+            }
+        });
+    }
+
     public static onAppStateChange(callback: (isActive: boolean) => void): void {
         if (this.isNative()) {
             App.addListener('appStateChange', ({ isActive }) => {

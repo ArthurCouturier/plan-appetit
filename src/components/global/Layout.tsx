@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import DarkModeButton from "../buttons/DarkModeButton";
 import { useEffect, useState } from "react";
 import HeaderMobile from "./HeaderMobile";
@@ -10,10 +10,13 @@ export default function Layout() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const location = useLocation();
 
-  // Initialise la plateforme, le StatusBar pour Android et le tracking
+  const navigate = useNavigate();
+
+  // Initialise la plateforme, le StatusBar pour Android, le tracking et le deep linking
   useEffect(() => {
     PlatformService.setPlatformClass();
     PlatformService.initializeStatusBar();
+    PlatformService.onDeepLink(navigate);
     TrackingService.initialize();
 
     // Sur iOS, demande ATT après un court délai pour laisser l'app se charger

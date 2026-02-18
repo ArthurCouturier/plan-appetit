@@ -31,6 +31,7 @@ export default function RecipeDetail() {
     const [showCreditPaywallModal, setShowCreditPaywallModal] = useState(false);
     const [userCredits, setUserCredits] = useState(0);
     const [modificationSuccess, setModificationSuccess] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
 
     useEffect(() => {
         const fetchRecipe = async () => {
@@ -125,41 +126,40 @@ export default function RecipeDetail() {
     };
 
     const handleShare = async () => {
+        if (isSharing) return;
+        setIsSharing(true);
+
         const shareUrl = Capacitor.isNativePlatform()
             ? `https://plan-appetit.fr${window.location.pathname}`
             : window.location.href;
 
-        if (Capacitor.isNativePlatform()) {
-            try {
+        try {
+            if (Capacitor.isNativePlatform()) {
                 await Share.share({
                     title: recipe?.name || 'Recette Plan Appetit',
-                    text: `Découvrez cette recette : ${recipe?.name}`,
                     url: shareUrl,
                     dialogTitle: 'Partager cette recette',
                 });
                 await trackExport();
-            } catch (error) {
-                if ((error as Error).message !== 'Share canceled') {
-                    console.error('Erreur lors du partage:', error);
-                }
-            }
-        } else if (navigator.share) {
-            try {
+            } else if (navigator.share) {
                 await navigator.share({
                     title: recipe?.name || 'Recette Plan Appetit',
                     text: `Découvrez cette recette : ${recipe?.name}`,
                     url: shareUrl,
                 });
                 await trackExport();
-            } catch (error) {
-                if ((error as Error).name !== 'AbortError') {
-                    console.error('Erreur lors du partage:', error);
-                }
+            } else {
+                await navigator.clipboard.writeText(shareUrl);
+                alert('Lien copié dans le presse-papier !');
+                await trackExport();
             }
-        } else {
-            await navigator.clipboard.writeText(shareUrl);
-            alert('Lien copié dans le presse-papier !');
-            await trackExport();
+        } catch (error) {
+            const msg = (error as Error).message || '';
+            if (msg !== 'Share canceled' && (error as Error).name !== 'AbortError') {
+                console.error('Erreur lors du partage:', error);
+            }
+        } finally {
+            setIsSharing(false);
         }
     };
 

@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FolderIcon, DocumentTextIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { useQueryClient } from "@tanstack/react-query";
 import {
     DndContext,
     DragOverlay,
@@ -22,7 +24,9 @@ import {
 } from "@dnd-kit/sortable";
 import RecipeCollectionInterface from "../api/interfaces/collections/RecipeCollectionInterface";
 import RecipeSummaryInterface from "../api/interfaces/recipes/RecipeSummaryInterface";
-import CollectionService from "../api/services/CollectionService";
+import { useCollection } from "../api/hooks/useCollectionQueries";
+import { useMoveRecipeToCollection, useMoveCollectionToParent, useReorderCollectionItems } from "../api/hooks/useCollectionMutations";
+import { queryKeys } from "../api/queryConfig";
 import DraggableRecipeCard from "../components/dnd/DraggableRecipeCard";
 import DroppableCollectionCard from "../components/dnd/DroppableCollectionCard";
 import ParentDropZone from "../components/dnd/ParentDropZone";
@@ -31,7 +35,6 @@ import CollectionCard from "../components/cards/CollectionCard";
 import QuickActions from "../components/actions/QuickActions";
 import Header from "../components/global/Header";
 import EditableCollectionTitle from "../components/collections/EditableCollectionTitle";
-import useAuth from "../api/hooks/useAuth";
 
 type DragItemType = {
     type: 'recipe' | 'collection';
@@ -41,14 +44,17 @@ type DragItemType = {
 
 export default function CollectionDetail() {
     const { uuid } = useParams<{ uuid: string }>();
-    const { user } = useAuth();
+    const queryClient = useQueryClient();
 
-    const [collection, setCollection] = useState<RecipeCollectionInterface | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data: collection, isLoading, isError, refetch } = useCollection(uuid);
+
     const [isMobile, setIsMobile] = useState(false);
-
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [activeItem, setActiveItem] = useState<DragItemType | null>(null);
+
+    const moveRecipeMutation = useMoveRecipeToCollection();
+    const moveCollectionMutation = useMoveCollectionToParent();
+    const reorderMutation = useReorderCollectionItems();
 
     const pointerSensor = useSensor(PointerSensor, {
         activationConstraint: {
@@ -104,42 +110,13 @@ export default function CollectionDetail() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const refreshCollection = useCallback(async () => {
-        if (!uuid || !user) return;
-
-        try {
-            const fetchedCollection = await CollectionService.getCollectionById(uuid);
-            if (fetchedCollection) {
-                setCollection(fetchedCollection);
-            }
-        } catch (err) {
-            console.error('Erreur lors du refresh de la collection:', err);
-        }
-    }, [uuid, user]);
-
-    useEffect(() => {
-        const fetchCollection = async () => {
-            if (!uuid || !user) return;
-
-            try {
-                setLoading(true);
-                setError(null);
-                const fetchedCollection = await CollectionService.getCollectionById(uuid);
-                if (fetchedCollection) {
-                    setCollection(fetchedCollection);
-                } else {
-                    setError("Collection introuvable");
-                }
-            } catch (err) {
-                console.error('Erreur lors du fetch de la collection:', err);
-                setError("Erreur lors du chargement de la collection");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCollection();
-    }, [uuid, user]);
+    const setCollectionCache = useCallback((updater: (prev: RecipeCollectionInterface) => RecipeCollectionInterface) => {
+        if (!uuid) return;
+        queryClient.setQueryData(
+            queryKeys.collections.byId(uuid),
+            (prev: RecipeCollectionInterface | null | undefined) => prev ? updater(prev) : prev
+        );
+    }, [uuid, queryClient]);
 
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
@@ -195,10 +172,7 @@ export default function CollectionDetail() {
                     displayOrder: index,
                 }));
 
-                setCollection({
-                    ...collection,
-                    recipes: updatedRecipes,
-                });
+                setCollectionCache(prev => ({ ...prev, recipes: updatedRecipes }));
 
                 await handleSaveRecipeOrder(updatedRecipes);
             }
@@ -216,10 +190,7 @@ export default function CollectionDetail() {
                     displayOrder: index,
                 }));
 
-                setCollection({
-                    ...collection,
-                    subCollections: updatedCollections,
-                });
+                setCollectionCache(prev => ({ ...prev, subCollections: updatedCollections }));
 
                 await handleSaveCollectionOrder(updatedCollections);
             }
@@ -230,20 +201,17 @@ export default function CollectionDetail() {
         if (!collection || !uuid) return;
 
         const updatedRecipes = (collection.recipes || []).filter(r => r.uuid !== recipe.uuid);
-        setCollection({
-            ...collection,
-            recipes: updatedRecipes,
-        });
+        setCollectionCache(prev => ({ ...prev, recipes: updatedRecipes }));
 
         try {
-            await CollectionService.moveRecipeToCollection(
-                String(recipe.uuid),
-                uuid,
-                targetCollectionUuid
-            );
+            await moveRecipeMutation.mutateAsync({
+                recipeUuid: String(recipe.uuid),
+                sourceCollectionUuid: uuid,
+                targetCollectionUuid,
+            });
         } catch (err) {
             console.error('Erreur lors du déplacement de la recette:', err);
-            refreshCollection();
+            refetch();
         }
     };
 
@@ -251,19 +219,16 @@ export default function CollectionDetail() {
         if (!collection) return;
 
         const updatedSubCollections = (collection.subCollections || []).filter(c => c.uuid !== movedCollection.uuid);
-        setCollection({
-            ...collection,
-            subCollections: updatedSubCollections,
-        });
+        setCollectionCache(prev => ({ ...prev, subCollections: updatedSubCollections }));
 
         try {
-            await CollectionService.moveCollectionToParent(
-                String(movedCollection.uuid),
-                targetCollectionUuid
-            );
+            await moveCollectionMutation.mutateAsync({
+                collectionUuid: String(movedCollection.uuid),
+                newParentCollectionUuid: targetCollectionUuid,
+            });
         } catch (err) {
             console.error('Erreur lors du déplacement de la collection:', err);
-            refreshCollection();
+            refetch();
         }
     };
 
@@ -276,10 +241,14 @@ export default function CollectionDetail() {
         }));
 
         try {
-            await CollectionService.reorderCollectionItems(uuid, recipeOrders, undefined);
+            await reorderMutation.mutateAsync({
+                collectionUuid: uuid,
+                recipeOrders,
+                subCollectionOrders: undefined,
+            });
         } catch (err) {
             console.error('Erreur lors de la sauvegarde de l\'ordre des recettes:', err);
-            refreshCollection();
+            refetch();
         }
     };
 
@@ -292,10 +261,14 @@ export default function CollectionDetail() {
         }));
 
         try {
-            await CollectionService.reorderCollectionItems(uuid, undefined, subCollectionOrders);
+            await reorderMutation.mutateAsync({
+                collectionUuid: uuid,
+                recipeOrders: undefined,
+                subCollectionOrders,
+            });
         } catch (err) {
             console.error('Erreur lors de la sauvegarde de l\'ordre des collections:', err);
-            refreshCollection();
+            refetch();
         }
     };
 
@@ -304,20 +277,24 @@ export default function CollectionDetail() {
     };
 
     const handleNameChange = (newName: string) => {
-        if (collection) {
-            setCollection({
-                ...collection,
-                name: newName,
-            });
-        }
+        setCollectionCache(prev => ({ ...prev, name: newName }));
     };
 
-    if (loading) {
+    const handleRefresh = useCallback(async () => {
+        setIsRefreshing(true);
+        try {
+            await refetch();
+        } finally {
+            setIsRefreshing(false);
+        }
+    }, [refetch]);
+
+    if (isLoading || isRefreshing) {
         return <CollectionDetailSkeleton isMobile={isMobile} />;
     }
 
-    if (error || !collection) {
-        return <CollectionNotFound error={error} isMobile={isMobile} />;
+    if (isError || !collection) {
+        return <CollectionNotFound error={isError ? "Erreur lors du chargement de la collection" : null} isMobile={isMobile} />;
     }
 
     return (
@@ -331,16 +308,18 @@ export default function CollectionDetail() {
             {isMobile ? (
                 <CollectionDetailMobile
                     collection={collection}
-                    onCollectionCreated={refreshCollection}
+                    onCollectionCreated={handleRefresh}
                     onNameChange={handleNameChange}
                     isDragging={activeItem !== null}
+                    onRefresh={handleRefresh}
                 />
             ) : (
                 <CollectionDetailDesktop
                     collection={collection}
-                    onCollectionCreated={refreshCollection}
+                    onCollectionCreated={handleRefresh}
                     onNameChange={handleNameChange}
                     isDragging={activeItem !== null}
+                    onRefresh={handleRefresh}
                 />
             )}
             <DragOverlay>
@@ -357,19 +336,8 @@ export default function CollectionDetail() {
 
 function CollectionDetailSkeleton({ isMobile }: { isMobile: boolean }) {
     return (
-        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-            {!isMobile && (
-                <Header back={true} home={true} title={true} profile={true} pageName="Collection" />
-            )}
-            <div className="mt-6 animate-pulse">
-                <div className="h-8 bg-border-color rounded w-1/3 mb-4"></div>
-                <div className="h-4 bg-border-color rounded w-1/4 mb-8"></div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="bg-primary rounded-xl border border-border-color p-6 h-40"></div>
-                    ))}
-                </div>
-            </div>
+        <div className={`min-h-screen bg-bg-color flex items-center justify-center ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
+            <div className="animate-pulse text-text-secondary">Chargement en cours...</div>
         </div>
     );
 }
@@ -407,9 +375,10 @@ type CollectionDetailLayoutProps = {
     onCollectionCreated: () => void;
     onNameChange: (newName: string) => void;
     isDragging: boolean;
+    onRefresh: () => void;
 };
 
-function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange, isDragging }: CollectionDetailLayoutProps) {
+function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh }: CollectionDetailLayoutProps) {
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
 
@@ -421,12 +390,21 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
     return (
         <div className="min-h-screen bg-bg-color px-4 pb-8 mobile-content-with-header">
             <div className="mb-6">
-                <EditableCollectionTitle
-                    collectionUuid={collection.uuid!}
-                    name={collection.name}
-                    onNameChange={onNameChange}
-                    isMobile={true}
-                />
+                <div className="flex items-center gap-2">
+                    <EditableCollectionTitle
+                        collectionUuid={collection.uuid!}
+                        name={collection.name}
+                        onNameChange={onNameChange}
+                        isMobile={true}
+                    />
+                    <button
+                        onClick={onRefresh}
+                        className="p-1.5 rounded-lg hover:bg-secondary transition-colors mb-2 font-bold"
+                        title="Rafraîchir"
+                    >
+                        <ArrowPathIcon className="w-5 h-5 text-cout-base" />
+                    </button>
+                </div>
                 <p className="text-text-secondary text-sm">
                     {recipes.length} recette{recipes.length > 1 ? 's' : ''}
                     {subCollections.length > 0 && ` • ${subCollections.length} sous-collection${subCollections.length > 1 ? 's' : ''}`}
@@ -502,7 +480,7 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
     );
 }
 
-function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange, isDragging }: CollectionDetailLayoutProps) {
+function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh }: CollectionDetailLayoutProps) {
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
 
@@ -519,11 +497,20 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
                 title={true}
                 profile={true}
                 pageName={
-                    <EditableCollectionTitle
-                        collectionUuid={collection.uuid!}
-                        name={collection.name}
-                        onNameChange={onNameChange}
-                    />
+                    <div className="flex items-center gap-2">
+                        <EditableCollectionTitle
+                            collectionUuid={collection.uuid!}
+                            name={collection.name}
+                            onNameChange={onNameChange}
+                        />
+                        <button
+                            onClick={onRefresh}
+                            className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
+                            title="Rafraîchir"
+                        >
+                            <ArrowPathIcon className="w-5 h-5 text-cout-base" />
+                        </button>
+                    </div>
                 }
             />
 

@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import RecipeService from "../api/services/RecipeService";
 import BackendService from "../api/services/BackendService";
 import { useEffect, useState } from "react";
@@ -6,10 +6,11 @@ import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import IngredientsList from "../components/lists/IngredientsList";
 import RecipeStepsList from "../components/lists/RecipeStepsList";
 import Header from "../components/global/Header";
-import { TrashIcon, CheckIcon, UserGroupIcon, SparklesIcon, ArrowUpOnSquareIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, CheckIcon, UserGroupIcon, SparklesIcon, ArrowUpOnSquareIcon, BookmarkIcon } from "@heroicons/react/24/solid";
 import RecipeModificationModal from "../components/popups/RecipeModificationModal";
 import PurchaseModificationCreditsModal from "../components/popups/PurchaseModificationCreditsModal";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
+import SaveToCollectionModal from "../components/popups/SaveToCollectionModal";
 import RecipeImage from "../components/recipes/RecipeImage";
 import { TrackingService } from "../api/services/TrackingService";
 import { Capacitor } from "@capacitor/core";
@@ -19,6 +20,8 @@ export default function RecipeDetail() {
 
     const navigate = useNavigate();
     const { uuid } = useParams<{ uuid: string }>();
+    const [searchParams] = useSearchParams();
+    const isFromShare = searchParams.has('share');
 
     const [recipe, setRecipe] = useState<RecipeInterface | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -31,6 +34,8 @@ export default function RecipeDetail() {
     const [showCreditPaywallModal, setShowCreditPaywallModal] = useState(false);
     const [userCredits, setUserCredits] = useState(0);
     const [modificationSuccess, setModificationSuccess] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
+    const [showSaveModal, setShowSaveModal] = useState(false);
 
     useEffect(() => {
         const fetchRecipe = async () => {
@@ -125,42 +130,50 @@ export default function RecipeDetail() {
     };
 
     const handleShare = async () => {
-        const shareUrl = Capacitor.isNativePlatform()
-            ? `https://plan-appetit.fr${window.location.pathname}`
-            : window.location.href;
+        if (isSharing) return;
+        setIsSharing(true);
 
-        if (Capacitor.isNativePlatform()) {
-            try {
+        const shareUrl = Capacitor.isNativePlatform()
+            ? `https://plan-appetit.fr${window.location.pathname}?share`
+            : `${window.location.origin}${window.location.pathname}?share`;
+
+        try {
+            if (Capacitor.isNativePlatform()) {
                 await Share.share({
                     title: recipe?.name || 'Recette Plan Appetit',
-                    text: `Découvrez cette recette : ${recipe?.name}`,
                     url: shareUrl,
                     dialogTitle: 'Partager cette recette',
                 });
                 await trackExport();
-            } catch (error) {
-                if ((error as Error).message !== 'Share canceled') {
-                    console.error('Erreur lors du partage:', error);
-                }
-            }
-        } else if (navigator.share) {
-            try {
+            } else if (navigator.share) {
                 await navigator.share({
                     title: recipe?.name || 'Recette Plan Appetit',
                     text: `Découvrez cette recette : ${recipe?.name}`,
                     url: shareUrl,
                 });
                 await trackExport();
-            } catch (error) {
-                if ((error as Error).name !== 'AbortError') {
-                    console.error('Erreur lors du partage:', error);
-                }
+            } else {
+                await navigator.clipboard.writeText(shareUrl);
+                alert('Lien copié dans le presse-papier !');
+                await trackExport();
             }
-        } else {
-            await navigator.clipboard.writeText(shareUrl);
-            alert('Lien copié dans le presse-papier !');
-            await trackExport();
+        } catch (error) {
+            const msg = (error as Error).message || '';
+            if (msg !== 'Share canceled' && (error as Error).name !== 'AbortError') {
+                console.error('Erreur lors du partage:', error);
+            }
+        } finally {
+            setIsSharing(false);
         }
+    };
+
+    const handleSaveToCollection = () => {
+        const token = localStorage.getItem("firebaseIdToken");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+        setShowSaveModal(true);
     };
 
     if (loading) {
@@ -236,6 +249,25 @@ export default function RecipeDetail() {
                 </div>
             </div>
 
+            {/* Owner Banner */}
+            {!recipe.isOwner && recipe.ownerDisplayName && (
+                <div className="flex items-center justify-center gap-3 mt-4 p-4 bg-primary rounded-xl shadow-lg border border-border-color">
+                    <span className="text-text-secondary text-sm">Recette de</span>
+                    <span className="text-text-primary font-semibold">{recipe.ownerDisplayName}</span>
+                    {recipe.ownerProfilePhoto ? (
+                        <img
+                            src={recipe.ownerProfilePhoto}
+                            alt={recipe.ownerDisplayName}
+                            className="w-8 h-8 rounded-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-8 h-8 rounded-full bg-cout-base flex items-center justify-center text-white font-semibold text-sm">
+                            {recipe.ownerDisplayName.charAt(0).toUpperCase()}
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Success Notification */}
             {modificationSuccess && (
                 <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-pulse">
@@ -253,6 +285,15 @@ export default function RecipeDetail() {
                         isOwner={recipe.isOwner}
                         className="mt-4"
                     />
+                    {isFromShare && !recipe.isOwner && (
+                        <button
+                            onClick={handleSaveToCollection}
+                            className="w-full flex items-center justify-center gap-2 mt-4 px-6 py-3 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+                        >
+                            <BookmarkIcon className="w-5 h-5" />
+                            Enregistrer dans...
+                        </button>
+                    )}
                     <RecipeContent recipe={recipe} isMobile={isMobile} />
                 </>
             )}
@@ -280,6 +321,16 @@ export default function RecipeDetail() {
                                 isGenerated={recipe.isGenerated}
                                 isOwner={recipe.isOwner}
                             />
+
+                            {isFromShare && !recipe.isOwner && (
+                                <button
+                                    onClick={handleSaveToCollection}
+                                    className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+                                >
+                                    <BookmarkIcon className="w-5 h-5" />
+                                    Enregistrer dans...
+                                </button>
+                            )}
 
                             {/* Étapes */}
                             <div>
@@ -336,6 +387,15 @@ export default function RecipeDetail() {
             <CreditPaywallModal
                 isOpen={showCreditPaywallModal}
                 onClose={() => setShowCreditPaywallModal(false)}
+            />
+
+            <SaveToCollectionModal
+                isOpen={showSaveModal}
+                onClose={() => setShowSaveModal(false)}
+                recipeUuid={recipe.uuid.toString()}
+                onSaved={() => {
+                    navigate(`/recettes/${uuid}`, { replace: true });
+                }}
             />
         </div>
     );

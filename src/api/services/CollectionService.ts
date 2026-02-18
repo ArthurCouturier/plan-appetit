@@ -158,7 +158,7 @@ export default class CollectionService {
         }
     }
 
-    static async addRecipeToCollection(collectionUuid: string, recipeUuid: string): Promise<RecipeCollectionInterface> {
+    static async addRecipeToCollection(collectionUuid: string, recipeUuid: string): Promise<void> {
         const email: string = localStorage.getItem('email') as string;
         const token: string = localStorage.getItem('firebaseIdToken') as string;
 
@@ -176,11 +176,9 @@ export default class CollectionService {
             body: JSON.stringify({ recipeUuid }),
         });
 
-        if (!response.ok) {
+        if (response.status >= 400 && response.status < 500) {
             throw new Error(`Failed to add recipe to collection: ${response.statusText}`);
         }
-
-        return await response.json();
     }
 
     static async removeRecipeFromCollection(collectionUuid: string, recipeUuid: string): Promise<RecipeCollectionInterface> {

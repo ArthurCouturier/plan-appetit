@@ -1,7 +1,18 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Typography } from '@material-tailwind/react';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 
 export default function Footer() {
+    const [appVersion, setAppVersion] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (Capacitor.isNativePlatform()) {
+            App.getInfo().then(info => setAppVersion(info.version));
+        }
+    }, []);
+
     return (
         <footer className="bg-gray-100 border-t border-gray-200 mt-auto relative bottom-0">
             <div className="container mx-auto px-4 py-6">
@@ -13,7 +24,7 @@ export default function Footer() {
                         onPointerEnterCapture={undefined}
                         onPointerLeaveCapture={undefined}
                     >
-                        © {new Date().getFullYear()} Plan Appetit. Tous droits réservés.
+                        © {new Date().getFullYear()} Plan Appetit{appVersion ? ` v${appVersion}` : ''}. Tous droits réservés.
                     </Typography>
 
                     <div className="flex flex-wrap gap-4 justify-center">

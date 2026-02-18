@@ -18,4 +18,6 @@ export default interface RecipeInterface {
     remainingModifications: number;
     isGenerated: boolean;
     isOwner: boolean;
+    ownerDisplayName?: string;
+    ownerProfilePhoto?: string;
 }

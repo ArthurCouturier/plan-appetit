@@ -1,6 +1,7 @@
 import { SetStateAction, useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { useQueryClient } from '@tanstack/react-query';
 import UserInterface, { UserRole } from '../../api/interfaces/users/UserInterface';
 import { AuthContext } from '../../api/authentication/AuthContext';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -8,9 +9,11 @@ import { convertFirebaseUser } from '../../api/authentication/convertFirebaseUse
 import { auth } from '../../api/authentication/firebase';
 import BackendService from '../../api/services/BackendService';
 import NotificationService from '../../api/services/NotificationService';
+import { queryKeys } from '../../api/queryConfig';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserInterface | null | undefined>(undefined);
+    const queryClient = useQueryClient();
 
     const login = (userData: SetStateAction<UserInterface | null | undefined>) => setUser(userData);
     const logout = () => setUser(null);
@@ -63,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             );
                             userData.role = backendUser.role;
                             userData.isPremium = backendUser.isPremium;
+                            queryClient.setQueryData(queryKeys.user.connect(), backendUser);
                         } catch (err) {
                             console.warn('Backend sync failed during session restore, using default values');
                         }

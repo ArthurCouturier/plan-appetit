@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Modal from "./Modal";
-import CollectionService from "../../api/services/CollectionService";
+import { useCreateCollection } from "../../api/hooks/useCollectionMutations";
 import SwitchField from "../fields/SwitchField";
 
 interface CreateCollectionModalProps {
@@ -18,8 +18,9 @@ export default function CreateCollectionModal({
 }: CreateCollectionModalProps) {
   const [name, setName] = useState("");
   const [isPublic, setIsPublic] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const createCollectionMutation = useCreateCollection();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,28 +30,23 @@ export default function CreateCollectionModal({
       return;
     }
 
-    setIsCreating(true);
     setError(null);
 
     try {
-      await CollectionService.createCollection(name, isPublic, parentCollectionUuid);
+      await createCollectionMutation.mutateAsync({
+        name,
+        isPublic,
+        parentCollectionUuid,
+      });
 
-      // Reset form
       setName("");
       setIsPublic(false);
 
-      // Notify parent component
-      if (onCollectionCreated) {
-        onCollectionCreated();
-      }
-
-      // Close modal
+      onCollectionCreated?.();
       onClose();
     } catch (err) {
       console.error("Erreur lors de la création de la collection:", err);
       setError("Une erreur est survenue lors de la création de la collection");
-    } finally {
-      setIsCreating(false);
     }
   };
 
@@ -79,7 +75,7 @@ export default function CreateCollectionModal({
             onChange={(e) => setName(e.target.value)}
             placeholder="Ex: Mes recettes italiennes"
             className="w-full px-4 py-3 bg-secondary border border-border-color rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-cout-base focus:border-transparent transition-all duration-200"
-            disabled={isCreating}
+            disabled={createCollectionMutation.isPending}
             maxLength={255}
           />
         </div>
@@ -114,17 +110,17 @@ export default function CreateCollectionModal({
           <button
             type="button"
             onClick={handleClose}
-            disabled={isCreating}
+            disabled={createCollectionMutation.isPending}
             className="flex-1 px-6 py-3 bg-secondary text-text-primary font-semibold rounded-lg hover:bg-secondary/80 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Annuler
           </button>
           <button
             type="submit"
-            disabled={isCreating || !name.trim()}
+            disabled={createCollectionMutation.isPending || !name.trim()}
             className="flex-1 px-6 py-3 bg-cout-base hover:bg-cout-purple text-white font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 shadow-md"
           >
-            {isCreating ? "Création..." : "Créer la collection"}
+            {createCollectionMutation.isPending ? "Création..." : "Créer la collection"}
           </button>
         </div>
       </form>

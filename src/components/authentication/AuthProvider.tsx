@@ -16,7 +16,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const queryClient = useQueryClient();
 
     const login = (userData: SetStateAction<UserInterface | null | undefined>) => setUser(userData);
-    const logout = () => setUser(null);
+    const logout = () => {
+        queryClient.removeQueries();
+        setUser(null);
+    };
 
     useEffect(() => {
         const initAuth = async () => {

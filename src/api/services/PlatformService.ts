@@ -135,8 +135,8 @@ export default class PlatformService {
         App.addListener('appUrlOpen', ({ url }) => {
             try {
                 const parsed = new URL(url);
-                const path = parsed.pathname;
-                if (path && path !== '/') {
+                const path = parsed.pathname + parsed.search;
+                if (parsed.pathname && parsed.pathname !== '/') {
                     navigate(path);
                 }
             } catch {

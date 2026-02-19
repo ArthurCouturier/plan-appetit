@@ -45,10 +45,24 @@ export default function Sandbox() {
     pauseDuration: 2000,
   });
 
+  const [examplePrompts, setExamplePrompts] = useState<string[]>([]);
+
   const { trackEvent } = usePostHog()
 
+  const pickRandomExamples = (source: string[]) => {
+    if (source.length <= 4) {
+      setExamplePrompts([...source]);
+      return;
+    }
+    const shuffled = [...source].sort(() => Math.random() - 0.5);
+    setExamplePrompts(shuffled.slice(0, 4));
+  };
+
   useEffect(() => {
-    SandboxService.getPlaceholders().then(setPlaceholders);
+    SandboxService.getPlaceholders().then((p) => {
+      setPlaceholders(p);
+      pickRandomExamples(p);
+    });
     SandboxService.getQuotaStatus().then(setQuotaInfo);
 
     const storedUuid = localStorage.getItem('anonymousRecipeUuid');
@@ -244,13 +258,6 @@ export default function Sandbox() {
     }
   };
 
-  const examplePrompts = [
-    "5 recettes autour de la butternut",
-    "Un dessert sans lactose",
-    "Des idées de batch cooking",
-    "Un curry thaï végétalien express"
-  ];
-
   return (
     <div className="min-h-screen bg-bg-color flex flex-col">
       <div className="flex-grow">
@@ -360,7 +367,7 @@ export default function Sandbox() {
             </div>
 
             {/* Quick examples */}
-            <div className="mt-3 flex flex-wrap justify-center gap-2">
+            <div className="mt-3 flex flex-col justify-center gap-2 m-5">
               {examplePrompts.map((example, index) => (
                 <button
                   key={index}
@@ -373,6 +380,15 @@ export default function Sandbox() {
                   {example}
                 </button>
               ))}
+            </div>
+            <div className="mt-3 flex justify-center">
+              <button
+                onClick={() => pickRandomExamples(placeholders)}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white transition-all duration-200 border border-white/20 hover:border-white/40"
+                aria-label="Voir d'autres exemples"
+              >
+                <ArrowPathIcon className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Login Button - Only for non-logged users */}
@@ -547,7 +563,7 @@ export default function Sandbox() {
                 Décrivez ce que vous voulez cuisiner et laissez l'IA faire le reste !
               </p>
               <div className="flex flex-wrap justify-center gap-2">
-                {examplePrompts.slice(0, 3).map((example, index) => (
+                {examplePrompts.map((example, index) => (
                   <button
                     key={index}
                     onClick={() => {
@@ -560,6 +576,15 @@ export default function Sandbox() {
                     {example}
                   </button>
                 ))}
+              </div>
+              <div className="mt-3 flex justify-center">
+                <button
+                  onClick={() => pickRandomExamples(placeholders)}
+                  className="p-2 rounded-full bg-secondary hover:bg-cout-base/10 text-text-secondary hover:text-cout-base transition-all duration-200 border border-border-color hover:border-cout-base"
+                  aria-label="Voir d'autres exemples"
+                >
+                  <ArrowPathIcon className="w-5 h-5" />
+                </button>
               </div>
             </div>
           </section>

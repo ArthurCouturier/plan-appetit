@@ -4,13 +4,17 @@ import { useEffect, useState } from "react";
 import HeaderMobile from "./HeaderMobile";
 import PlatformService from "../../api/services/PlatformService";
 import { TrackingService } from "../../api/services/TrackingService";
+import { Capacitor } from "@capacitor/core";
+import { FirebaseMessaging } from "@capacitor-firebase/messaging";
+import DailyRecipeModal from "../popups/DailyRecipeModal";
+import { useDailyRecipeContext } from "../../contexts/DailyRecipeContext";
 
 export default function Layout() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const location = useLocation();
-
   const navigate = useNavigate();
+  const { showDailyRecipeModal, setShowDailyRecipeModal } = useDailyRecipeContext();
 
   // Initialise la plateforme, le StatusBar pour Android, le tracking et le deep linking
   useEffect(() => {
@@ -23,7 +27,24 @@ export default function Layout() {
     const timer = setTimeout(() => {
       TrackingService.promptATTIfNeeded();
     }, 2000);
-    return () => clearTimeout(timer);
+
+    // Listener pour les taps sur notifications (native uniquement)
+    if (Capacitor.isNativePlatform()) {
+      FirebaseMessaging.addListener("notificationActionPerformed", (event) => {
+        const data = event.notification?.data as Record<string, string> | undefined;
+        const type = data?.type;
+        if (type === "daily_recipe") {
+          setShowDailyRecipeModal(true);
+        }
+      });
+    }
+
+    return () => {
+      clearTimeout(timer);
+      if (Capacitor.isNativePlatform()) {
+        FirebaseMessaging.removeAllListeners();
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -55,6 +76,11 @@ export default function Layout() {
       {!isMobile && <DarkModeButton mode={theme} changeMode={changeTheme} />}
       {isMobile && <HeaderMobile />}
       <Outlet />
+
+      <DailyRecipeModal
+        isOpen={showDailyRecipeModal}
+        onClose={() => setShowDailyRecipeModal(false)}
+      />
     </div>
   );
 }

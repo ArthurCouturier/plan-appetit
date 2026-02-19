@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowDownTrayIcon, SparklesIcon, FolderPlusIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, SparklesIcon, FolderPlusIcon, CalendarDaysIcon } from "@heroicons/react/24/solid";
 import PremiumFeatureDisplayer from "../displayers/PremiumFeatureDisplayer";
 
 export function ImportRecipeButtonDetail({
@@ -69,6 +69,22 @@ export function CreateCollectionButton({
         >
             <FolderPlusIcon className="w-5 h-5" />
             <span>Collection</span>
+        </button>
+    );
+}
+
+export function DailyRecipeButton({
+    onClick
+}: {
+    onClick: () => void;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200"
+        >
+            <CalendarDaysIcon className="w-5 h-5" />
+            <span>Recettes du jour</span>
         </button>
     );
 }

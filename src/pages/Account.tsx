@@ -8,8 +8,8 @@ import Header from '../components/global/Header';
 import Footer from '../components/global/Footer';
 import BackendService from '../api/services/BackendService';
 import CreditPaywallModal from '../components/popups/CreditPaywallModal';
-import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { isPremiumUser } from '../api/interfaces/users/UserInterface';
+import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/solid";
+import { isPremiumUser, hasRoleLevel, UserRole } from '../api/interfaces/users/UserInterface';
 import CreditIcon from '../components/icons/CreditIcon';
 import OnboardingChecklist from '../components/onboarding/OnboardingChecklist';
 import UserAvatar from '../components/global/UserAvatar';
@@ -192,6 +192,16 @@ export default function Account() {
                             >
                                 <SparklesIcon className="w-5 h-5" />
                                 Devenir Premium
+                            </button>
+                        )}
+
+                        {user && hasRoleLevel(user.role, UserRole.ADMIN) && (
+                            <button
+                                onClick={() => navigate("/admin")}
+                                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-cout-purple/50 text-cout-purple font-semibold rounded-xl hover:bg-cout-purple/10 transition-all duration-200"
+                            >
+                                <WrenchScrewdriverIcon className="w-5 h-5" />
+                                Administration
                             </button>
                         )}
 

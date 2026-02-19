@@ -16,6 +16,7 @@ import Layout from "./components/global/Layout";
 import BecomePremium from "./pages/BecomePremium";
 import InstagramImport from "./pages/InstagramImport";
 import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } from "./pages/legal";
+import Admin from "./pages/Admin";
 
 const router = createBrowserRouter([
     {
@@ -98,6 +99,10 @@ const router = createBrowserRouter([
                             {
                                 path: "premium",
                                 element: <BecomePremium />
+                            },
+                            {
+                                path: "admin",
+                                element: <Admin />
                             }
                         ],
                     },

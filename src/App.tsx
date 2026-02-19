@@ -4,12 +4,15 @@ import { RouterProvider } from 'react-router-dom';
 import router from './routes';
 import { AuthProvider } from './components/authentication/AuthProvider';
 import CookieConsentBanner from './components/global/CookieConsentBanner';
+import { DailyRecipeProvider } from './contexts/DailyRecipeContext';
 
 function App() {
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
-      <CookieConsentBanner />
+      <DailyRecipeProvider>
+        <RouterProvider router={router} />
+        <CookieConsentBanner />
+      </DailyRecipeProvider>
     </AuthProvider>
   );
 }

@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import useAuth from "../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import AdminService, { SetRoleResponse, TriggerDailyRecipesResponse } from "../api/services/AdminService";
+import AdminService, { SetRoleResponse } from "../api/services/AdminService";
+import { QueueListIcon } from "@heroicons/react/24/solid";
 
 export default function Admin() {
     const { user } = useAuth();
+    const navigate = useNavigate();
 
     if (!user || !hasRoleLevel(user.role, UserRole.ADMIN)) {
         return <Navigate to="/" replace />;
@@ -17,7 +19,20 @@ export default function Admin() {
                 <h2 className="text-lg font-bold text-text-primary mb-6">Actions administrateur</h2>
 
                 <div className="space-y-4">
-                    <DailyRecipesTrigger />
+                    <button
+                        onClick={() => navigate("/admin/batchs")}
+                        className="w-full flex items-center justify-between px-4 py-4 bg-secondary border border-border-color rounded-lg hover:bg-tertiary transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <QueueListIcon className="w-5 h-5 text-orange-500" />
+                            <div className="text-left">
+                                <h3 className="font-semibold text-text-primary">Batchs</h3>
+                                <p className="text-sm text-text-secondary">Voir et gérer les tâches planifiées</p>
+                            </div>
+                        </div>
+                        <span className="text-text-secondary">&rsaquo;</span>
+                    </button>
+
                     <SetRoleAction
                         title="Passer un utilisateur Premium"
                         description="Attribue le rôle PREMIUM à un utilisateur via son email."
@@ -34,77 +49,6 @@ export default function Admin() {
                     />
                 </div>
             </div>
-        </div>
-    );
-}
-
-function DailyRecipesTrigger() {
-    const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<TriggerDailyRecipesResponse | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    const handleTrigger = async () => {
-        setLoading(true);
-        setResult(null);
-        setError(null);
-
-        try {
-            const response = await AdminService.triggerDailyRecipes();
-            setResult(response);
-        } catch (e) {
-            setError(e instanceof Error ? e.message : "Erreur inconnue");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="border border-border-color rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-                <div>
-                    <h3 className="font-semibold text-text-primary">Recettes du jour</h3>
-                    <p className="text-sm text-text-secondary">
-                        Relance la generation des recettes quotidiennes et envoie la notification push.
-                    </p>
-                </div>
-                <button
-                    onClick={handleTrigger}
-                    disabled={loading}
-                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                >
-                    {loading ? (
-                        <span className="flex items-center gap-2">
-                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            En cours...
-                        </span>
-                    ) : (
-                        "Lancer le batch"
-                    )}
-                </button>
-            </div>
-
-            {result && result.status === "success" && (
-                <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                    <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                        {result.recipesGenerated} recettes generees avec succes
-                    </p>
-                    {result.recipes && (
-                        <ul className="mt-2 space-y-1">
-                            {result.recipes.map((r) => (
-                                <li key={r.uuid} className="text-xs text-green-600 dark:text-green-300">
-                                    {r.name}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            )}
-
-            {error && (
-                <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                    <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
-                </div>
-            )}
         </div>
     );
 }
@@ -143,7 +87,7 @@ function SetRoleAction({ title, description, buttonLabel, buttonColor, onSubmit 
             <h3 className="font-semibold text-text-primary">{title}</h3>
             <p className="text-sm text-text-secondary mb-3">{description}</p>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
                 <input
                     type="email"
                     value={email}

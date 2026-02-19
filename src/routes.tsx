@@ -17,6 +17,7 @@ import BecomePremium from "./pages/BecomePremium";
 import InstagramImport from "./pages/InstagramImport";
 import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } from "./pages/legal";
 import Admin from "./pages/Admin";
+import AdminBatchs from "./pages/AdminBatchs";
 
 const router = createBrowserRouter([
     {
@@ -103,6 +104,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin",
                                 element: <Admin />
+                            },
+                            {
+                                path: "admin/batchs",
+                                element: <AdminBatchs />
                             }
                         ],
                     },

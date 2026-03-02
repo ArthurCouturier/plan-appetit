@@ -288,7 +288,13 @@ export default function LoginPage() {
             if (Capacitor.isNativePlatform()) {
                 // Sur iOS/Android natif, utiliser le plugin Capacitor Firebase
                 console.log('Starting native Google Sign-In...');
-                const result = await FirebaseAuthentication.signInWithGoogle();
+                let result;
+                try {
+                    result = await FirebaseAuthentication.signInWithGoogle();
+                } catch (credentialManagerError) {
+                    console.warn('Credential Manager failed, falling back to legacy flow:', credentialManagerError);
+                    result = await FirebaseAuthentication.signInWithGoogle({ useCredentialManager: false });
+                }
                 console.log('Native sign-in result user:', result.user?.email);
                 console.log('Native sign-in has credential:', !!result.credential);
                 console.log('Native sign-in has idToken:', !!result.credential?.idToken);

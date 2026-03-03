@@ -5,7 +5,7 @@ import IAPService from "../api/services/IAPService";
 import usePaywallProducts from "../api/hooks/usePaywallProducts";
 import { TrackingService } from "../api/services/TrackingService";
 import PaywallContent from "../components/paywall/PaywallContent";
-import { getPrice, formatPrice, monthlyEquivalent, discountPercent } from "../utils/priceUtils";
+import { getPrice, formatPrice, monthlyEquivalent, discountPercent, hasFreeTrial, getTrialText } from "../utils/priceUtils";
 
 export default function BecomePremium() {
   const navigate = useNavigate();
@@ -34,6 +34,8 @@ export default function BecomePremium() {
   const yearlyFormatted = yearlyRaw ? formatPrice(yearlyRaw) : null;
   const monthlyEquivFormatted = yearlyRaw ? formatPrice(monthlyEquivalent(yearlyRaw)) : null;
   const yearlyDiscountPct = (yearlyRaw && monthlyRaw) ? discountPercent(monthlyRaw * 12, yearlyRaw) : null;
+  const yearlyHasTrial = hasFreeTrial(products.iapYearly);
+  const yearlyTrialText = getTrialText(products.iapYearly);
 
   const faqs = [
     {
@@ -60,7 +62,9 @@ export default function BecomePremium() {
     },
     {
       question: "Puis-je essayer Premium avant de m'engager ?",
-      answer: "Nous proposons des packs de crédits (10 ou 20 recettes) si vous souhaitez tester les fonctionnalités avancées avant de souscrire à un abonnement."
+      answer: yearlyHasTrial
+        ? `Oui ! Profitez de ${yearlyTrialText} pour découvrir toutes les fonctionnalités Premium. Vous ne serez facturé qu'à la fin de la période d'essai. Vous pouvez annuler à tout moment.`
+        : "Nous proposons des packs de crédits (10 ou 20 recettes) si vous souhaitez tester les fonctionnalités avancées avant de souscrire à un abonnement."
     }
   ];
 
@@ -346,11 +350,13 @@ export default function BecomePremium() {
               className="px-10 py-5 bg-cout-yellow text-cout-purple font-bold rounded-lg text-xl shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               disabled={products.isPurchasing}
             >
-              {products.isPurchasing ? 'Achat en cours...' : `Devenir Premium${yearlyFormatted ? ` — ${yearlyFormatted}/an` : ''}`}
+              {products.isPurchasing ? 'Achat en cours...' : yearlyHasTrial ? `Commencer l'essai gratuit` : `Devenir Premium${yearlyFormatted ? ` — ${yearlyFormatted}/an` : ''}`}
             </button>
           </div>
           <p className="mt-8 text-white/70 text-sm">
-            {monthlyEquivFormatted ? `Soit seulement ${monthlyEquivFormatted}/mois • ` : ''}Annulation à tout moment
+            {yearlyHasTrial
+              ? `${yearlyTrialText}, puis ${yearlyFormatted ?? ''}/an • Annulation à tout moment`
+              : `${monthlyEquivFormatted ? `Soit seulement ${monthlyEquivFormatted}/mois • ` : ''}Annulation à tout moment`}
           </p>
         </div>
       </section>

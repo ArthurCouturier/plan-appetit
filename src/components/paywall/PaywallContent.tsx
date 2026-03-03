@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { usePostHog } from "../../contexts/PostHogContext";
 import type { PaywallProducts, SubscriptionType, CreditPack, ProductOption } from "../../api/hooks/usePaywallProducts";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
-import { getPrice, getFormattedPrice, formatPrice, monthlyEquivalent, discountPercent, pricePerRecipe } from "../../utils/priceUtils";
+import { getPrice, getFormattedPrice, formatPrice, monthlyEquivalent, discountPercent, pricePerRecipe, hasFreeTrial, getTrialText } from "../../utils/priceUtils";
 
 interface PaywallContentProps {
     products: PaywallProducts;
@@ -38,6 +38,12 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
         ? discountPercent(pricePerRecipe(credits10Raw, 10) * 20, credits20Raw) : null;
 
     const pricePlaceholder = '—';
+
+    // Free trial detection (iOS only)
+    const yearlyTrialText = getTrialText(products.iapYearly);
+    const monthlyTrialText = getTrialText(products.iapMonthly);
+    const selectedHasTrial = selectedAbo === 'yearly' ? hasFreeTrial(products.iapYearly) : hasFreeTrial(products.iapMonthly);
+    const selectedTrialText = selectedAbo === 'yearly' ? yearlyTrialText : monthlyTrialText;
 
     const handleToggle = (tab: 'abo' | 'credits') => {
         setMode(tab);
@@ -75,9 +81,11 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
     };
 
     const ctaText = mode === 'abo'
-        ? selectedAbo === 'yearly'
-            ? `S'abonner — ${yearlyPrice ?? pricePlaceholder}/an`
-            : `S'abonner — ${monthlyPrice ?? pricePlaceholder}/mois`
+        ? selectedHasTrial
+            ? `Commencer l'essai gratuit`
+            : selectedAbo === 'yearly'
+                ? `S'abonner — ${yearlyPrice ?? pricePlaceholder}/an`
+                : `S'abonner — ${monthlyPrice ?? pricePlaceholder}/mois`
         : selectedCredits === 20
             ? `Acheter — ${credits20Price ?? pricePlaceholder}`
             : `Acheter — ${credits10Price ?? pricePlaceholder}`;
@@ -194,13 +202,23 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                             boxShadow: isCardShadow(selectedAbo === 'yearly'),
                         }}
                     >
-                        <div style={{
-                            position: 'absolute', top: '12px', right: '12px',
-                            background: 'linear-gradient(135deg, #f2a96f 0%, #f17c63 100%)',
-                            color: 'white', fontSize: '11px', fontWeight: '700',
-                            padding: '4px 10px', borderRadius: '8px', letterSpacing: '0.3px',
-                        }}>
-                            ⭐ RECOMMANDÉ
+                        <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px' }}>
+                            {yearlyTrialText && (
+                                <span style={{
+                                    background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
+                                    color: 'white', fontSize: '11px', fontWeight: '700',
+                                    padding: '4px 10px', borderRadius: '8px', letterSpacing: '0.3px',
+                                }}>
+                                    🎁 {yearlyTrialText.toUpperCase()}
+                                </span>
+                            )}
+                            <span style={{
+                                background: 'linear-gradient(135deg, #f2a96f 0%, #f17c63 100%)',
+                                color: 'white', fontSize: '11px', fontWeight: '700',
+                                padding: '4px 10px', borderRadius: '8px', letterSpacing: '0.3px',
+                            }}>
+                                ⭐ RECOMMANDÉ
+                            </span>
                         </div>
                         <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                             <div style={{ marginTop: '2px' }}>
@@ -261,8 +279,19 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                             border: isCardBorder(selectedAbo === 'monthly'),
                             cursor: 'pointer', transition: 'all 0.3s ease',
                             boxShadow: isCardShadow(selectedAbo === 'monthly'),
+                            position: 'relative', overflow: 'hidden',
                         }}
                     >
+                        {monthlyTrialText && (
+                            <div style={{
+                                position: 'absolute', top: '12px', right: '12px',
+                                background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
+                                color: 'white', fontSize: '11px', fontWeight: '700',
+                                padding: '4px 10px', borderRadius: '8px', letterSpacing: '0.3px',
+                            }}>
+                                🎁 {monthlyTrialText.toUpperCase()}
+                            </div>
+                        )}
                         <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                             <RadioButton selected={selectedAbo === 'monthly'} />
                             <div style={{ flex: 1 }}>
@@ -487,7 +516,14 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                 textAlign: 'center', color: 'rgba(255,255,255,0.3)',
                 fontSize: '10px', margin: '16px 0 0', lineHeight: '1.4',
             }}>
-                Renouvellement automatique. Annulable à tout moment.
+                {mode === 'abo' && selectedHasTrial ? (
+                    <>
+                        Essai gratuit de {selectedTrialText}, puis {selectedAbo === 'yearly' ? `${yearlyPrice ?? pricePlaceholder}/an` : `${monthlyPrice ?? pricePlaceholder}/mois`}.
+                        {' '}Annulable à tout moment.
+                    </>
+                ) : (
+                    <>Renouvellement automatique. Annulable à tout moment.</>
+                )}
                 <br />
                 <a href="/legal/cgu" style={{ color: 'rgba(255,255,255,0.3)', textDecoration: 'underline' }}>
                     Conditions d'utilisation

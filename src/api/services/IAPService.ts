@@ -1,6 +1,17 @@
 import { Capacitor } from '@capacitor/core';
 import { NativePurchases, PURCHASE_TYPE, Product } from '@capgo/native-purchases';
 
+export interface IAPIntroductoryPrice {
+    price: number;
+    priceString: string;
+    /** 0 = pay as you go, 1 = pay up front, 2 = free trial */
+    paymentMode: number;
+    numberOfPeriods: number;
+    /** 0 = day, 1 = week, 2 = month, 3 = year */
+    periodUnit: number;
+    periodNumberOfUnits: number;
+}
+
 export interface IAPProduct {
     identifier: string;
     title: string;
@@ -8,6 +19,7 @@ export interface IAPProduct {
     priceString: string;
     price: number;
     currencyCode: string;
+    introductoryPrice: IAPIntroductoryPrice | null;
 }
 
 export interface IAPPurchaseResult {
@@ -157,13 +169,22 @@ export default class IAPService {
      * Map native product to our interface
      */
     private static mapProduct(product: Product): IAPProduct {
+        const intro = product.introductoryPrice;
         return {
             identifier: product.identifier,
             title: product.title,
             description: product.description || '',
             priceString: product.priceString,
             price: product.price,
-            currencyCode: product.currencyCode || 'EUR'
+            currencyCode: product.currencyCode || 'EUR',
+            introductoryPrice: intro ? {
+                price: intro.price,
+                priceString: intro.priceString,
+                paymentMode: intro.paymentMode,
+                numberOfPeriods: intro.numberOfPeriods,
+                periodUnit: intro.subscriptionPeriod.unit,
+                periodNumberOfUnits: intro.subscriptionPeriod.numberOfUnits,
+            } : null,
         };
     }
 

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { usePostHog } from "../../contexts/PostHogContext";
 import type { PaywallProducts, SubscriptionType, CreditPack, ProductOption } from "../../api/hooks/usePaywallProducts";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
+import { getPrice, getFormattedPrice, formatPrice, monthlyEquivalent, discountPercent, pricePerRecipe } from "../../utils/priceUtils";
 
 interface PaywallContentProps {
     products: PaywallProducts;
@@ -17,6 +18,26 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
     const ctaRef = useRef<HTMLButtonElement>(null);
     const navigate = useNavigate();
     const { trackEvent } = usePostHog();
+
+    // Dynamic prices
+    const yearlyRaw = getPrice(products.iapYearly, products.premiumYearly);
+    const monthlyRaw = getPrice(products.iapMonthly, products.premiumMonthly);
+    const credits20Raw = getPrice(products.iapCredits20, products.credit20);
+    const credits10Raw = getPrice(products.iapCredits10, products.credit10);
+
+    const yearlyPrice = getFormattedPrice(products.iapYearly, products.premiumYearly);
+    const monthlyPrice = getFormattedPrice(products.iapMonthly, products.premiumMonthly);
+    const credits20Price = getFormattedPrice(products.iapCredits20, products.credit20);
+    const credits10Price = getFormattedPrice(products.iapCredits10, products.credit10);
+
+    const monthlyEquiv = yearlyRaw ? formatPrice(monthlyEquivalent(yearlyRaw)) : null;
+    const yearlyDiscountPct = (yearlyRaw && monthlyRaw) ? discountPercent(monthlyRaw * 12, yearlyRaw) : null;
+    const perRecipe20 = credits20Raw ? formatPrice(pricePerRecipe(credits20Raw, 20)) : null;
+    const perRecipe10 = credits10Raw ? formatPrice(pricePerRecipe(credits10Raw, 10)) : null;
+    const credits20DiscountPct = (credits20Raw && credits10Raw)
+        ? discountPercent(pricePerRecipe(credits10Raw, 10) * 20, credits20Raw) : null;
+
+    const pricePlaceholder = '—';
 
     const handleToggle = (tab: 'abo' | 'credits') => {
         setMode(tab);
@@ -55,11 +76,11 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
 
     const ctaText = mode === 'abo'
         ? selectedAbo === 'yearly'
-            ? "S'abonner — 44,99\u00A0\u20AC/an"
-            : "S'abonner — 5,99\u00A0\u20AC/mois"
+            ? `S'abonner — ${yearlyPrice ?? pricePlaceholder}/an`
+            : `S'abonner — ${monthlyPrice ?? pricePlaceholder}/mois`
         : selectedCredits === 20
-            ? "Acheter — 3,99\u00A0\u20AC"
-            : "Acheter — 2,99\u00A0\u20AC";
+            ? `Acheter — ${credits20Price ?? pricePlaceholder}`
+            : `Acheter — ${credits10Price ?? pricePlaceholder}`;
 
     const isCardSelected = (sel: boolean) => sel
         ? 'rgba(255,255,255,0.92)'
@@ -199,7 +220,7 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                                         color: textPrice(selectedAbo === 'yearly'),
                                         letterSpacing: '-1px', lineHeight: '1',
                                     }}>
-                                        44,99€
+                                        {yearlyPrice ?? pricePlaceholder}
                                     </span>
                                     <span style={{
                                         fontSize: '15px', fontWeight: '500',
@@ -213,16 +234,18 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                                         fontSize: '14px', fontWeight: '600',
                                         color: textAccent(selectedAbo === 'yearly'),
                                     }}>
-                                        soit 3,75€/mois
+                                        soit {monthlyEquiv ?? pricePlaceholder}/mois
                                     </span>
+                                    {yearlyDiscountPct != null && (
                                     <span style={{
                                         background: badgeBg(selectedAbo === 'yearly'),
                                         color: badgeColor(selectedAbo === 'yearly'),
                                         fontSize: '12px', fontWeight: '700',
                                         padding: '2px 8px', borderRadius: '6px',
                                     }}>
-                                        -37%
+                                        -{yearlyDiscountPct}%
                                     </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -256,7 +279,7 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                                         color: textPrice(selectedAbo === 'monthly'),
                                         letterSpacing: '-0.8px', lineHeight: '1',
                                     }}>
-                                        5,99€
+                                        {monthlyPrice ?? pricePlaceholder}
                                     </span>
                                     <span style={{
                                         fontSize: '15px', fontWeight: '500',
@@ -322,7 +345,7 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                                         color: textPrice(selectedCredits === 20),
                                         letterSpacing: '-1px', lineHeight: '1',
                                     }}>
-                                        3,99€
+                                        {credits20Price ?? pricePlaceholder}
                                     </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -330,16 +353,18 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                                         fontSize: '14px', fontWeight: '600',
                                         color: textAccent(selectedCredits === 20),
                                     }}>
-                                        soit 0,20€/recette
+                                        soit {perRecipe20 ?? pricePlaceholder}/recette
                                     </span>
+                                    {credits20DiscountPct != null && (
                                     <span style={{
                                         background: badgeBg(selectedCredits === 20),
                                         color: badgeColor(selectedCredits === 20),
                                         fontSize: '12px', fontWeight: '700',
                                         padding: '2px 8px', borderRadius: '6px',
                                     }}>
-                                        -33%
+                                        -{credits20DiscountPct}%
                                     </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -373,13 +398,13 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                                         color: textPrice(selectedCredits === 10),
                                         letterSpacing: '-0.8px', lineHeight: '1',
                                     }}>
-                                        2,99€
+                                        {credits10Price ?? pricePlaceholder}
                                     </span>
                                     <span style={{
                                         fontSize: '13px', fontWeight: '500',
                                         color: selectedCredits === 10 ? '#999' : 'rgba(255,255,255,0.5)',
                                     }}>
-                                        soit 0,30€/recette
+                                        soit {perRecipe10 ?? pricePlaceholder}/recette
                                     </span>
                                 </div>
                             </div>
@@ -401,7 +426,7 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                         }}>
                             <strong style={{ color: 'white', fontWeight: '600' }}>Astuce :</strong>{' '}
                             L'abonnement annuel revient à{' '}
-                            <strong style={{ color: 'white' }}>3,75€/mois</strong>{' '}
+                            <strong style={{ color: 'white' }}>{monthlyEquiv ?? pricePlaceholder}/mois</strong>{' '}
                             pour des recettes <em>illimitées</em>
                         </p>
                     </div>

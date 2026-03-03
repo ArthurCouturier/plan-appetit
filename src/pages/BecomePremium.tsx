@@ -5,6 +5,7 @@ import IAPService from "../api/services/IAPService";
 import usePaywallProducts from "../api/hooks/usePaywallProducts";
 import { TrackingService } from "../api/services/TrackingService";
 import PaywallContent from "../components/paywall/PaywallContent";
+import { getPrice, formatPrice, monthlyEquivalent, discountPercent } from "../utils/priceUtils";
 
 export default function BecomePremium() {
   const navigate = useNavigate();
@@ -27,6 +28,12 @@ export default function BecomePremium() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const yearlyRaw = getPrice(products.iapYearly, products.premiumYearly);
+  const monthlyRaw = getPrice(products.iapMonthly, products.premiumMonthly);
+  const yearlyFormatted = yearlyRaw ? formatPrice(yearlyRaw) : null;
+  const monthlyEquivFormatted = yearlyRaw ? formatPrice(monthlyEquivalent(yearlyRaw)) : null;
+  const yearlyDiscountPct = (yearlyRaw && monthlyRaw) ? discountPercent(monthlyRaw * 12, yearlyRaw) : null;
+
   const faqs = [
     {
       question: "Quelle est la différence entre la version gratuite et Premium ?",
@@ -39,8 +46,8 @@ export default function BecomePremium() {
     {
       question: "Comment fonctionne la facturation ?",
       answer: products.isNativeIOS
-        ? "Votre abonnement se renouvelle automatiquement via l'App Store. Vous pouvez choisir entre un abonnement mensuel ou annuel. L'abonnement annuel revient à 3,75€/mois. Vous pouvez annuler à tout moment depuis les réglages de votre compte Apple."
-        : "Nous utilisons des paiements 100% sécurisés. Vous pouvez choisir entre un abonnement mensuel ou annuel. L'abonnement annuel à 44,99€/an revient à seulement 3,75€/mois, soit 37% d'économie. Vous pouvez annuler à tout moment depuis votre profil."
+        ? `Votre abonnement se renouvelle automatiquement via l'App Store. Vous pouvez choisir entre un abonnement mensuel ou annuel.${monthlyEquivFormatted ? ` L'abonnement annuel revient à ${monthlyEquivFormatted}/mois.` : ''} Vous pouvez annuler à tout moment depuis les réglages de votre compte Apple.`
+        : `Nous utilisons des paiements 100% sécurisés. Vous pouvez choisir entre un abonnement mensuel ou annuel.${yearlyFormatted && monthlyEquivFormatted && yearlyDiscountPct ? ` L'abonnement annuel à ${yearlyFormatted}/an revient à seulement ${monthlyEquivFormatted}/mois, soit ${yearlyDiscountPct}% d'économie.` : ''} Vous pouvez annuler à tout moment depuis votre profil.`
     },
     {
       question: "Puis-je annuler mon abonnement ?",
@@ -338,11 +345,11 @@ export default function BecomePremium() {
               className="px-10 py-5 bg-cout-yellow text-cout-purple font-bold rounded-lg text-xl shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               disabled={products.isPurchasing}
             >
-              {products.isPurchasing ? 'Achat en cours...' : 'Devenir Premium — 44,99€/an'}
+              {products.isPurchasing ? 'Achat en cours...' : `Devenir Premium${yearlyFormatted ? ` — ${yearlyFormatted}/an` : ''}`}
             </button>
           </div>
           <p className="mt-8 text-white/70 text-sm">
-            Soit seulement 3,75€/mois • Annulation à tout moment
+            {monthlyEquivFormatted ? `Soit seulement ${monthlyEquivFormatted}/mois • ` : ''}Annulation à tout moment
           </p>
         </div>
       </section>

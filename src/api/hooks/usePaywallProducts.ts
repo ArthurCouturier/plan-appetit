@@ -105,11 +105,14 @@ export default function usePaywallProducts(): PaywallProducts {
     const purchaseSubscription = useCallback(async (type: SubscriptionType) => {
         setPurchaseError(null);
         const productType: ProductOption = type === 'yearly' ? 'yearly' : 'monthly';
-        TrackingService.logInitiateCheckout('premium_subscription', 0, 'EUR');
-        trackEvent('checkout_started', { product_type: productType, payment_method: isNativeIOS ? 'iap' : 'stripe' });
+        const iapProduct = type === 'yearly' ? iapYearly : iapMonthly;
+        const stripeProduct = type === 'yearly' ? premiumYearly : premiumMonthly;
+        const price = iapProduct?.price ?? (stripeProduct?.prices?.[0]?.unitAmount ? stripeProduct.prices[0].unitAmount / 100 : 0);
+        const currency = iapProduct?.currencyCode ?? stripeProduct?.prices?.[0]?.currency ?? 'EUR';
+        TrackingService.logInitiateCheckout('premium_subscription', price, currency);
+        trackEvent('checkout_started', { product_type: productType, payment_method: isNativeIOS ? 'iap' : 'stripe', price });
 
         if (isNativeIOS && isIAPAvailable) {
-            const iapProduct = type === 'yearly' ? iapYearly : iapMonthly;
             if (!iapProduct) return;
 
             setIsPurchasing(true);
@@ -142,7 +145,6 @@ export default function usePaywallProducts(): PaywallProducts {
             return;
         }
 
-        const stripeProduct = type === 'yearly' ? premiumYearly : premiumMonthly;
         if (!stripeProduct || !user) return;
         const cart: CartItem = { priceId: stripeProduct.prices[0].stripePriceId, quantity: 1 };
         StripeService.checkout([cart], user);
@@ -151,11 +153,14 @@ export default function usePaywallProducts(): PaywallProducts {
     const purchaseCredits = useCallback(async (pack: CreditPack) => {
         setPurchaseError(null);
         const productType: ProductOption = pack === 20 ? 'credits_20' : 'credits_10';
-        TrackingService.logInitiateCheckout('credits', 0, 'EUR');
-        trackEvent('checkout_started', { product_type: productType, payment_method: isNativeIOS ? 'iap' : 'stripe' });
+        const iapProduct = pack === 20 ? iapCredits20 : iapCredits10;
+        const stripeProduct = pack === 20 ? credit20 : credit10;
+        const price = iapProduct?.price ?? (stripeProduct?.prices?.[0]?.unitAmount ? stripeProduct.prices[0].unitAmount / 100 : 0);
+        const currency = iapProduct?.currencyCode ?? stripeProduct?.prices?.[0]?.currency ?? 'EUR';
+        TrackingService.logInitiateCheckout('credits', price, currency);
+        trackEvent('checkout_started', { product_type: productType, payment_method: isNativeIOS ? 'iap' : 'stripe', price });
 
         if (isNativeIOS && isIAPAvailable) {
-            const iapProduct = pack === 20 ? iapCredits20 : iapCredits10;
             if (!iapProduct) return;
 
             setIsPurchasing(true);
@@ -188,7 +193,6 @@ export default function usePaywallProducts(): PaywallProducts {
             return;
         }
 
-        const stripeProduct = pack === 20 ? credit20 : credit10;
         if (!stripeProduct || !user) return;
         const cart: CartItem = { priceId: stripeProduct.prices[0].stripePriceId, quantity: 1 };
         StripeService.checkout([cart], user);

@@ -17,6 +17,7 @@ import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 import useAuth from "../api/hooks/useAuth";
 import { usePostHog } from "../contexts/PostHogContext";
 import { TrackingService } from "../api/services/TrackingService";
+import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 
 export default function Sandbox() {
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ export default function Sandbox() {
   const [examplePrompts, setExamplePrompts] = useState<string[]>([]);
 
   const { trackEvent } = usePostHog()
+  const invalidateCollections = useInvalidateCollections();
 
   const pickRandomExamples = (source: string[]) => {
     if (source.length <= 4) {
@@ -198,6 +200,7 @@ export default function Sandbox() {
       });
       TrackingService.logRecipeGenerated('sandbox');
       TrackingService.promptATTIfNeeded();
+      invalidateCollections();
 
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -594,10 +597,9 @@ export default function Sandbox() {
         <RecipeGenerationLoadingModal isOpen={isLoading} />
 
         {/* Paywall Modal */}
-        <CreditPaywallModal
-          isOpen={showPaywall}
-          onClose={() => setShowPaywall(false)}
-        />
+        {showPaywall && (
+          <CreditPaywallModal onClose={() => setShowPaywall(false)} />
+        )}
 
         {/* Multiple Recipe Confirmation Modal */}
         {user && quotaInfo && (

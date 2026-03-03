@@ -146,6 +146,9 @@ export default function usePaywallProducts(): PaywallProducts {
         }
 
         if (!stripeProduct || !user) return;
+        sessionStorage.setItem('pending_stripe_purchase', JSON.stringify({
+            type: 'subscription', productType, price, currency,
+        }));
         const cart: CartItem = { priceId: stripeProduct.prices[0].stripePriceId, quantity: 1 };
         StripeService.checkout([cart], user);
     }, [isNativeIOS, isIAPAvailable, iapYearly, iapMonthly, premiumYearly, premiumMonthly, user, navigate, trackEvent]);
@@ -194,6 +197,9 @@ export default function usePaywallProducts(): PaywallProducts {
         }
 
         if (!stripeProduct || !user) return;
+        sessionStorage.setItem('pending_stripe_purchase', JSON.stringify({
+            type: 'credits', productType, price, currency,
+        }));
         const cart: CartItem = { priceId: stripeProduct.prices[0].stripePriceId, quantity: 1 };
         StripeService.checkout([cart], user);
     }, [isNativeIOS, isIAPAvailable, iapCredits20, iapCredits10, credit20, credit10, user, navigate, trackEvent]);

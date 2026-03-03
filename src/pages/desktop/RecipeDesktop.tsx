@@ -177,10 +177,9 @@ export default function RecipeDesktop() {
       </div>
 
       {/* Paywall Modal */}
-      <CreditPaywallModal
-        isOpen={showPaywall}
-        onClose={() => setShowPaywall(false)}
-      />
+      {showPaywall && (
+        <CreditPaywallModal onClose={() => setShowPaywall(false)} />
+      )}
     </div>
   )
 }

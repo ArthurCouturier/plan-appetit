@@ -384,10 +384,9 @@ export default function RecipeDetail() {
                 }}
             />
 
-            <CreditPaywallModal
-                isOpen={showCreditPaywallModal}
-                onClose={() => setShowCreditPaywallModal(false)}
-            />
+            {showCreditPaywallModal && (
+                <CreditPaywallModal onClose={() => setShowCreditPaywallModal(false)} />
+            )}
 
             <SaveToCollectionModal
                 isOpen={showSaveModal}

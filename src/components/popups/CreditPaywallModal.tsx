@@ -6,11 +6,10 @@ import { useEffect, useState } from "react";
 import PaywallContent from "../paywall/PaywallContent";
 
 interface CreditPaywallModalProps {
-    isOpen: boolean;
     onClose: () => void;
 }
 
-export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallModalProps) {
+export default function CreditPaywallModal({ onClose }: CreditPaywallModalProps) {
     const products = usePaywallProducts();
     const [isMobile, setIsMobile] = useState(false);
 
@@ -22,16 +21,11 @@ export default function CreditPaywallModal({ isOpen, onClose }: CreditPaywallMod
     }, []);
 
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-            TrackingService.logCreditPackViewed('paywall');
-        } else {
-            document.body.style.overflow = 'unset';
-        }
+        document.body.style.overflow = 'hidden';
+        TrackingService.logCreditPackViewed('paywall');
+        TrackingService.logViewContent('paywall');
         return () => { document.body.style.overflow = 'unset'; };
-    }, [isOpen]);
-
-    if (!isOpen) return null;
+    }, []);
 
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) {

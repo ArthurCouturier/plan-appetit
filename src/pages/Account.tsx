@@ -152,10 +152,9 @@ export default function Account() {
                     </div>
 
                     {/* Modal de rechargement des crédits */}
-                    <CreditPaywallModal
-                        isOpen={showCreditModal}
-                        onClose={() => setShowCreditModal(false)}
-                    />
+                    {showCreditModal && (
+                        <CreditPaywallModal onClose={() => setShowCreditModal(false)} />
+                    )}
 
                     <OnboardingChecklist onCreditsUpdated={fetchAccountInfo} />
 

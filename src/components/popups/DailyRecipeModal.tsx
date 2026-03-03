@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
+import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import Modal from "./Modal";
 import DailyRecipeService, { DailyRecipeDTO } from "../../api/services/DailyRecipeService";
+import NotificationService from "../../api/services/NotificationService";
 
 interface DailyRecipeModalProps {
     isOpen: boolean;
@@ -13,6 +16,41 @@ export default function DailyRecipeModal({ isOpen, onClose }: DailyRecipeModalPr
     const [data, setData] = useState<DailyRecipeDTO | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
+    const [showNotifPrompt, setShowNotifPrompt] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setShowNotifPrompt(false);
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            try {
+                if (Capacitor.isNativePlatform()) {
+                    const status = await FirebaseMessaging.checkPermissions();
+                    if (status.receive !== "granted") {
+                        setShowNotifPrompt(true);
+                    }
+                } else if ("Notification" in window && Notification.permission !== "granted") {
+                    setShowNotifPrompt(true);
+                }
+            } catch { /* ignore */ }
+        }, 2000);
+
+        return () => clearTimeout(timer);
+    }, [isOpen]);
+
+    const handleEnableNotifications = async () => {
+        const granted = await NotificationService.requestPermission();
+        if (granted) {
+            const email = localStorage.getItem("email") || "";
+            const token = localStorage.getItem("firebaseIdToken") || "";
+            if (email && token) {
+                await NotificationService.initializeNotifications(email, token);
+            }
+        }
+        setShowNotifPrompt(false);
+    };
 
     useEffect(() => {
         if (!isOpen) return;
@@ -62,6 +100,28 @@ export default function DailyRecipeModal({ isOpen, onClose }: DailyRecipeModalPr
                         imageData={data.expertRecipe.imageData}
                         onClick={() => handleRecipeClick(data.expertRecipe.uuid)}
                     />
+
+                    {showNotifPrompt && (
+                        <div className="mt-2 p-3 rounded-xl bg-cout-yellow/10 border border-cout-yellow/30">
+                            <p className="text-sm text-text-primary mb-2">
+                                Activez les notifications pour ne plus rater les recettes du jour !
+                            </p>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleEnableNotifications}
+                                    className="flex-1 px-3 py-2 bg-cout-yellow text-cout-purple text-sm font-semibold rounded-lg"
+                                >
+                                    Activer
+                                </button>
+                                <button
+                                    onClick={() => setShowNotifPrompt(false)}
+                                    className="px-3 py-2 text-text-secondary text-sm rounded-lg"
+                                >
+                                    Plus tard
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </Modal>

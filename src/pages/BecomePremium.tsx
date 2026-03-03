@@ -15,6 +15,7 @@ export default function BecomePremium() {
 
   useEffect(() => {
     TrackingService.logCreditPackViewed('premium_page');
+    TrackingService.logViewContent('premium_page');
   }, []);
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import Modal from "./Modal";
 import DailyRecipeService, { DailyRecipeDTO } from "../../api/services/DailyRecipeService";
 import NotificationService from "../../api/services/NotificationService";
+import { TrackingService } from "../../api/services/TrackingService";
 
 interface DailyRecipeModalProps {
     isOpen: boolean;
@@ -61,7 +62,11 @@ export default function DailyRecipeModal({ isOpen, onClose }: DailyRecipeModalPr
         DailyRecipeService.getDailyRecipes()
             .then((result) => {
                 setData(result);
-                if (!result) setError(true);
+                if (result) {
+                    TrackingService.promptATTIfNeeded();
+                } else {
+                    setError(true);
+                }
             })
             .catch(() => setError(true))
             .finally(() => setLoading(false));

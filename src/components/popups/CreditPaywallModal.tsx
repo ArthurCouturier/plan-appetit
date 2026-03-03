@@ -22,8 +22,16 @@ export default function CreditPaywallModal({ onClose }: CreditPaywallModalProps)
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
-        TrackingService.logCreditPackViewed('paywall');
-        TrackingService.logViewContent('paywall');
+
+        const COOLDOWN_KEY = 'paywall_last_tracked';
+        const COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
+        const lastTracked = Number(sessionStorage.getItem(COOLDOWN_KEY) || '0');
+        if (Date.now() - lastTracked > COOLDOWN_MS) {
+            sessionStorage.setItem(COOLDOWN_KEY, String(Date.now()));
+            TrackingService.logCreditPackViewed('paywall');
+            TrackingService.logViewContent('paywall');
+        }
+
         return () => { document.body.style.overflow = 'unset'; };
     }, []);
 

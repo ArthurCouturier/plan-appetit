@@ -23,11 +23,6 @@ export default function Layout() {
     PlatformService.onDeepLink(navigate);
     TrackingService.initialize();
 
-    // Sur iOS, demande ATT après un court délai pour laisser l'app se charger
-    const timer = setTimeout(() => {
-      TrackingService.promptATTIfNeeded();
-    }, 2000);
-
     // Listener pour les taps sur notifications (native uniquement)
     if (Capacitor.isNativePlatform()) {
       FirebaseMessaging.addListener("notificationActionPerformed", (event) => {
@@ -40,7 +35,6 @@ export default function Layout() {
     }
 
     return () => {
-      clearTimeout(timer);
       if (Capacitor.isNativePlatform()) {
         FirebaseMessaging.removeAllListeners();
       }

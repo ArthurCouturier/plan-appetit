@@ -20,11 +20,16 @@ export default class IAPService {
     // Product IDs - must match App Store Connect / Google Play Console
     static readonly PREMIUM_MONTHLY_IOS = 'fr.planappetit.premium.monthly';
     static readonly PREMIUM_MONTHLY_ANDROID = 'fr.planappetit.premium.monthly';
+    static readonly PREMIUM_YEARLY_IOS = 'fr.planappetit.premium.yearly';
+    static readonly PREMIUM_YEARLY_ANDROID = 'fr.planappetit.premium.yearly';
     static readonly CREDITS_20_IOS = 'fr.planappetit.credits.20';
     static readonly CREDITS_20_ANDROID = 'fr.planappetit.credits.20';
+    static readonly CREDITS_10_IOS = 'fr.planappetit.credits.10';
+    static readonly CREDITS_10_ANDROID = 'fr.planappetit.credits.10';
 
-    // Android base plan ID (required for subscriptions)
+    // Android base plan IDs (required for subscriptions)
     static readonly ANDROID_MONTHLY_PLAN = 'monthly-plan';
+    static readonly ANDROID_YEARLY_PLAN = 'yearly-plan';
 
     private static initialized = false;
 
@@ -76,14 +81,20 @@ export default class IAPService {
     /**
      * Get the correct subscription product ID for current platform
      */
-    static getSubscriptionProductId(): string {
+    static getSubscriptionProductId(type: 'monthly' | 'yearly' = 'monthly'): string {
+        if (type === 'yearly') {
+            return this.isIOS() ? this.PREMIUM_YEARLY_IOS : this.PREMIUM_YEARLY_ANDROID;
+        }
         return this.isIOS() ? this.PREMIUM_MONTHLY_IOS : this.PREMIUM_MONTHLY_ANDROID;
     }
 
     /**
      * Get the correct credits product ID for current platform
      */
-    static getCreditsProductId(): string {
+    static getCreditsProductId(pack: 10 | 20 = 20): string {
+        if (pack === 10) {
+            return this.isIOS() ? this.CREDITS_10_IOS : this.CREDITS_10_ANDROID;
+        }
         return this.isIOS() ? this.CREDITS_20_IOS : this.CREDITS_20_ANDROID;
     }
 
@@ -91,13 +102,13 @@ export default class IAPService {
      * Fetch subscription product info from the store
      * Returns title and price from Apple/Google (required by Apple guidelines)
      */
-    static async getSubscriptionProduct(): Promise<IAPProduct | null> {
+    static async getSubscriptionProduct(type: 'monthly' | 'yearly' = 'monthly'): Promise<IAPProduct | null> {
         if (!await this.initialize()) {
             return null;
         }
 
         try {
-            const productId = this.getSubscriptionProductId();
+            const productId = this.getSubscriptionProductId(type);
             const { product } = await NativePurchases.getProduct({
                 productIdentifier: productId,
                 productType: PURCHASE_TYPE.SUBS
@@ -118,13 +129,13 @@ export default class IAPService {
     /**
      * Fetch credits product info from the store
      */
-    static async getCreditsProduct(): Promise<IAPProduct | null> {
+    static async getCreditsProduct(pack: 10 | 20 = 20): Promise<IAPProduct | null> {
         if (!await this.initialize()) {
             return null;
         }
 
         try {
-            const productId = this.getCreditsProductId();
+            const productId = this.getCreditsProductId(pack);
             const { product } = await NativePurchases.getProduct({
                 productIdentifier: productId,
                 productType: PURCHASE_TYPE.INAPP
@@ -160,13 +171,13 @@ export default class IAPService {
      * Purchase subscription
      * On success, returns transactionId to verify with backend
      */
-    static async purchaseSubscription(): Promise<IAPPurchaseResult> {
+    static async purchaseSubscription(type: 'monthly' | 'yearly' = 'monthly'): Promise<IAPPurchaseResult> {
         if (!await this.initialize()) {
             return { success: false, error: 'IAP not available' };
         }
 
         try {
-            const productId = this.getSubscriptionProductId();
+            const productId = this.getSubscriptionProductId(type);
 
             const purchaseParams: {
                 productIdentifier: string;
@@ -179,15 +190,13 @@ export default class IAPService {
                 quantity: 1
             };
 
-            // Android requires planIdentifier for subscriptions
             if (this.isAndroid()) {
-                purchaseParams.planIdentifier = this.ANDROID_MONTHLY_PLAN;
+                purchaseParams.planIdentifier = type === 'yearly' ? this.ANDROID_YEARLY_PLAN : this.ANDROID_MONTHLY_PLAN;
             }
 
             const result = await NativePurchases.purchaseProduct(purchaseParams);
 
             if (result.transactionId) {
-                console.log('Purchase successful, transactionId:', result.transactionId);
                 return {
                     success: true,
                     transactionId: result.transactionId
@@ -199,7 +208,6 @@ export default class IAPService {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             console.error('Purchase failed:', errorMessage);
 
-            // Check for user cancellation
             if (errorMessage.includes('cancel') || errorMessage.includes('Cancel')) {
                 return { success: false, error: 'cancelled' };
             }
@@ -212,13 +220,13 @@ export default class IAPService {
      * Purchase credits (consumable)
      * On success, returns transactionId to verify with backend
      */
-    static async purchaseCredits(): Promise<IAPPurchaseResult> {
+    static async purchaseCredits(pack: 10 | 20 = 20): Promise<IAPPurchaseResult> {
         if (!await this.initialize()) {
             return { success: false, error: 'IAP not available' };
         }
 
         try {
-            const productId = this.getCreditsProductId();
+            const productId = this.getCreditsProductId(pack);
 
             const result = await NativePurchases.purchaseProduct({
                 productIdentifier: productId,
@@ -227,7 +235,6 @@ export default class IAPService {
             });
 
             if (result.transactionId) {
-                console.log('Credits purchase successful, transactionId:', result.transactionId);
                 return {
                     success: true,
                     transactionId: result.transactionId
@@ -289,9 +296,10 @@ export default class IAPService {
     static async verifySubscriptionPurchase(
         transactionId: string,
         email: string,
-        token: string
+        token: string,
+        type: 'monthly' | 'yearly' = 'monthly'
     ): Promise<boolean> {
-        return this.verifyPurchaseWithBackend(transactionId, email, token, this.getSubscriptionProductId());
+        return this.verifyPurchaseWithBackend(transactionId, email, token, this.getSubscriptionProductId(type));
     }
 
     /**
@@ -300,9 +308,10 @@ export default class IAPService {
     static async verifyCreditsPurchase(
         transactionId: string,
         email: string,
-        token: string
+        token: string,
+        pack: 10 | 20 = 20
     ): Promise<boolean> {
-        return this.verifyPurchaseWithBackend(transactionId, email, token, this.getCreditsProductId());
+        return this.verifyPurchaseWithBackend(transactionId, email, token, this.getCreditsProductId(pack));
     }
 
     /**

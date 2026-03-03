@@ -5,7 +5,9 @@ import UserInterface from '../interfaces/users/UserInterface';
 export default class StripeService {
 
   static readonly PREMIUM_SUBSCRIPTION_MENSUAL = "premium_subscription_mensual"
+  static readonly PREMIUM_SUBSCRIPTION_YEARLY = "premium_subscription_yearly"
   static readonly CREDIT_TWENTY_RECIPES = "credit_twenty_recipes"
+  static readonly CREDIT_TEN_RECIPES = "credit_ten_recipes"
 
   static async fetchProduct(productCode: string): Promise<Product> {
     const res = await fetch(

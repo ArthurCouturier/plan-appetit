@@ -63,37 +63,50 @@ export default function usePaywallProducts(): PaywallProducts {
             const isIOS = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios';
             setIsNativeIOS(isIOS);
 
-            if (IAPService.isAvailable()) {
-                const available = await IAPService.initialize();
+            const withTimeout = <T,>(promise: Promise<T>, ms: number, fallback: T): Promise<T> =>
+                Promise.race([promise, new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms))]);
+
+            // IAP and Stripe fetches run in parallel so IAP can't block Stripe on Android
+            const iapPromise = (async () => {
+                if (!IAPService.isAvailable()) return;
+
+                const available = await withTimeout(IAPService.initialize(), 5000, false);
                 setIsIAPAvailable(available);
 
                 if (available) {
-                    const [monthly, yearly, credits20, credits10] = await Promise.all([
-                        IAPService.getSubscriptionProduct('monthly'),
-                        IAPService.getSubscriptionProduct('yearly'),
-                        IAPService.getCreditsProduct(20),
-                        IAPService.getCreditsProduct(10),
-                    ]);
+                    const [monthly, yearly, credits20, credits10] = await withTimeout(
+                        Promise.all([
+                            IAPService.getSubscriptionProduct('monthly'),
+                            IAPService.getSubscriptionProduct('yearly'),
+                            IAPService.getCreditsProduct(20),
+                            IAPService.getCreditsProduct(10),
+                        ]),
+                        10000,
+                        [null, null, null, null] as [null, null, null, null]
+                    );
                     setIapMonthly(monthly);
                     setIapYearly(yearly);
                     setIapCredits20(credits20);
                     setIapCredits10(credits10);
                 }
-            }
+            })();
 
-            if (!isIOS) {
+            const stripePromise = (async () => {
+                if (isIOS) return;
+
                 const [monthly, yearly, c20, c10] = await Promise.all([
-                    StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_MENSUAL).catch(() => null),
-                    StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_YEARLY).catch(() => null),
-                    StripeService.fetchProduct(StripeService.CREDIT_TWENTY_RECIPES).catch(() => null),
-                    StripeService.fetchProduct(StripeService.CREDIT_TEN_RECIPES).catch(() => null),
+                    StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_MENSUAL).catch((e) => { console.error('Stripe fetch monthly:', e); return null; }),
+                    StripeService.fetchProduct(StripeService.PREMIUM_SUBSCRIPTION_YEARLY).catch((e) => { console.error('Stripe fetch yearly:', e); return null; }),
+                    StripeService.fetchProduct(StripeService.CREDIT_TWENTY_RECIPES).catch((e) => { console.error('Stripe fetch credits20:', e); return null; }),
+                    StripeService.fetchProduct(StripeService.CREDIT_TEN_RECIPES).catch((e) => { console.error('Stripe fetch credits10:', e); return null; }),
                 ]);
                 setPremiumMonthly(monthly);
                 setPremiumYearly(yearly);
                 setCredit20(c20);
                 setCredit10(c10);
-            }
+            })();
 
+            await Promise.all([iapPromise, stripePromise]);
             setIsLoading(false);
         };
 

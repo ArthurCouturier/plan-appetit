@@ -353,8 +353,11 @@ export default class IAPService {
 
         try {
             const platform = this.isIOS() ? 'apple' : 'google';
+            const base = import.meta.env.VITE_API_URL;
+            const port = import.meta.env.VITE_API_PORT;
+            const apiUrl = port ? `${base}:${port}` : base;
             const response = await fetch(
-                `${import.meta.env.VITE_API_URL}:${import.meta.env.VITE_API_PORT}/api/v1/iap/${platform}/verify`,
+                `${apiUrl}/api/v1/iap/${platform}/verify`,
                 {
                     method: 'POST',
                     headers: {

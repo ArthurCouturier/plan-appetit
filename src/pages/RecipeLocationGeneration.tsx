@@ -113,6 +113,7 @@ export default function RecipeLocationGeneration() {
             }
         } catch (error: any) {
             if (error.type === "INSUFFICIENT_CREDITS") {
+                setIsLoading(false);
                 trackEvent('quota_limit_reached', {
                     localisation,
                     vegan,
@@ -120,7 +121,6 @@ export default function RecipeLocationGeneration() {
                 TrackingService.logQuotaLimitReached('localisation');
                 TrackingService.logLead('localisation');
                 showModalRechargerCredits();
-                setIsLoading(false);
                 return;
             }
             trackEvent('recipe_generation_failed', {

@@ -132,7 +132,12 @@ export default function Sandbox() {
     }
 
     // Si utilisateur connecté, vérifier les crédits
-    if (user && quotaInfo) {
+    if (user) {
+      if (!quotaInfo) {
+        setError("Chargement en cours, veuillez réessayer dans un instant.");
+        return;
+      }
+
       // Si utilisateur non-premium et crédits insuffisants
       if (!quotaInfo.isSubscriber && quotaInfo.remainingFree < recipeCount) {
         setError(`Crédits insuffisants. Vous avez ${quotaInfo.remainingFree} crédit${quotaInfo.remainingFree > 1 ? 's' : ''} mais essayez d'en générer ${recipeCount}.`);
@@ -210,6 +215,7 @@ export default function Sandbox() {
       console.error("Erreur lors de la génération:", err);
 
       if (err.type === "QUOTA_EXCEEDED") {
+        setIsLoading(false);
         setError(err.message || "Quota épuisé. Passez Premium pour continuer !");
         setQuotaInfo(err.quota);
 
@@ -223,9 +229,7 @@ export default function Sandbox() {
         TrackingService.logQuotaLimitReached('sandbox');
         TrackingService.logLead('sandbox');
 
-        if (!user || (quotaInfo && !quotaInfo.isSubscriber)) {
-          setShowPaywall(true);
-        }
+        setShowPaywall(true);
       } else if (err.type === "VALIDATION_ERROR") {
         setError(err.message || "Erreur de validation de votre demande");
 

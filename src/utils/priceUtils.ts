@@ -3,7 +3,7 @@ import { Product } from '../api/interfaces/stripe/Product';
 
 export function getPrice(iap: IAPProduct | null, stripe: Product | null): number | null {
     if (iap) return iap.price;
-    if (stripe?.prices?.[0]) return stripe.prices[0].unitAmount / 100;
+    if (stripe?.prices?.[0]) return stripe.prices[0].unitAmount;
     return null;
 }
 

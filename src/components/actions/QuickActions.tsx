@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { GenerateAIRecipeButton, CreateCollectionButton } from "../buttons/NewRecipeButton";
+import { GenerateAIRecipeButton, CreateCollectionButton, DailyRecipeButton } from "../buttons/NewRecipeButton";
 import RecipeGenerationChoiceModal from "../popups/RecipeGenerationChoiceModal";
 import CreateCollectionModal from "../popups/CreateCollectionModal";
+import DailyRecipeModal from "../popups/DailyRecipeModal";
 
 interface QuickActionsProps {
     parentCollectionUuid?: string;
@@ -16,6 +17,7 @@ export default function QuickActions({
 }: QuickActionsProps) {
     const [showGenerationChoice, setShowGenerationChoice] = useState(false);
     const [showCreateCollection, setShowCreateCollection] = useState(false);
+    const [showDailyRecipe, setShowDailyRecipe] = useState(false);
 
     if (isMobile) {
         return (
@@ -24,6 +26,8 @@ export default function QuickActions({
                 setShowGenerationChoice={setShowGenerationChoice}
                 showCreateCollection={showCreateCollection}
                 setShowCreateCollection={setShowCreateCollection}
+                showDailyRecipe={showDailyRecipe}
+                setShowDailyRecipe={setShowDailyRecipe}
                 parentCollectionUuid={parentCollectionUuid}
                 onCollectionCreated={onCollectionCreated}
             />
@@ -36,6 +40,8 @@ export default function QuickActions({
             setShowGenerationChoice={setShowGenerationChoice}
             showCreateCollection={showCreateCollection}
             setShowCreateCollection={setShowCreateCollection}
+            showDailyRecipe={showDailyRecipe}
+            setShowDailyRecipe={setShowDailyRecipe}
             parentCollectionUuid={parentCollectionUuid}
             onCollectionCreated={onCollectionCreated}
         />
@@ -47,6 +53,8 @@ interface QuickActionsInternalProps {
     setShowGenerationChoice: (show: boolean) => void;
     showCreateCollection: boolean;
     setShowCreateCollection: (show: boolean) => void;
+    showDailyRecipe: boolean;
+    setShowDailyRecipe: (show: boolean) => void;
     parentCollectionUuid?: string;
     onCollectionCreated?: () => void;
 }
@@ -56,6 +64,8 @@ function QuickActionsDesktop({
     setShowGenerationChoice,
     showCreateCollection,
     setShowCreateCollection,
+    showDailyRecipe,
+    setShowDailyRecipe,
     parentCollectionUuid,
     onCollectionCreated
 }: QuickActionsInternalProps) {
@@ -66,6 +76,7 @@ function QuickActionsDesktop({
                 <div className="flex flex-wrap gap-3">
                     <GenerateAIRecipeButton disabled={false} onClick={() => setShowGenerationChoice(true)} />
                     <CreateCollectionButton disabled={false} onClick={() => setShowCreateCollection(true)} />
+                    <DailyRecipeButton onClick={() => setShowDailyRecipe(true)} />
                 </div>
             </div>
 
@@ -79,6 +90,11 @@ function QuickActionsDesktop({
                 onClose={() => setShowCreateCollection(false)}
                 parentCollectionUuid={parentCollectionUuid}
                 onCollectionCreated={onCollectionCreated}
+            />
+
+            <DailyRecipeModal
+                isOpen={showDailyRecipe}
+                onClose={() => setShowDailyRecipe(false)}
             />
         </>
     );
@@ -89,6 +105,8 @@ function QuickActionsMobile({
     setShowGenerationChoice,
     showCreateCollection,
     setShowCreateCollection,
+    showDailyRecipe,
+    setShowDailyRecipe,
     parentCollectionUuid,
     onCollectionCreated
 }: QuickActionsInternalProps) {
@@ -99,6 +117,7 @@ function QuickActionsMobile({
                 <div className="flex flex-wrap gap-2">
                     <GenerateAIRecipeButton disabled={false} onClick={() => setShowGenerationChoice(true)} />
                     <CreateCollectionButton disabled={false} onClick={() => setShowCreateCollection(true)} />
+                    <DailyRecipeButton onClick={() => setShowDailyRecipe(true)} />
                 </div>
             </div>
 
@@ -112,6 +131,11 @@ function QuickActionsMobile({
                 onClose={() => setShowCreateCollection(false)}
                 parentCollectionUuid={parentCollectionUuid}
                 onCollectionCreated={onCollectionCreated}
+            />
+
+            <DailyRecipeModal
+                isOpen={showDailyRecipe}
+                onClose={() => setShowDailyRecipe(false)}
             />
         </>
     );

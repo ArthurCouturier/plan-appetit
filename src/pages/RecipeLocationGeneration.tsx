@@ -12,6 +12,7 @@ import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
 import { usePostHog } from "../contexts/PostHogContext";
 import { TrackingService } from "../api/services/TrackingService";
+import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 
 const DRAFT_STORAGE_KEY = "recipeGenerationDraft";
 
@@ -19,6 +20,7 @@ export default function RecipeLocationGeneration() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const navigate = useNavigate();
     const { trackEvent } = usePostHog();
+    const invalidateCollections = useInvalidateCollections();
 
     // Load draft from localStorage
     const loadDraft = () => {
@@ -77,6 +79,7 @@ export default function RecipeLocationGeneration() {
         };
 
         trackEvent('recipe_generation_started', {
+            source: 'location',
             localisation,
             seasons: seasons.join(', '),
             hasIngredients: !!ingredients,
@@ -99,6 +102,7 @@ export default function RecipeLocationGeneration() {
             // Naviguer vers la recette générée
             if (newRecipe) {
                 trackEvent('recipe_generation_completed', {
+                    source: 'location',
                     recipeUuid: newRecipe.uuid,
                     localisation,
                     vegan,
@@ -106,21 +110,24 @@ export default function RecipeLocationGeneration() {
                 TrackingService.logRecipeGenerated('localisation');
                 TrackingService.promptATTIfNeeded();
 
+                invalidateCollections();
                 navigate(`/recettes/${newRecipe.uuid}`);
             }
         } catch (error: any) {
             if (error.type === "INSUFFICIENT_CREDITS") {
+                setIsLoading(false);
                 trackEvent('quota_limit_reached', {
+                    source: 'location',
                     localisation,
                     vegan,
                 });
                 TrackingService.logQuotaLimitReached('localisation');
                 TrackingService.logLead('localisation');
                 showModalRechargerCredits();
-                setIsLoading(false);
                 return;
             }
             trackEvent('recipe_generation_failed', {
+                source: 'location',
                 error: error.message || 'Unknown error',
                 localisation,
             });
@@ -154,10 +161,9 @@ export default function RecipeLocationGeneration() {
             {isMobile ? null : <RecipeGenerationHeader />}
 
             {/* Modal crédits épuisés */}
-            <CreditPaywallModal
-                isOpen={showCreditModal}
-                onClose={() => setShowCreditModal(false)}
-            />
+            {showCreditModal && (
+                <CreditPaywallModal onClose={() => setShowCreditModal(false)} />
+            )}
 
             <div className="max-w-3xl mx-auto bg-primary shadow-lg rounded-xl p-6 md:p-8 mt-4">
                 <TextualField

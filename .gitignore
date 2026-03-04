@@ -50,6 +50,7 @@ ios/xcuserdata
 ios/capacitor-cordova-ios-plugins
 ios/App/App/capacitor.config.json
 ios/App/App/config.xml
+ios/App/App/config [0-9]*.xml
 
 android/*
 android/app/src/main/assets/public

@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../queryConfig';
 import CollectionService from '../services/CollectionService';
@@ -90,4 +91,12 @@ export function useReorderCollectionItems() {
             queryClient.invalidateQueries({ queryKey: queryKeys.collections.byId(variables.collectionUuid) });
         },
     });
+}
+
+export function useInvalidateCollections() {
+    const queryClient = useQueryClient();
+
+    return useCallback(() => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.collections.all() });
+    }, [queryClient]);
 }

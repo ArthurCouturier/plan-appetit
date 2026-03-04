@@ -5,22 +5,28 @@ import UserInterface from '../interfaces/users/UserInterface';
 export default class StripeService {
 
   static readonly PREMIUM_SUBSCRIPTION_MENSUAL = "premium_subscription_mensual"
+  static readonly PREMIUM_SUBSCRIPTION_YEARLY = "premium_subscription_yearly"
   static readonly CREDIT_TWENTY_RECIPES = "credit_twenty_recipes"
+  static readonly CREDIT_TEN_RECIPES = "credit_ten_recipes"
+
+  private static getApiUrl(): string {
+    const base = import.meta.env.VITE_API_URL;
+    const port = import.meta.env.VITE_API_PORT;
+    return port ? `${base}:${port}` : base;
+  }
 
   static async fetchProduct(productCode: string): Promise<Product> {
     const res = await fetch(
-      `${import.meta.env.VITE_API_URL}:${import.meta.env.VITE_API_PORT}/api/products/${productCode}`,
-      { credentials: 'include' }
+      `${this.getApiUrl()}/api/products/${productCode}`
     );
     if (!res.ok) throw new Error('Cannot fetch product');
-    return await res.json(); // { code, name, description, prices: [{stripePriceId, currency, recurringInterval, unitAmount}] }
+    return await res.json();
   }
 
   static async checkout(cart: CartItem[], user: UserInterface) {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}:${import.meta.env.VITE_API_PORT}/api/checkout/session`, {
+    const res = await fetch(`${this.getApiUrl()}/api/checkout/session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({
         items: cart,
         email: user.email,

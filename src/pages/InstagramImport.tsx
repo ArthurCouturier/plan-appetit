@@ -8,11 +8,13 @@ import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import InstagramService from "../api/services/InstagramService";
 import SandboxService from "../api/services/SandboxService";
 import useAuth from "../api/hooks/useAuth";
+import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 
 export default function InstagramImport() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const invalidateCollections = useInvalidateCollections();
 
   const [instagramUrl, setInstagramUrl] = useState("");
   const [showEmbed, setShowEmbed] = useState(false);
@@ -147,6 +149,7 @@ export default function InstagramImport() {
 
       // Navigate to the newly created recipe
       if (response.recipe?.uuid) {
+        invalidateCollections();
         navigate(`/recettes/${response.recipe.uuid}`);
       } else {
         setError("Recette générée mais impossible de récupérer son identifiant");
@@ -405,10 +408,9 @@ export default function InstagramImport() {
       {!user && <Footer />}
 
       {/* Paywall Modal */}
-      <CreditPaywallModal
-        isOpen={showPaywall}
-        onClose={() => setShowPaywall(false)}
-      />
+      {showPaywall && (
+        <CreditPaywallModal onClose={() => setShowPaywall(false)} />
+      )}
 
       <style>{`
         @keyframes gradient-x {

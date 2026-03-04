@@ -17,6 +17,7 @@ import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 import useAuth from "../api/hooks/useAuth";
 import { usePostHog } from "../contexts/PostHogContext";
 import { TrackingService } from "../api/services/TrackingService";
+import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 
 export default function Sandbox() {
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ export default function Sandbox() {
   const [examplePrompts, setExamplePrompts] = useState<string[]>([]);
 
   const { trackEvent } = usePostHog()
+  const invalidateCollections = useInvalidateCollections();
 
   const pickRandomExamples = (source: string[]) => {
     if (source.length <= 4) {
@@ -130,7 +132,12 @@ export default function Sandbox() {
     }
 
     // Si utilisateur connecté, vérifier les crédits
-    if (user && quotaInfo) {
+    if (user) {
+      if (!quotaInfo) {
+        setError("Chargement en cours, veuillez réessayer dans un instant.");
+        return;
+      }
+
       // Si utilisateur non-premium et crédits insuffisants
       if (!quotaInfo.isSubscriber && quotaInfo.remainingFree < recipeCount) {
         setError(`Crédits insuffisants. Vous avez ${quotaInfo.remainingFree} crédit${quotaInfo.remainingFree > 1 ? 's' : ''} mais essayez d'en générer ${recipeCount}.`);
@@ -198,6 +205,7 @@ export default function Sandbox() {
       });
       TrackingService.logRecipeGenerated('sandbox');
       TrackingService.promptATTIfNeeded();
+      invalidateCollections();
 
       setTimeout(() => {
         resultsRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -207,6 +215,7 @@ export default function Sandbox() {
       console.error("Erreur lors de la génération:", err);
 
       if (err.type === "QUOTA_EXCEEDED") {
+        setIsLoading(false);
         setError(err.message || "Quota épuisé. Passez Premium pour continuer !");
         setQuotaInfo(err.quota);
 
@@ -220,9 +229,7 @@ export default function Sandbox() {
         TrackingService.logQuotaLimitReached('sandbox');
         TrackingService.logLead('sandbox');
 
-        if (!user || (quotaInfo && !quotaInfo.isSubscriber)) {
-          setShowPaywall(true);
-        }
+        setShowPaywall(true);
       } else if (err.type === "VALIDATION_ERROR") {
         setError(err.message || "Erreur de validation de votre demande");
 
@@ -594,10 +601,9 @@ export default function Sandbox() {
         <RecipeGenerationLoadingModal isOpen={isLoading} />
 
         {/* Paywall Modal */}
-        <CreditPaywallModal
-          isOpen={showPaywall}
-          onClose={() => setShowPaywall(false)}
-        />
+        {showPaywall && (
+          <CreditPaywallModal onClose={() => setShowPaywall(false)} />
+        )}
 
         {/* Multiple Recipe Confirmation Modal */}
         {user && quotaInfo && (

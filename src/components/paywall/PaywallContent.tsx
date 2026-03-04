@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePostHog } from "../../contexts/PostHogContext";
 import type { PaywallProducts, SubscriptionType, CreditPack, ProductOption } from "../../api/hooks/usePaywallProducts";
@@ -18,6 +18,10 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
     const ctaRef = useRef<HTMLButtonElement>(null);
     const navigate = useNavigate();
     const { trackEvent } = usePostHog();
+
+    useEffect(() => {
+        trackEvent('paywall_viewed', { variant });
+    }, []);
 
     // Dynamic prices
     const yearlyRaw = getPrice(products.iapYearly, products.premiumYearly);

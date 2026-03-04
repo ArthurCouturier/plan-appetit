@@ -79,6 +79,7 @@ export default function RecipeLocationGeneration() {
         };
 
         trackEvent('recipe_generation_started', {
+            source: 'location',
             localisation,
             seasons: seasons.join(', '),
             hasIngredients: !!ingredients,
@@ -101,6 +102,7 @@ export default function RecipeLocationGeneration() {
             // Naviguer vers la recette générée
             if (newRecipe) {
                 trackEvent('recipe_generation_completed', {
+                    source: 'location',
                     recipeUuid: newRecipe.uuid,
                     localisation,
                     vegan,
@@ -115,6 +117,7 @@ export default function RecipeLocationGeneration() {
             if (error.type === "INSUFFICIENT_CREDITS") {
                 setIsLoading(false);
                 trackEvent('quota_limit_reached', {
+                    source: 'location',
                     localisation,
                     vegan,
                 });
@@ -124,6 +127,7 @@ export default function RecipeLocationGeneration() {
                 return;
             }
             trackEvent('recipe_generation_failed', {
+                source: 'location',
                 error: error.message || 'Unknown error',
                 localisation,
             });

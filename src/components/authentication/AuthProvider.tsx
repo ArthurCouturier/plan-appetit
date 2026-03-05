@@ -76,10 +76,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
                         setUser(userData);
 
-                        // Initialiser les notifications push si permission déjà accordée
+                        // Re-register le token FCM uniquement si la permission est déjà accordée
                         if (idTokenResult.token) {
-                            NotificationService.initializeNotifications(userData.email, idTokenResult.token)
-                                .catch(err => console.log('Notifications non initialisées:', err));
+                            NotificationService.isPermissionGranted().then(granted => {
+                                if (granted) {
+                                    NotificationService.registerTokenWithBackend(userData.email, idTokenResult.token!)
+                                        .catch(err => console.log('Token FCM non re-enregistré:', err));
+                                }
+                            });
                         }
                     } else {
                         console.log('Aucune session native trouvée');

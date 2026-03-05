@@ -42,13 +42,10 @@ export default function DailyRecipeModal({ isOpen, onClose }: DailyRecipeModalPr
     }, [isOpen]);
 
     const handleEnableNotifications = async () => {
-        const granted = await NotificationService.requestPermission();
-        if (granted) {
-            const email = localStorage.getItem("email") || "";
-            const token = localStorage.getItem("firebaseIdToken") || "";
-            if (email && token) {
-                await NotificationService.initializeNotifications(email, token);
-            }
+        const email = localStorage.getItem("email") || "";
+        const token = localStorage.getItem("firebaseIdToken") || "";
+        if (email && token) {
+            await NotificationService.initializeNotifications(email, token, "daily_recipe_modal");
         }
         setShowNotifPrompt(false);
     };

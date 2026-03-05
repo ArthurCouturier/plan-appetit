@@ -43,7 +43,7 @@ export default function NotificationSettings({ isPremium }: NotificationSettings
                 throw new Error('Non authentifié');
             }
 
-            const success = await NotificationService.initializeNotifications(email, token);
+            const success = await NotificationService.initializeNotifications(email, token, "settings");
 
             if (success) {
                 setNotificationsEnabled(true);

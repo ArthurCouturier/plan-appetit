@@ -15,6 +15,7 @@ import RecipeImage from "../components/recipes/RecipeImage";
 import { TrackingService } from "../api/services/TrackingService";
 import { Capacitor } from "@capacitor/core";
 import { Share } from "@capacitor/share";
+import { useDelayedNotificationPrompt } from "../api/hooks/useDelayedNotificationPrompt";
 
 export default function RecipeDetail() {
 
@@ -36,6 +37,8 @@ export default function RecipeDetail() {
     const [modificationSuccess, setModificationSuccess] = useState(false);
     const [isSharing, setIsSharing] = useState(false);
     const [showSaveModal, setShowSaveModal] = useState(false);
+
+    useDelayedNotificationPrompt("recipe_detail", 5000);
 
     useEffect(() => {
         const fetchRecipe = async () => {

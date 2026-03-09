@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FolderIcon, DocumentTextIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
@@ -34,6 +34,7 @@ import CollectionCard from "../components/cards/CollectionCard";
 import QuickActions from "../components/actions/QuickActions";
 import Header from "../components/global/Header";
 import EditableCollectionTitle from "../components/collections/EditableCollectionTitle";
+import RecipeSortSelect, { RecipeSortOption, getInitialSort, sortRecipes } from "../components/collections/RecipeSortSelect";
 
 type DragItemType = {
     type: 'recipe' | 'collection';
@@ -50,6 +51,11 @@ export default function CollectionDetail() {
     const [isMobile, setIsMobile] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [activeItem, setActiveItem] = useState<DragItemType | null>(null);
+    const [sortOption, setSortOption] = useState<RecipeSortOption>("custom");
+
+    useEffect(() => {
+        if (uuid) setSortOption(getInitialSort(uuid));
+    }, [uuid]);
 
     const moveRecipeMutation = useMoveRecipeToCollection();
     const moveCollectionMutation = useMoveCollectionToParent();
@@ -311,6 +317,8 @@ export default function CollectionDetail() {
                     onNameChange={handleNameChange}
                     isDragging={activeItem !== null}
                     onRefresh={handleRefresh}
+                    sortOption={sortOption}
+                    onSortChange={setSortOption}
                 />
             ) : (
                 <CollectionDetailDesktop
@@ -319,6 +327,8 @@ export default function CollectionDetail() {
                     onNameChange={handleNameChange}
                     isDragging={activeItem !== null}
                     onRefresh={handleRefresh}
+                    sortOption={sortOption}
+                    onSortChange={setSortOption}
                 />
             )}
             <DragOverlay>
@@ -375,11 +385,14 @@ type CollectionDetailLayoutProps = {
     onNameChange: (newName: string) => void;
     isDragging: boolean;
     onRefresh: () => void;
+    sortOption: RecipeSortOption;
+    onSortChange: (sort: RecipeSortOption) => void;
 };
 
-function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh }: CollectionDetailLayoutProps) {
+function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh, sortOption, onSortChange }: CollectionDetailLayoutProps) {
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
+    const sortedRecipes = useMemo(() => sortRecipes(recipes, sortOption), [recipes, sortOption]);
 
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
 
@@ -451,12 +464,17 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
 
             {recipes.length > 0 && (
                 <div>
-                    <h2 className="text-lg font-bold text-text-primary mb-3 flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-3">
                         <DocumentTextIcon className="w-5 h-5 text-cout-base" />
-                        Recettes
-                    </h2>
+                        <h2 className="text-lg font-bold text-text-primary">Recettes</h2>
+                        <RecipeSortSelect
+                            collectionUuid={String(collection.uuid)}
+                            currentSort={sortOption}
+                            onSortChange={onSortChange}
+                        />
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
-                        {recipes.map((recipe) => (
+                        {sortedRecipes.map((recipe) => (
                             <RecipeCard
                                 key={String(recipe.uuid)}
                                 recipe={recipe}
@@ -470,9 +488,10 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
     );
 }
 
-function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh }: CollectionDetailLayoutProps) {
+function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh, sortOption, onSortChange }: CollectionDetailLayoutProps) {
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
+    const sortedRecipes = useMemo(() => sortRecipes(recipes, sortOption), [recipes, sortOption]);
 
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
 
@@ -553,9 +572,14 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
                             <DocumentTextIcon className="w-6 h-6 text-cout-base" />
                             <h2 className="text-xl font-bold text-text-primary">Recettes</h2>
                             <span className="text-text-secondary text-sm">({recipes.length})</span>
+                            <RecipeSortSelect
+                                collectionUuid={String(collection.uuid)}
+                                currentSort={sortOption}
+                                onSortChange={onSortChange}
+                            />
                         </div>
                         <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4">
-                            {recipes.map((recipe) => (
+                            {sortedRecipes.map((recipe) => (
                                 <RecipeCard
                                     key={String(recipe.uuid)}
                                     recipe={recipe}

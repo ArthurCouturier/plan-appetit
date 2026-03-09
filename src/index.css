@@ -119,6 +119,17 @@ html, body {
   min-height: 100dvh;
 }
 
+* {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* Base styles pour #root */
 #root {
   box-sizing: border-box;

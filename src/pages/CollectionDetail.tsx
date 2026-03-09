@@ -27,7 +27,6 @@ import RecipeSummaryInterface from "../api/interfaces/recipes/RecipeSummaryInter
 import { useCollection } from "../api/hooks/useCollectionQueries";
 import { useMoveRecipeToCollection, useMoveCollectionToParent, useReorderCollectionItems } from "../api/hooks/useCollectionMutations";
 import { queryKeys } from "../api/queryConfig";
-import DraggableRecipeCard from "../components/dnd/DraggableRecipeCard";
 import DroppableCollectionCard from "../components/dnd/DroppableCollectionCard";
 import ParentDropZone from "../components/dnd/ParentDropZone";
 import RecipeCard from "../components/cards/RecipeCard";
@@ -324,7 +323,7 @@ export default function CollectionDetail() {
             )}
             <DragOverlay>
                 {activeItem?.type === 'recipe' && activeItem.recipe && (
-                    <RecipeCard recipe={activeItem.recipe} isMobile={isMobile} />
+                    <RecipeCard recipe={activeItem.recipe} />
                 )}
                 {activeItem?.type === 'collection' && activeItem.collection && (
                     <CollectionCard collection={activeItem.collection} isMobile={isMobile} />
@@ -383,7 +382,6 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
     const recipes = collection.recipes || [];
 
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
-    const recipeIds = recipes.map(r => `recipe-${r.uuid}`);
 
     const hasParent = !!collection.parentCollectionUuid;
 
@@ -457,17 +455,14 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
                         <DocumentTextIcon className="w-5 h-5 text-cout-base" />
                         Recettes
                     </h2>
-                    <SortableContext items={recipeIds} strategy={rectSortingStrategy}>
-                        <div className="space-y-3">
-                            {recipes.map((recipe) => (
-                                <DraggableRecipeCard
-                                    key={String(recipe.uuid)}
-                                    recipe={recipe}
-                                    isMobile={true}
-                                />
-                            ))}
-                        </div>
-                    </SortableContext>
+                    <div className="grid grid-cols-2 gap-3">
+                        {recipes.map((recipe) => (
+                            <RecipeCard
+                                key={String(recipe.uuid)}
+                                recipe={recipe}
+                            />
+                        ))}
+                    </div>
                 </div>
             )}
 
@@ -480,7 +475,6 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
     const recipes = collection.recipes || [];
 
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
-    const recipeIds = recipes.map(r => `recipe-${r.uuid}`);
 
     const hasParent = !!collection.parentCollectionUuid;
 
@@ -560,17 +554,14 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
                             <h2 className="text-xl font-bold text-text-primary">Recettes</h2>
                             <span className="text-text-secondary text-sm">({recipes.length})</span>
                         </div>
-                        <SortableContext items={recipeIds} strategy={rectSortingStrategy}>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                                {recipes.map((recipe) => (
-                                    <DraggableRecipeCard
-                                        key={String(recipe.uuid)}
-                                        recipe={recipe}
-                                        isMobile={false}
-                                    />
-                                ))}
-                            </div>
-                        </SortableContext>
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4">
+                            {recipes.map((recipe) => (
+                                <RecipeCard
+                                    key={String(recipe.uuid)}
+                                    recipe={recipe}
+                                />
+                            ))}
+                        </div>
                     </div>
                 )}
 

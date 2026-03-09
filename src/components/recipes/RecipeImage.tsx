@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import BackendService from "../../api/services/BackendService";
+import { queryKeys } from "../../api/queryConfig";
 
 interface RecipeImageProps {
     recipeUuid: string;
@@ -11,11 +13,17 @@ interface RecipeImageProps {
 type ImageState = "idle" | "loading" | "generating" | "no-image" | "error" | "ready";
 
 export default function RecipeImage({ recipeUuid, isGenerated, isOwner, className = "" }: RecipeImageProps) {
+    const queryClient = useQueryClient();
 
     const [imageData, setImageData] = useState<string | null>(null);
     const [state, setState] = useState<ImageState>("idle");
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
+    const updateCache = useCallback((data: string) => {
+        if (isOwner) {
+            queryClient.setQueryData(queryKeys.recipes.image(recipeUuid), data);
+        }
+    }, [isOwner, recipeUuid, queryClient]);
 
     const fetchImage = useCallback(async () => {
         setState("loading");
@@ -31,6 +39,7 @@ export default function RecipeImage({ recipeUuid, isGenerated, isOwner, classNam
             } else if (response.imageData) {
                 setImageData(response.imageData);
                 setState("ready");
+                updateCache(response.imageData);
             } else {
                 setState("generating");
                 setTimeout(() => fetchImage(), 3000);
@@ -38,7 +47,7 @@ export default function RecipeImage({ recipeUuid, isGenerated, isOwner, classNam
         } catch (err) {
             setState("error");
         }
-    }, [recipeUuid]);
+    }, [recipeUuid, updateCache]);
 
     const handleGenerateImage = async () => {
         setState("generating");
@@ -57,6 +66,7 @@ export default function RecipeImage({ recipeUuid, isGenerated, isOwner, classNam
             if (response && response.imageData) {
                 setImageData(response.imageData);
                 setState("ready");
+                updateCache(response.imageData);
             } else {
                 setState("error");
             }
@@ -67,11 +77,20 @@ export default function RecipeImage({ recipeUuid, isGenerated, isOwner, classNam
     };
 
     useEffect(() => {
-        if (!isGenerated) {
-            return;
+        if (!isGenerated) return;
+
+        // Pour les propriétaires, vérifier le cache React Query d'abord (peuplé par RecipeCard)
+        if (isOwner) {
+            const cached = queryClient.getQueryData<string | null>(queryKeys.recipes.image(recipeUuid));
+            if (cached) {
+                setImageData(cached);
+                setState("ready");
+                return;
+            }
         }
+
         fetchImage();
-    }, [recipeUuid, isGenerated, fetchImage]);
+    }, [recipeUuid, isGenerated, isOwner, fetchImage, queryClient]);
 
     if (!isGenerated) {
         return null;

@@ -387,8 +387,10 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
 
     const hasParent = !!collection.parentCollectionUuid;
 
+    const isEmpty = subCollections.length === 0 && recipes.length === 0;
+
     return (
-        <div className="min-h-screen bg-bg-color px-4 pb-8 mobile-content-with-header">
+        <div className={`min-h-screen bg-bg-color px-4 pb-8 mobile-content-with-header ${isEmpty ? 'flex flex-col' : ''}`}>
             <div className="mb-6">
                 <div className="flex items-center gap-2">
                     <EditableCollectionTitle
@@ -411,11 +413,13 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
                 </p>
             </div>
 
-            <QuickActions
-                parentCollectionUuid={collection.uuid}
-                onCollectionCreated={onCollectionCreated}
-                isMobile={true}
-            />
+            <div className={isEmpty ? 'flex-1 flex items-center justify-center' : ''}>
+                <QuickActions
+                    parentCollectionUuid={collection.uuid}
+                    onCollectionCreated={onCollectionCreated}
+                    isMobile={true}
+                />
+            </div>
 
             {hasParent && (
                 <ParentDropZone
@@ -467,15 +471,6 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
                 </div>
             )}
 
-            {subCollections.length === 0 && recipes.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12">
-                    <FolderIcon className="w-16 h-16 text-text-secondary opacity-50 mb-4" />
-                    <h3 className="text-xl font-bold text-text-primary mb-2">Collection vide</h3>
-                    <p className="text-text-secondary text-center">
-                        Cette collection ne contient pas encore de recettes.
-                    </p>
-                </div>
-            )}
         </div>
     );
 }
@@ -579,15 +574,6 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
                     </div>
                 )}
 
-                {subCollections.length === 0 && recipes.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-16">
-                        <FolderIcon className="w-24 h-24 text-text-secondary opacity-50 mb-4" />
-                        <h3 className="text-2xl font-bold text-text-primary mb-2">Collection vide</h3>
-                        <p className="text-text-secondary text-center mb-6">
-                            Cette collection ne contient pas encore de recettes.
-                        </p>
-                    </div>
-                )}
             </div>
         </div>
     );

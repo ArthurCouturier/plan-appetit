@@ -1,5 +1,17 @@
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'Sora';
+  src: url('/fonts/Sora-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+@utility text-sora {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+}
+
 @theme {
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);

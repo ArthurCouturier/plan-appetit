@@ -5,14 +5,13 @@ import { queryKeys } from "../../api/queryConfig";
 
 interface RecipeImageProps {
     recipeUuid: string;
-    isGenerated: boolean;
     isOwner: boolean;
     className?: string;
 }
 
 type ImageState = "idle" | "loading" | "generating" | "no-image" | "error" | "ready";
 
-export default function RecipeImage({ recipeUuid, isGenerated, isOwner, className = "" }: RecipeImageProps) {
+export default function RecipeImage({ recipeUuid, isOwner, className = "" }: RecipeImageProps) {
     const queryClient = useQueryClient();
 
     const [imageData, setImageData] = useState<string | null>(null);
@@ -77,9 +76,6 @@ export default function RecipeImage({ recipeUuid, isGenerated, isOwner, classNam
     };
 
     useEffect(() => {
-        if (!isGenerated) return;
-
-        // Pour les propriétaires, vérifier le cache React Query d'abord (peuplé par RecipeCard)
         if (isOwner) {
             const cached = queryClient.getQueryData<string | null>(queryKeys.recipes.image(recipeUuid));
             if (cached) {
@@ -90,11 +86,7 @@ export default function RecipeImage({ recipeUuid, isGenerated, isOwner, classNam
         }
 
         fetchImage();
-    }, [recipeUuid, isGenerated, isOwner, fetchImage, queryClient]);
-
-    if (!isGenerated) {
-        return null;
-    }
+    }, [recipeUuid, isOwner, fetchImage, queryClient]);
 
     if (state === "idle" || state === "loading") {
         return (

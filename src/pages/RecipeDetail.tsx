@@ -327,7 +327,7 @@ export default function RecipeDetail() {
                 <>
                     <RecipeImage
                         recipeUuid={recipe.uuid.toString()}
-                        isGenerated={recipe.isGenerated}
+
                         isOwner={recipe.isOwner}
                         className="mt-4"
                     />
@@ -364,7 +364,7 @@ export default function RecipeDetail() {
                             {/* Image */}
                             <RecipeImage
                                 recipeUuid={recipe.uuid.toString()}
-                                isGenerated={recipe.isGenerated}
+        
                                 isOwner={recipe.isOwner}
                             />
 

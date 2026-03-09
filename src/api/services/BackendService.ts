@@ -408,10 +408,6 @@ export default class BackendService {
             headers,
         });
 
-        if (response.status === 400) {
-            return null;
-        }
-
         if (response.status === 404) {
             return null;
         }
@@ -440,10 +436,6 @@ export default class BackendService {
                 'Email': email
             },
         });
-
-        if (response.status === 400) {
-            return null;
-        }
 
         if (response.status === 404) {
             return null;

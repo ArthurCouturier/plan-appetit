@@ -18,6 +18,7 @@ import InstagramImport from "./pages/InstagramImport";
 import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } from "./pages/legal";
 import Admin from "./pages/Admin";
 import AdminBatchs from "./pages/AdminBatchs";
+import AdminUserRecipes from "./pages/AdminUserRecipes";
 
 const router = createBrowserRouter([
     {
@@ -108,6 +109,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/batchs",
                                 element: <AdminBatchs />
+                            },
+                            {
+                                path: "admin/user-recipes",
+                                element: <AdminUserRecipes />
                             }
                         ],
                     },

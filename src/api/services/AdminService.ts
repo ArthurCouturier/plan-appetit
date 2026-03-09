@@ -20,6 +20,20 @@ export interface TriggerSchedulerResponse {
     message?: string;
 }
 
+export interface UserRecipesInfoResponse {
+    email: string;
+    collectionsCount: number;
+    recipesCount: number;
+    recipesWithoutImageCount: number;
+}
+
+export interface BatchImageGenerationResponse {
+    email: string;
+    generatedCount: number;
+    failedCount: number;
+    totalWithoutImageBefore: number;
+}
+
 export default class AdminService {
 
     private static getAuthHeaders() {
@@ -83,6 +97,22 @@ export default class AdminService {
         return this.request(`/api/v1/admin/schedulers/${name}/trigger`, {
             method: "POST",
             headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async getUserRecipesInfo(targetEmail: string): Promise<UserRecipesInfoResponse> {
+        return this.request("/api/v1/admin/user-recipes-info", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ email: targetEmail }),
+        });
+    }
+
+    static async generateUserImages(targetEmail: string): Promise<BatchImageGenerationResponse> {
+        return this.request("/api/v1/admin/generate-user-images", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ email: targetEmail }),
         });
     }
 }

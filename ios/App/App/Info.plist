@@ -41,6 +41,11 @@
 	<string>$(FACEBOOK_CLIENT_TOKEN)</string>
 	<key>FacebookDisplayName</key>
 	<string>Plan Appetit</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>

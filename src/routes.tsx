@@ -19,6 +19,7 @@ import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } f
 import Admin from "./pages/Admin";
 import AdminBatchs from "./pages/AdminBatchs";
 import AdminUserRecipes from "./pages/AdminUserRecipes";
+import FridgeMode from "./pages/FridgeMode";
 
 const router = createBrowserRouter([
     {
@@ -97,6 +98,10 @@ const router = createBrowserRouter([
                             {
                                 path: "collections/:uuid",
                                 element: <CollectionDetail />,
+                            },
+                            {
+                                path: "frigo",
+                                element: <FridgeMode />,
                             },
                             {
                                 path: "premium",

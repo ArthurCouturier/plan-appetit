@@ -42,6 +42,11 @@ export default function RecipeGenerationChoiceModal({
     navigate("/instagram");
   };
 
+  const handleFridgeChoice = () => {
+    onClose();
+    navigate("/frigo");
+  };
+
   return (
     <Dialog
       open={isOpen}
@@ -128,6 +133,30 @@ export default function RecipeGenerationChoiceModal({
             </div>
           </div>
           {/* Effet de brillance au hover */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/10 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+        </button>
+
+        {/* Vide mon frigo */}
+        <button
+          onClick={handleFridgeChoice}
+          className="w-full group relative overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 hover:from-orange-500 hover:to-amber-400 p-6 rounded-xl text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+        >
+          <div className="relative z-10">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <span className="text-3xl">🧊</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Vide mon frigo !
+                </h3>
+                <div className="mt-3 flex items-center gap-2 text-amber-100 text-xs font-semibold">
+                  <span>🍳</span>
+                  <span>Cuisine avec ce que tu as</span>
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/10 to-transparent transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
         </button>
 

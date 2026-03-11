@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { QUICK_SUGGESTIONS } from "../../data/fridgeIngredients";
 import { searchIngredients, extractCurrentWord, replaceCurrentWord } from "../../api/utils/fuzzySearch";
@@ -13,7 +13,9 @@ interface FridgeStep1IngredientsProps {
 export default function FridgeStep1Ingredients({ value, onChange, onNext }: FridgeStep1IngredientsProps) {
     const [suggestions, setSuggestions] = useState<FridgeIngredient[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [hoveredIndex, setHoveredIndex] = useState(-1);
     const inputRef = useRef<HTMLInputElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const { word } = extractCurrentWord(value);
@@ -21,30 +23,65 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
             const results = searchIngredients(word, 5);
             setSuggestions(results);
             setShowSuggestions(results.length > 0);
+            setHoveredIndex(-1);
         } else {
             setSuggestions([]);
             setShowSuggestions(false);
+            setHoveredIndex(-1);
         }
     }, [value]);
 
-    const handleSuggestionClick = (ingredient: FridgeIngredient) => {
-        const newValue = replaceCurrentWord(value, ingredient.name.toLowerCase());
+    // Close suggestions on click outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setShowSuggestions(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const selectSuggestion = useCallback((ingredient: FridgeIngredient) => {
+        const newValue = replaceCurrentWord(value, ingredient.name.toLowerCase()) + " ";
         onChange(newValue);
         setShowSuggestions(false);
+        setHoveredIndex(-1);
         inputRef.current?.focus();
-    };
+    }, [value, onChange]);
 
     const handleChipClick = (ingredient: FridgeIngredient) => {
         const name = ingredient.name.toLowerCase();
         if (value.trim().length === 0) {
-            onChange(name);
+            onChange(name + " ");
         } else {
-            onChange(value.trim() + " et " + name);
+            onChange(value.trim() + " et " + name + " ");
         }
         inputRef.current?.focus();
     };
 
     const canProceed = value.trim().length >= 2;
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "ArrowDown" && showSuggestions) {
+            e.preventDefault();
+            setHoveredIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
+        } else if (e.key === "ArrowUp" && showSuggestions) {
+            e.preventDefault();
+            setHoveredIndex((prev) => Math.max(prev - 1, -1));
+        } else if (e.key === "Enter") {
+            e.preventDefault();
+            if (showSuggestions && hoveredIndex >= 0 && hoveredIndex < suggestions.length) {
+                selectSuggestion(suggestions[hoveredIndex]);
+            } else if (canProceed && !showSuggestions) {
+                onNext();
+            } else if (showSuggestions) {
+                setShowSuggestions(false);
+            }
+        } else if (e.key === "Escape") {
+            setShowSuggestions(false);
+        }
+    };
 
     return (
         <motion.div
@@ -54,36 +91,34 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
             className="flex flex-col items-center justify-center min-h-[60vh] px-4"
         >
             <h2 className="text-2xl font-bold text-text-primary text-center mb-2">
-                Qu'est-ce que tu veux cuisiner ce soir ?
+                Qu'est-ce que tu veux vider dans ton frigo?
             </h2>
             <p className="text-text-secondary text-center mb-8 text-sm">
-                Dis-nous ton ingrédient principal
+                Liste tes ingrédients principaux
             </p>
 
-            <div className="w-full max-w-md relative">
+            <div className="w-full max-w-md relative" ref={containerRef}>
                 <input
                     ref={inputRef}
                     type="text"
                     value={value}
-                    onChange={(e) => onChange(e.target.value.slice(0, 100))}
+                    onChange={(e) => onChange(e.target.value.slice(0, 300))}
                     placeholder="Ex: poulet, courgettes et riz..."
                     className="w-full bg-secondary text-text-primary placeholder-text-secondary px-5 py-4 rounded-xl border border-border-color focus:outline-none focus:ring-2 focus:ring-cout-base text-lg"
                     autoFocus
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter" && canProceed) {
-                            setShowSuggestions(false);
-                            onNext();
-                        }
-                    }}
+                    onKeyDown={handleKeyDown}
                 />
 
                 {showSuggestions && (
                     <div className="absolute top-full left-0 right-0 mt-1 bg-primary border border-border-color rounded-xl shadow-lg z-10 overflow-hidden">
-                        {suggestions.map((s) => (
+                        {suggestions.map((s, index) => (
                             <button
                                 key={s.name}
-                                onClick={() => handleSuggestionClick(s)}
-                                className="w-full px-4 py-3 text-left hover:bg-secondary transition-colors flex items-center gap-3 text-text-primary"
+                                onClick={() => selectSuggestion(s)}
+                                onMouseEnter={() => setHoveredIndex(index)}
+                                onMouseLeave={() => setHoveredIndex(-1)}
+                                className={`w-full px-4 py-3 text-left transition-colors flex items-center gap-3 text-text-primary ${index === hoveredIndex ? "bg-cout-base/20" : "hover:bg-secondary"
+                                    }`}
                             >
                                 <span className="text-xl">{s.emoji}</span>
                                 <span>{s.name}</span>

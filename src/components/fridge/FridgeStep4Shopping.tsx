@@ -5,7 +5,6 @@ interface FridgeStep4ShoppingProps {
     shoppingData: FridgeShoppingResponse;
     onAcceptShopping: () => void;
     onDeclineShopping: () => void;
-    onBack: () => void;
 }
 
 function formatPrice(cents: number): string {
@@ -19,7 +18,6 @@ export default function FridgeStep4Shopping({
     shoppingData,
     onAcceptShopping,
     onDeclineShopping,
-    onBack,
 }: FridgeStep4ShoppingProps) {
     const totalCents = shoppingData.items.reduce((sum, item) => sum + item.priceCents, 0);
 
@@ -34,10 +32,10 @@ export default function FridgeStep4Shopping({
                 <div className="text-center mb-8">
                     <span className="text-5xl mb-4 block">🛒</span>
                     <h2 className="text-2xl font-bold text-text-primary mb-2">
-                        Petite course possible ?
+                        Petite course possible?
                     </h2>
                     <p className="text-text-secondary">
-                        Pour débloquer beaucoup plus de recettes, il manquerait juste :
+                        Pour débloquer plus de recettes, il manque:
                     </p>
                 </div>
 
@@ -102,13 +100,6 @@ export default function FridgeStep4Shopping({
                         <span>❌</span> Non, je cuisine avec ce que j'ai
                     </button>
                 </div>
-
-                <button
-                    onClick={onBack}
-                    className="w-full mt-4 text-text-secondary text-sm hover:text-text-primary transition-colors text-center"
-                >
-                    ← Revenir aux questions
-                </button>
             </div>
         </motion.div>
     );

@@ -229,6 +229,8 @@ function ChoiceControl({
     value: string;
     onChange: (v: unknown) => void;
 }) {
+    const isCustomValue = value !== "" && !options.includes(value);
+
     return (
         <div className="space-y-2">
             {options.map((option) => (
@@ -244,6 +246,19 @@ function ChoiceControl({
                     {option}
                 </button>
             ))}
+            <input
+                type="text"
+                value={isCustomValue ? (value as string) : ""}
+                onChange={(e) => onChange(e.target.value.slice(0, 30))}
+                onFocus={() => { if (!isCustomValue) onChange(""); }}
+                placeholder="Autre..."
+                maxLength={30}
+                className={`w-full py-3 px-4 rounded-xl text-sm font-medium text-left transition-all duration-200 ${
+                    isCustomValue
+                        ? "bg-cout-yellow text-cout-purple shadow-md border-2 border-cout-yellow"
+                        : "bg-secondary text-text-primary border border-border-color focus:border-cout-base focus:outline-none"
+                }`}
+            />
         </div>
     );
 }

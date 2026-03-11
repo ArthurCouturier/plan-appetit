@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import useAuth from "../api/hooks/useAuth";
 import FridgeService from "../api/services/FridgeService";
-import Header from "../components/global/Header";
 import FridgeStep1Ingredients from "../components/fridge/FridgeStep1Ingredients";
 import FridgeStep2Context from "../components/fridge/FridgeStep2Context";
 import FridgeStep3Questions from "../components/fridge/FridgeStep3Questions";
@@ -42,6 +41,7 @@ export default function FridgeMode() {
 
     // Flow state
     const [step, setStep] = useState(1);
+    const stepRef = useRef(1);
 
     // Step 1 & 2 state (cached)
     const draft = loadDraft();
@@ -62,6 +62,31 @@ export default function FridgeMode() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [showPaywall, setShowPaywall] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Back button via history — step 1 goes to previous page, other steps go back one step
+    const goToStep = useCallback((newStep: number) => {
+        setStep(newStep);
+        stepRef.current = newStep;
+        window.scrollTo(0, 0);
+        window.history.pushState({ fridgeStep: newStep }, "");
+    }, []);
+
+    useEffect(() => {
+        // Push initial state for step 1
+        window.history.replaceState({ fridgeStep: 1 }, "");
+
+        const handlePopState = (e: PopStateEvent) => {
+            const targetStep = e.state?.fridgeStep;
+            if (typeof targetStep === "number" && targetStep >= 1) {
+                setStep(targetStep);
+                stepRef.current = targetStep;
+                window.scrollTo(0, 0);
+            }
+        };
+
+        window.addEventListener("popstate", handlePopState);
+        return () => window.removeEventListener("popstate", handlePopState);
+    }, []);
 
     // Save draft on step 1 & 2 changes
     useEffect(() => {
@@ -101,7 +126,7 @@ export default function FridgeMode() {
     const handleStep2Next = async () => {
         setError(null);
         setIsLoadingQuestions(true);
-        setStep(3);
+        goToStep(3);
 
         try {
             const { email, token } = getAuthHeaders();
@@ -114,6 +139,7 @@ export default function FridgeMode() {
         } catch {
             setError("Impossible de générer les questions. Réessaie.");
             setStep(2);
+            stepRef.current = 2;
         } finally {
             setIsLoadingQuestions(false);
         }
@@ -135,7 +161,7 @@ export default function FridgeMode() {
                 await generateFinalRecipe(false, []);
             } else {
                 setShoppingData(response);
-                setStep(4);
+                goToStep(4);
             }
         } catch {
             setError("Impossible d'analyser les courses. Réessaie.");
@@ -189,9 +215,7 @@ export default function FridgeMode() {
 
     return (
         <>
-            <Header pageName="Vide mon frigo !" />
-
-            <div className="min-h-screen bg-bg-color pt-4 pb-20">
+            <div className="min-h-screen bg-bg-color pb-20" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4rem)" }}>
                 {/* Error banner */}
                 {error && (
                     <div className="max-w-md mx-auto mb-4 px-4">
@@ -206,9 +230,8 @@ export default function FridgeMode() {
                     {[1, 2, 3, 4].map((s) => (
                         <div
                             key={s}
-                            className={`h-1.5 rounded-full transition-all duration-300 ${
-                                s === step ? "w-8 bg-cout-base" : s < step ? "w-8 bg-cout-yellow" : "w-8 bg-secondary"
-                            }`}
+                            className={`h-1.5 rounded-full transition-all duration-300 ${s === step ? "w-8 bg-cout-base" : s < step ? "w-8 bg-cout-yellow" : "w-8 bg-secondary"
+                                }`}
                         />
                     ))}
                 </div>
@@ -219,7 +242,7 @@ export default function FridgeMode() {
                             key="step1"
                             value={ingredients}
                             onChange={setIngredients}
-                            onNext={() => setStep(2)}
+                            onNext={() => goToStep(2)}
                         />
                     )}
 
@@ -231,7 +254,7 @@ export default function FridgeMode() {
                             onServingsChange={setServings}
                             onTimeCategoryChange={setTimeCategory}
                             onNext={handleStep2Next}
-                            onBack={() => setStep(1)}
+                            onBack={() => goToStep(1)}
                         />
                     )}
 
@@ -257,7 +280,7 @@ export default function FridgeMode() {
                                         setAnswers((prev) => ({ ...prev, [id]: value }))
                                     }
                                     onNext={handleStep3Next}
-                                    onBack={() => setStep(2)}
+                                    onBack={() => goToStep(2)}
                                 />
                             )}
                         </>
@@ -282,7 +305,6 @@ export default function FridgeMode() {
                                     shoppingData={shoppingData}
                                     onAcceptShopping={handleAcceptShopping}
                                     onDeclineShopping={handleDeclineShopping}
-                                    onBack={() => setStep(3)}
                                 />
                             )}
                         </>

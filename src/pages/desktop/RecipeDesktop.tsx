@@ -111,12 +111,7 @@ export default function RecipeDesktop() {
         </div>
 
         {/* Action buttons */}
-        <QuickActions
-          onCollectionCreated={async () => {
-            const fetchedCollections = await CollectionService.getRootCollections();
-            setCollections(fetchedCollections);
-          }}
-        />
+        <QuickActions />
 
         {/* Collections section */}
         <div className="mb-8">

@@ -30,7 +30,7 @@ import {
 import RecipeCollectionInterface from "../api/interfaces/collections/RecipeCollectionInterface";
 import RecipeSummaryInterface from "../api/interfaces/recipes/RecipeSummaryInterface";
 import { useCollection } from "../api/hooks/useCollectionQueries";
-import { useMoveRecipeToCollection, useMoveCollectionToParent, useReorderCollectionItems } from "../api/hooks/useCollectionMutations";
+import { useMoveCollectionToParent, useReorderCollectionItems } from "../api/hooks/useCollectionMutations";
 import { queryKeys } from "../api/queryConfig";
 import DroppableCollectionCard from "../components/dnd/DroppableCollectionCard";
 import ParentDropZone from "../components/dnd/ParentDropZone";
@@ -64,7 +64,6 @@ export default function CollectionDetail() {
         if (uuid) setSortOption(getInitialSort(uuid));
     }, [uuid]);
 
-    const moveRecipeMutation = useMoveRecipeToCollection();
     const moveCollectionMutation = useMoveCollectionToParent();
     const reorderMutation = useReorderCollectionItems();
 
@@ -165,14 +164,9 @@ export default function CollectionDetail() {
         const overId = String(over.id);
         const activeData = active.data.current;
 
-        if (overId.startsWith('droppable-collection-') && activeData) {
+        if (overId.startsWith('droppable-collection-') && activeData?.type === 'collection' && activeData.collection) {
             const targetCollectionUuid = overId.replace('droppable-collection-', '');
-
-            if (activeData.type === 'recipe' && activeData.recipe) {
-                await handleMoveRecipeToCollection(activeData.recipe, targetCollectionUuid);
-            } else if (activeData.type === 'collection' && activeData.collection) {
-                await handleMoveCollectionToCollection(activeData.collection, targetCollectionUuid);
-            }
+            await handleMoveCollectionToCollection(activeData.collection, targetCollectionUuid);
             return;
         }
 
@@ -198,10 +192,6 @@ export default function CollectionDetail() {
                 }));
 
                 setCollectionCache(prev => ({ ...prev, recipes: updatedRecipes }));
-
-                if (!isReordering) {
-                    await handleSaveRecipeOrder(updatedRecipes);
-                }
             }
         } else if (isActiveCollection && isOverCollection) {
             const subCollections = [...(collection.subCollections || [])];
@@ -224,24 +214,6 @@ export default function CollectionDetail() {
         }
     };
 
-    const handleMoveRecipeToCollection = async (recipe: RecipeSummaryInterface, targetCollectionUuid: string) => {
-        if (!collection || !uuid) return;
-
-        const updatedRecipes = (collection.recipes || []).filter(r => r.uuid !== recipe.uuid);
-        setCollectionCache(prev => ({ ...prev, recipes: updatedRecipes }));
-
-        try {
-            await moveRecipeMutation.mutateAsync({
-                recipeUuid: String(recipe.uuid),
-                sourceCollectionUuid: uuid,
-                targetCollectionUuid,
-            });
-        } catch (err) {
-            console.error('Erreur lors du déplacement de la recette:', err);
-            refetch();
-        }
-    };
-
     const handleMoveCollectionToCollection = async (movedCollection: RecipeCollectionInterface, targetCollectionUuid: string) => {
         if (!collection) return;
 
@@ -255,26 +227,6 @@ export default function CollectionDetail() {
             });
         } catch (err) {
             console.error('Erreur lors du déplacement de la collection:', err);
-            refetch();
-        }
-    };
-
-    const handleSaveRecipeOrder = async (recipes: RecipeSummaryInterface[]) => {
-        if (!uuid) return;
-
-        const recipeOrders = recipes.map((r, index) => ({
-            uuid: String(r.uuid),
-            displayOrder: index,
-        }));
-
-        try {
-            await reorderMutation.mutateAsync({
-                collectionUuid: uuid,
-                recipeOrders,
-                subCollectionOrders: undefined,
-            });
-        } catch (err) {
-            console.error('Erreur lors de la sauvegarde de l\'ordre des recettes:', err);
             refetch();
         }
     };
@@ -402,13 +354,9 @@ export default function CollectionDetail() {
             )}
             <DragOverlay>
                 {activeItem?.type === 'recipe' && activeItem.recipe && (
-                    isReordering ? (
-                        <div className="flex items-center gap-3 bg-primary border border-cout-base rounded-xl px-4 py-3 shadow-lg select-none cursor-grabbing">
-                            <span className="text-sm font-medium text-text-primary truncate">{activeItem.recipe.name}</span>
-                        </div>
-                    ) : (
-                        <RecipeCard recipe={activeItem.recipe} />
-                    )
+                    <div className="flex items-center gap-3 bg-primary border border-cout-base rounded-xl px-4 py-3 shadow-lg select-none cursor-grabbing">
+                        <span className="text-sm font-medium text-text-primary truncate">{activeItem.recipe.name}</span>
+                    </div>
                 )}
                 {activeItem?.type === 'collection' && activeItem.collection && (
                     <CollectionCard collection={activeItem.collection} isMobile={isMobile} />

@@ -5,13 +5,22 @@ export interface FridgeIngredient {
 
 export const QUICK_SUGGESTIONS: FridgeIngredient[] = [
   { name: "Oeufs", emoji: "🥚" },
+  { name: "Pain", emoji: "🍞" },
+  { name: "Fromage rape", emoji: "🧀" },
+  { name: "Basilic", emoji: "🌿" },
+  { name: "Noix", emoji: "🌰" },
+  { name: "Aubergine", emoji: "🍆" },
+  { name: "Brocoli", emoji: "🥦" },
+  { name: "Carotte", emoji: "🥕" },
+  { name: "Chou-fleur", emoji: "🥬" },
+  { name: "Navet", emoji: "🫜" },
+  { name: "Oignon", emoji: "🧅" },
+  { name: "Haricots en boite", emoji: "🥫" },
+  { name: "Potiron", emoji: "🎃" },
+  { name: "Pommes de terre", emoji: "🥔" },
+  { name: "Sardine", emoji: "🐟" },
   { name: "Poulet", emoji: "🍗" },
   { name: "Boeuf", emoji: "🥩" },
-  { name: "Fromage", emoji: "🧀" },
-  { name: "Legumes", emoji: "🥬" },
-  { name: "Pates", emoji: "🍝" },
-  { name: "Poisson", emoji: "🐟" },
-  { name: "Pommes de terre", emoji: "🥔" },
 ];
 
 export const FRIDGE_INGREDIENTS: FridgeIngredient[] = [
@@ -59,7 +68,7 @@ export const FRIDGE_INGREDIENTS: FridgeIngredient[] = [
   { name: "Mais", emoji: "🌽" },
   { name: "Mache", emoji: "🥬" },
   { name: "Mesclun", emoji: "🥬" },
-  { name: "Navet", emoji: "🌿" },
+  { name: "Navet", emoji: "🫜" },
   { name: "Oignon", emoji: "🧅" },
   { name: "Oignon rouge", emoji: "🧅" },
   { name: "Oseille", emoji: "🌿" },

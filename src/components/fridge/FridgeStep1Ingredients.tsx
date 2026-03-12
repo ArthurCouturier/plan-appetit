@@ -22,6 +22,7 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
     const containerRef = useRef<HTMLDivElement>(null);
     const limitMsgTimer = useRef<ReturnType<typeof setTimeout>>();
     const borderTimer = useRef<ReturnType<typeof setTimeout>>();
+    const skipNextSearch = useRef(false);
     const shakeControls = useAnimation();
 
     const autoResize = useCallback(() => {
@@ -59,6 +60,10 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
     }, [value, autoResize]);
 
     useEffect(() => {
+        if (skipNextSearch.current) {
+            skipNextSearch.current = false;
+            return;
+        }
         const { word } = extractCurrentWord(value);
         if (word.length >= 2) {
             const results = searchIngredients(word, 5);
@@ -96,8 +101,49 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
         inputRef.current?.focus();
     }, [value, onChange, triggerLimitFeedback]);
 
+    const isChipInValue = useCallback((ingredientName: string) => {
+        return value.toLowerCase().includes(ingredientName.toLowerCase());
+    }, [value]);
+
+    const removeIngredientFromValue = (name: string): string => {
+        const lower = value.toLowerCase();
+        const nameLower = name.toLowerCase();
+
+        // Try " et {name}" first (ingredient preceded by " et ")
+        const withEtBefore = " et " + nameLower;
+        const idxBefore = lower.indexOf(withEtBefore);
+        if (idxBefore !== -1) {
+            return (value.slice(0, idxBefore) + value.slice(idxBefore + withEtBefore.length)).trim();
+        }
+
+        // Try "{name} et " (ingredient followed by " et ")
+        const withEtAfter = nameLower + " et ";
+        const idxAfter = lower.indexOf(withEtAfter);
+        if (idxAfter !== -1) {
+            return (value.slice(0, idxAfter) + value.slice(idxAfter + withEtAfter.length)).trim();
+        }
+
+        // It's the only ingredient or standalone match
+        const idx = lower.indexOf(nameLower);
+        if (idx !== -1) {
+            return (value.slice(0, idx) + value.slice(idx + nameLower.length)).trim();
+        }
+
+        return value;
+    };
+
     const handleChipClick = (ingredient: FridgeIngredient) => {
         const name = ingredient.name.toLowerCase();
+
+        if (isChipInValue(name)) {
+            skipNextSearch.current = true;
+            const cleaned = removeIngredientFromValue(name);
+            onChange(cleaned);
+            setShowSuggestions(false);
+            setSuggestions([]);
+            return;
+        }
+
         let newValue: string;
         if (value.trim().length === 0) {
             newValue = name + " ";
@@ -201,16 +247,21 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
             </motion.div>
 
             <div className="flex flex-wrap justify-center gap-2 mt-8 max-w-md">
-                {QUICK_SUGGESTIONS.map((ingredient) => (
-                    <button
-                        key={ingredient.name}
-                        onClick={() => handleChipClick(ingredient)}
-                        className="px-4 py-2 bg-secondary text-text-primary rounded-full border border-border-color hover:border-cout-base hover:bg-cout-base/10 transition-all text-sm flex items-center gap-1.5"
-                    >
-                        <span>{ingredient.emoji}</span>
-                        <span>{ingredient.name}</span>
-                    </button>
-                ))}
+                {QUICK_SUGGESTIONS.map((ingredient) => {
+                    const active = isChipInValue(ingredient.name);
+                    return (
+                        <button
+                            key={ingredient.name}
+                            onClick={() => handleChipClick(ingredient)}
+                            className={`px-4 py-2 bg-secondary text-text-primary rounded-full border border-border-color hover:border-cout-base hover:bg-cout-base/10 transition-all text-sm flex items-center gap-1.5 ${
+                                active ? "opacity-50" : "opacity-100"
+                            }`}
+                        >
+                            <span>{ingredient.emoji}</span>
+                            <span>{ingredient.name}</span>
+                        </button>
+                    );
+                })}
             </div>
 
             <button

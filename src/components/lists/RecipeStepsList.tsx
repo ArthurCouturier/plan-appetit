@@ -14,6 +14,7 @@ export default function RecipeStepsList({
     onChange?: (updatedSteps: StepInterface[]) => void;
     onSave?: (steps: StepInterface[]) => void;
 }) {
+    const [highlightedKey, setHighlightedKey] = useState<number | null>(null);
 
     const handleStepChange = (updatedStep: StepInterface) => {
         const updatedSteps = steps.find(step => step.key === updatedStep.key);
@@ -62,6 +63,8 @@ export default function RecipeStepsList({
                         key={step.key}
                         step={step}
                         editMode={recipeEditMode}
+                        highlighted={highlightedKey === step.key}
+                        onHighlight={() => setHighlightedKey(highlightedKey === step.key ? null : step.key)}
                         onChange={(updatedStep) => handleStepChange(updatedStep)}
                         onRemove={() => handleRemoveStep(step.key - 1)}
                     />
@@ -82,11 +85,15 @@ export default function RecipeStepsList({
 export function Step({
     step,
     editMode,
+    highlighted,
+    onHighlight,
     onChange,
     onRemove,
 }: {
     step: StepInterface;
     editMode?: boolean;
+    highlighted?: boolean;
+    onHighlight?: () => void;
     onChange: (updatedStep: StepInterface) => void;
     onRemove: () => void;
 }) {
@@ -98,7 +105,7 @@ export function Step({
     return (
         <div className="flex items-center justify-start py-2 mb-2 mx-auto xl:w-1/2">
             {!editMode ? (
-                <DefaultMode step={step} />
+                <DefaultMode step={step} highlighted={highlighted} onHighlight={onHighlight} />
             ) : (
                 <EditMode step={step} onChange={handleStepChange} onRemove={onRemove} />
             )}
@@ -108,11 +115,23 @@ export function Step({
 
 function DefaultMode({
     step,
+    highlighted,
+    onHighlight,
 }: {
     step: StepInterface;
+    highlighted?: boolean;
+    onHighlight?: () => void;
 }) {
     return (
-        <div className="flex flex-col">
+        <div
+            className="flex flex-col cursor-pointer rounded-xl px-3 py-2 -mx-3 transition-all duration-300 ease-out md:hover:scale-[1.05] md:hover:bg-secondary/50 md:hover:shadow-md"
+            style={{
+                transform: highlighted ? "scale(1.05)" : undefined,
+                background: highlighted ? "var(--color-secondary)" : undefined,
+                boxShadow: highlighted ? "0 4px 12px rgba(0,0,0,0.08)" : undefined,
+            }}
+            onClick={onHighlight}
+        >
             <h3 className="font-extrabold mb-1 text-left">Etape {step.key}:</h3>
             <pre className="break-word whitespace-normal w-full md:w-[33vw] text-left">{step.value}</pre>
         </div>

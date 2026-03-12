@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import { QUICK_SUGGESTIONS } from "../../data/fridgeIngredients";
 import { searchIngredients, extractCurrentWord, replaceCurrentWord } from "../../api/utils/fuzzySearch";
 import type { FridgeIngredient } from "../../data/fridgeIngredients";
+
+const MAX_CHARS = 300;
 
 interface FridgeStep1IngredientsProps {
     value: string;
@@ -14,8 +16,47 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
     const [suggestions, setSuggestions] = useState<FridgeIngredient[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [hoveredIndex, setHoveredIndex] = useState(-1);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const [overLimit, setOverLimit] = useState(false);
+    const [showLimitMsg, setShowLimitMsg] = useState(false);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const limitMsgTimer = useRef<ReturnType<typeof setTimeout>>();
+    const borderTimer = useRef<ReturnType<typeof setTimeout>>();
+    const shakeControls = useAnimation();
+
+    const autoResize = useCallback(() => {
+        const el = inputRef.current;
+        if (!el) return;
+        el.style.height = "auto";
+        el.style.height = el.scrollHeight + "px";
+    }, []);
+
+    const triggerLimitFeedback = useCallback(() => {
+        setOverLimit(true);
+        setShowLimitMsg(true);
+
+        shakeControls.start({
+            rotate: [0, -2, 2, -2, 2, 0],
+            transition: { duration: 0.4 },
+        });
+
+        clearTimeout(borderTimer.current);
+        borderTimer.current = setTimeout(() => setOverLimit(false), 2000);
+
+        clearTimeout(limitMsgTimer.current);
+        limitMsgTimer.current = setTimeout(() => setShowLimitMsg(false), 5000);
+    }, [shakeControls]);
+
+    useEffect(() => {
+        return () => {
+            clearTimeout(limitMsgTimer.current);
+            clearTimeout(borderTimer.current);
+        };
+    }, []);
+
+    useEffect(() => {
+        autoResize();
+    }, [value, autoResize]);
 
     useEffect(() => {
         const { word } = extractCurrentWord(value);
@@ -44,20 +85,43 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
 
     const selectSuggestion = useCallback((ingredient: FridgeIngredient) => {
         const newValue = replaceCurrentWord(value, ingredient.name.toLowerCase()) + " ";
-        onChange(newValue);
+        if (newValue.length > MAX_CHARS) {
+            onChange(newValue.slice(0, MAX_CHARS));
+            triggerLimitFeedback();
+        } else {
+            onChange(newValue);
+        }
         setShowSuggestions(false);
         setHoveredIndex(-1);
         inputRef.current?.focus();
-    }, [value, onChange]);
+    }, [value, onChange, triggerLimitFeedback]);
 
     const handleChipClick = (ingredient: FridgeIngredient) => {
         const name = ingredient.name.toLowerCase();
+        let newValue: string;
         if (value.trim().length === 0) {
-            onChange(name + " ");
+            newValue = name + " ";
         } else {
-            onChange(value.trim() + " et " + name + " ");
+            newValue = value.trim() + " et " + name + " ";
         }
-        inputRef.current?.focus();
+
+        if (newValue.length > MAX_CHARS) {
+            onChange(newValue.slice(0, MAX_CHARS));
+            triggerLimitFeedback();
+        } else {
+            onChange(newValue);
+        }
+    };
+
+    const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const newValue = e.target.value;
+        if (newValue.length > MAX_CHARS) {
+            onChange(newValue.slice(0, MAX_CHARS));
+            triggerLimitFeedback();
+        } else {
+            onChange(newValue);
+        }
+        autoResize();
     };
 
     const canProceed = value.trim().length >= 2;
@@ -97,15 +161,23 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
                 Liste tes ingrédients principaux
             </p>
 
-            <div className="w-full max-w-md relative" ref={containerRef}>
-                <input
+            {showLimitMsg && (
+                <p className="text-red-500 text-sm font-semibold mb-2">Trop de caractères</p>
+            )}
+
+            <motion.div className="w-full max-w-md relative" ref={containerRef} animate={shakeControls}>
+                <textarea
                     ref={inputRef}
-                    type="text"
                     value={value}
-                    onChange={(e) => onChange(e.target.value.slice(0, 300))}
+                    onChange={handleTextChange}
                     placeholder="Ex: poulet, courgettes et riz..."
-                    className="w-full bg-secondary text-text-primary placeholder-text-secondary px-5 py-4 rounded-xl border border-border-color focus:outline-none focus:ring-2 focus:ring-cout-base text-lg"
-                    autoFocus
+                    className={`w-full bg-secondary text-text-primary placeholder-text-secondary px-5 py-4 rounded-xl border focus:outline-none focus:ring-2 text-lg resize-none overflow-hidden transition-colors duration-200 ${
+                        overLimit
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-border-color focus:ring-cout-base"
+                    }`}
+                    rows={1}
+                    autoFocus={false}
                     onKeyDown={handleKeyDown}
                 />
 
@@ -126,7 +198,7 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
                         ))}
                     </div>
                 )}
-            </div>
+            </motion.div>
 
             <div className="flex flex-wrap justify-center gap-2 mt-8 max-w-md">
                 {QUICK_SUGGESTIONS.map((ingredient) => (

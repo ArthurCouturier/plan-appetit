@@ -4,9 +4,23 @@ interface QuickActionButtonProps {
     title: string;
     onClick: () => void;
     disabled?: boolean;
+    mini?: boolean;
 }
 
-export default function QuickActionButton({ icon, iconSize = 24, title, onClick, disabled = false }: QuickActionButtonProps) {
+export default function QuickActionButton({ icon, iconSize = 24, title, onClick, disabled = false, mini = false }: QuickActionButtonProps) {
+    if (mini) {
+        return (
+            <button
+                onClick={onClick}
+                disabled={disabled}
+                className="flex items-center justify-center size-[42px] bg-premium-background rounded-full shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                title={title}
+            >
+                <img src={icon} alt={title} style={{ width: iconSize, height: iconSize }} />
+            </button>
+        );
+    }
+
     return (
         <button
             onClick={onClick}

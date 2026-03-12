@@ -1,22 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QuickActionButton from "../buttons/QuickActionButton";
-import CreateCollectionModal from "../popups/CreateCollectionModal";
 import DailyRecipeModal from "../popups/DailyRecipeModal";
 
 interface QuickActionsProps {
-    parentCollectionUuid?: string;
-    onCollectionCreated?: () => void;
     isMobile?: boolean;
 }
 
 export default function QuickActions({
-    parentCollectionUuid,
-    onCollectionCreated,
     isMobile = false
 }: QuickActionsProps) {
     const navigate = useNavigate();
-    const [showCreateCollection, setShowCreateCollection] = useState(false);
     const [showDailyRecipe, setShowDailyRecipe] = useState(false);
 
     return (
@@ -43,20 +37,8 @@ export default function QuickActions({
                         title="Import Instagram"
                         onClick={() => navigate("/instagram")}
                     />
-                    <QuickActionButton
-                        icon="/icons/AjouterCollection.svg"
-                        title="Ajouter Collection"
-                        onClick={() => setShowCreateCollection(true)}
-                    />
                 </div>
             </div>
-
-            <CreateCollectionModal
-                isOpen={showCreateCollection}
-                onClose={() => setShowCreateCollection(false)}
-                parentCollectionUuid={parentCollectionUuid}
-                onCollectionCreated={onCollectionCreated}
-            />
 
             <DailyRecipeModal
                 isOpen={showDailyRecipe}

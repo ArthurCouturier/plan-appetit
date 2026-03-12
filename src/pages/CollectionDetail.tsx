@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FolderIcon, DocumentTextIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import QuickActionButton from "../components/buttons/QuickActionButton";
+import CreateCollectionModal from "../components/popups/CreateCollectionModal";
 import { useQueryClient } from "@tanstack/react-query";
 import {
     DndContext,
@@ -390,6 +392,7 @@ type CollectionDetailLayoutProps = {
 };
 
 function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh, sortOption, onSortChange }: CollectionDetailLayoutProps) {
+    const [showCreateCollection, setShowCreateCollection] = useState(false);
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
     const sortedRecipes = useMemo(() => sortRecipes(recipes, sortOption), [recipes, sortOption]);
@@ -417,6 +420,15 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
                     >
                         <ArrowPathIcon className="w-5 h-5 text-cout-base" />
                     </button>
+                    <div className="mb-2 ml-auto">
+                        <QuickActionButton
+                            icon="/icons/AjouterCollection.svg"
+                            iconSize={22}
+                            title="Ajouter Collection"
+                            onClick={() => setShowCreateCollection(true)}
+                            mini
+                        />
+                    </div>
                 </div>
                 <p className="text-text-secondary text-sm">
                     {recipes.length} recette{recipes.length > 1 ? 's' : ''}
@@ -426,8 +438,6 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
 
             <div className={isEmpty ? 'flex-1 flex items-center justify-center' : ''}>
                 <QuickActions
-                    parentCollectionUuid={collection.uuid}
-                    onCollectionCreated={onCollectionCreated}
                     isMobile={true}
                 />
             </div>
@@ -484,11 +494,18 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
                 </div>
             )}
 
+            <CreateCollectionModal
+                isOpen={showCreateCollection}
+                onClose={() => setShowCreateCollection(false)}
+                parentCollectionUuid={collection.uuid}
+                onCollectionCreated={onCollectionCreated}
+            />
         </div>
     );
 }
 
 function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh, sortOption, onSortChange }: CollectionDetailLayoutProps) {
+    const [showCreateCollection, setShowCreateCollection] = useState(false);
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
     const sortedRecipes = useMemo(() => sortRecipes(recipes, sortOption), [recipes, sortOption]);
@@ -518,6 +535,13 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
                         >
                             <ArrowPathIcon className="w-5 h-5 text-cout-base" />
                         </button>
+                        <QuickActionButton
+                            icon="/icons/AjouterCollection.svg"
+                            iconSize={19}
+                            title="Ajouter Collection"
+                            onClick={() => setShowCreateCollection(true)}
+                            mini
+                        />
                     </div>
                 }
             />
@@ -530,10 +554,7 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
                     </p>
                 </div>
 
-                <QuickActions
-                    parentCollectionUuid={collection.uuid}
-                    onCollectionCreated={onCollectionCreated}
-                />
+                <QuickActions />
 
                 {hasParent && (
                     <ParentDropZone
@@ -590,6 +611,13 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
                 )}
 
             </div>
+
+            <CreateCollectionModal
+                isOpen={showCreateCollection}
+                onClose={() => setShowCreateCollection(false)}
+                parentCollectionUuid={collection.uuid}
+                onCollectionCreated={onCollectionCreated}
+            />
         </div>
     );
 }

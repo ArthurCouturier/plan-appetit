@@ -21,7 +21,6 @@ import { Capacitor } from '@capacitor/core';
 import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import { convertFirebaseUser } from '../api/authentication/convertFirebaseUser';
-import Header from '../components/global/Header';
 import BackendService from '../api/services/BackendService';
 import SandboxService from '../api/services/SandboxService';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrorMessages';
@@ -650,10 +649,9 @@ export default function LoginPage() {
     }, []);
 
     return (
-        <div className={`flex flex-col bg-bg-color ${isMobile ? 'mobile-content-with-header' : 'mt-4 md:mt-0 p-6 rounded-md'}`}>
-            <LoginHeader isMobile={isMobile} />
-            <div className={`flex-1 ${isMobile ? `overflow-y-auto px-4 ${isKeyboardOpen ? 'pb-[300px]' : 'pb-8'}` : ''}`}>
-                <div className={`flex items-center justify-center ${isMobile ? 'min-h-full py-4' : 'mt-4'}`}>
+        <div className={`flex flex-col min-h-screen bg-bg-color ${isMobile ? 'pt-[env(safe-area-inset-top)]' : ''}`}>
+            <div className={`flex-1 ${isMobile ? `overflow-y-auto px-4 ${isKeyboardOpen ? 'pb-[300px]' : 'pb-8'}` : 'p-6'}`}>
+                <div className={`flex flex-col items-center justify-center ${isMobile ? 'pt-16' : 'mt-4'}`}>
                     <Card className="w-full max-w-md p-4 shadow-lg" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                         <CardBody className="flex flex-col gap-4" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                             <Typography variant="h4" className="text-center" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
@@ -697,18 +695,6 @@ export default function LoginPage() {
                                         </svg>
                                         Se connecter avec Apple
                                     </button>
-                                    {/* Facebook login temporairement désactivé - À réactiver après configuration correcte du SDK Facebook
-                                <button
-                                    onClick={handleFacebookLogin}
-                                    disabled={loading}
-                                    className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#1877F2] hover:bg-[#166FE5] text-white font-semibold rounded-lg border-2 border-[#1877F2] hover:border-[#166FE5] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                                    </svg>
-                                    Se connecter avec Facebook
-                                </button>
-                                */}
                                     <Typography variant="small" className="text-center text-gray-500" placeholder={undefined} onPointerEnterCapture={undefined} onPointerLeaveCapture={undefined}>
                                         ou
                                     </Typography>
@@ -913,20 +899,15 @@ export default function LoginPage() {
                             </CardFooter>
                         )}
                     </Card>
+
+                    <button
+                        onClick={() => navigate('/')}
+                        className="mt-6 mb-4 px-4 py-1.5 bg-[#ee6344] text-white text-[11px] font-bold uppercase rounded-lg shadow-md hover:opacity-90 transition-opacity"
+                    >
+                        Revoir le tutoriel
+                    </button>
                 </div>
             </div>
         </div>
     );
 };
-
-function LoginHeader({ isMobile }: { isMobile: boolean }) {
-    return (
-        <Header
-            back={true}
-            home={true}
-            title={!isMobile}
-            profile={false}
-            pageName={isMobile ? "Connexion" : undefined}
-        />
-    )
-}

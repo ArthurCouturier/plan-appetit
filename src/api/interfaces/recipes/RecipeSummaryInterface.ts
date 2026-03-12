@@ -8,4 +8,5 @@ export default interface RecipeSummaryInterface {
     buyPrice: number;
     isPublic: boolean;
     displayOrder: number;
+    creationDate?: string;
 }

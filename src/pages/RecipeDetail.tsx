@@ -1,7 +1,7 @@
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import RecipeService from "../api/services/RecipeService";
 import BackendService from "../api/services/BackendService";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import IngredientsList from "../components/lists/IngredientsList";
 import RecipeStepsList from "../components/lists/RecipeStepsList";
@@ -13,8 +13,11 @@ import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import SaveToCollectionModal from "../components/popups/SaveToCollectionModal";
 import RecipeImage from "../components/recipes/RecipeImage";
 import { TrackingService } from "../api/services/TrackingService";
+import LinkCopiedPopup from "../components/popups/LinkCopiedPopup";
 import { Capacitor } from "@capacitor/core";
+import { Clipboard } from "@capacitor/clipboard";
 import { Share } from "@capacitor/share";
+import { useDelayedNotificationPrompt } from "../api/hooks/useDelayedNotificationPrompt";
 
 export default function RecipeDetail() {
 
@@ -36,6 +39,41 @@ export default function RecipeDetail() {
     const [modificationSuccess, setModificationSuccess] = useState(false);
     const [isSharing, setIsSharing] = useState(false);
     const [showSaveModal, setShowSaveModal] = useState(false);
+    const [copyToast, setCopyToast] = useState<{ x: number; y: number; key: number } | null>(null);
+    const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const copyToastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const clearLongPress = useCallback(() => {
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+    }, []);
+
+    const startLongPress = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+        clearLongPress();
+        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        longPressTimerRef.current = setTimeout(async () => {
+            const shareUrl = Capacitor.isNativePlatform()
+                ? `https://plan-appetit.fr${window.location.pathname}?share`
+                : `${window.location.origin}${window.location.pathname}?share`;
+            try {
+                if (Capacitor.isNativePlatform()) {
+                    await Clipboard.write({ string: shareUrl });
+                } else {
+                    await navigator.clipboard.writeText(shareUrl);
+                }
+            } catch {
+                // fallback silencieux
+            }
+            if (copyToastTimeoutRef.current) clearTimeout(copyToastTimeoutRef.current);
+            setCopyToast({ x: clientX, y: clientY, key: Date.now() });
+            copyToastTimeoutRef.current = setTimeout(() => setCopyToast(null), 1500);
+        }, 500);
+    }, [clearLongPress]);
+
+    useDelayedNotificationPrompt("recipe_detail", 5000);
 
     useEffect(() => {
         const fetchRecipe = async () => {
@@ -218,7 +256,15 @@ export default function RecipeDetail() {
 
                     {/* Titre centré */}
                     <div className="flex-1 text-center">
-                        <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
+                        <h1
+                            className="text-2xl md:text-3xl font-bold text-text-primary mb-2 cursor-pointer select-none"
+                            onMouseDown={startLongPress}
+                            onMouseUp={clearLongPress}
+                            onMouseLeave={clearLongPress}
+                            onTouchStart={startLongPress}
+                            onTouchEnd={clearLongPress}
+                            onTouchCancel={clearLongPress}
+                        >
                             {recipe.name}
                         </h1>
                         <div className="flex items-center justify-center gap-2 text-text-secondary">
@@ -281,7 +327,7 @@ export default function RecipeDetail() {
                 <>
                     <RecipeImage
                         recipeUuid={recipe.uuid.toString()}
-                        isGenerated={recipe.isGenerated}
+
                         isOwner={recipe.isOwner}
                         className="mt-4"
                     />
@@ -318,7 +364,7 @@ export default function RecipeDetail() {
                             {/* Image */}
                             <RecipeImage
                                 recipeUuid={recipe.uuid.toString()}
-                                isGenerated={recipe.isGenerated}
+        
                                 isOwner={recipe.isOwner}
                             />
 
@@ -396,6 +442,8 @@ export default function RecipeDetail() {
                     navigate(`/recettes/${uuid}`, { replace: true });
                 }}
             />
+
+            <LinkCopiedPopup key={copyToast?.key} position={copyToast} />
         </div>
     );
 }

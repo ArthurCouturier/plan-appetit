@@ -1,5 +1,17 @@
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'Sora';
+  src: url('/fonts/Sora-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+@utility text-sora {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+}
+
 @theme {
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
@@ -107,6 +119,17 @@ html, body {
   min-height: 100dvh;
 }
 
+* {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* Base styles pour #root */
 #root {
   box-sizing: border-box;
@@ -160,3 +183,27 @@ body {
 .animate-shimmer {
   animation: shimmer 2s infinite linear;
 }
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  20% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 1.5s ease-in-out forwards;
+}
+

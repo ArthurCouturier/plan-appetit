@@ -18,6 +18,9 @@ import InstagramImport from "./pages/InstagramImport";
 import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } from "./pages/legal";
 import Admin from "./pages/Admin";
 import AdminBatchs from "./pages/AdminBatchs";
+import AdminUserRecipes from "./pages/AdminUserRecipes";
+import FridgeMode from "./pages/FridgeMode";
+import NewRecipePage from "./pages/NewRecipePage";
 
 const router = createBrowserRouter([
     {
@@ -98,6 +101,14 @@ const router = createBrowserRouter([
                                 element: <CollectionDetail />,
                             },
                             {
+                                path: "frigo",
+                                element: <FridgeMode />,
+                            },
+                            {
+                                path: "recettes/nouvelle",
+                                element: <NewRecipePage />,
+                            },
+                            {
                                 path: "premium",
                                 element: <BecomePremium />
                             },
@@ -108,6 +119,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/batchs",
                                 element: <AdminBatchs />
+                            },
+                            {
+                                path: "admin/user-recipes",
+                                element: <AdminUserRecipes />
                             }
                         ],
                     },

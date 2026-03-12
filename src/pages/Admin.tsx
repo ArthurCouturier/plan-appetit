@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import useAuth from "../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
 import AdminService, { SetRoleResponse } from "../api/services/AdminService";
-import { QueueListIcon } from "@heroicons/react/24/solid";
+import { QueueListIcon, PhotoIcon } from "@heroicons/react/24/solid";
 
 export default function Admin() {
     const { user } = useAuth();
@@ -28,6 +28,20 @@ export default function Admin() {
                             <div className="text-left">
                                 <h3 className="font-semibold text-text-primary">Batchs</h3>
                                 <p className="text-sm text-text-secondary">Voir et gérer les tâches planifiées</p>
+                            </div>
+                        </div>
+                        <span className="text-text-secondary">&rsaquo;</span>
+                    </button>
+
+                    <button
+                        onClick={() => navigate("/admin/user-recipes")}
+                        className="w-full flex items-center justify-between px-4 py-4 bg-secondary border border-border-color rounded-lg hover:bg-tertiary transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <PhotoIcon className="w-5 h-5 text-orange-500" />
+                            <div className="text-left">
+                                <h3 className="font-semibold text-text-primary">User Recipes</h3>
+                                <p className="text-sm text-text-secondary">Voir les recettes d'un utilisateur et générer des visuels</p>
                             </div>
                         </div>
                         <span className="text-text-secondary">&rsaquo;</span>

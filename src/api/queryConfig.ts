@@ -9,4 +9,7 @@ export const queryKeys = {
         default: () => ['collections', 'default'] as const,
         byId: (uuid: string) => ['collections', uuid] as const,
     },
+    recipes: {
+        image: (uuid: string) => ['recipes', uuid, 'image'] as const,
+    },
 } as const;

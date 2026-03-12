@@ -1,137 +1,44 @@
 import { useState } from "react";
-import { GenerateAIRecipeButton, CreateCollectionButton, DailyRecipeButton } from "../buttons/NewRecipeButton";
-import RecipeGenerationChoiceModal from "../popups/RecipeGenerationChoiceModal";
-import CreateCollectionModal from "../popups/CreateCollectionModal";
+import { useNavigate } from "react-router-dom";
+import QuickActionButton from "../buttons/QuickActionButton";
 import DailyRecipeModal from "../popups/DailyRecipeModal";
 
 interface QuickActionsProps {
-    parentCollectionUuid?: string;
-    onCollectionCreated?: () => void;
     isMobile?: boolean;
 }
 
 export default function QuickActions({
-    parentCollectionUuid,
-    onCollectionCreated,
     isMobile = false
 }: QuickActionsProps) {
-    const [showGenerationChoice, setShowGenerationChoice] = useState(false);
-    const [showCreateCollection, setShowCreateCollection] = useState(false);
+    const navigate = useNavigate();
     const [showDailyRecipe, setShowDailyRecipe] = useState(false);
 
-    if (isMobile) {
-        return (
-            <QuickActionsMobile
-                showGenerationChoice={showGenerationChoice}
-                setShowGenerationChoice={setShowGenerationChoice}
-                showCreateCollection={showCreateCollection}
-                setShowCreateCollection={setShowCreateCollection}
-                showDailyRecipe={showDailyRecipe}
-                setShowDailyRecipe={setShowDailyRecipe}
-                parentCollectionUuid={parentCollectionUuid}
-                onCollectionCreated={onCollectionCreated}
-            />
-        );
-    }
-
-    return (
-        <QuickActionsDesktop
-            showGenerationChoice={showGenerationChoice}
-            setShowGenerationChoice={setShowGenerationChoice}
-            showCreateCollection={showCreateCollection}
-            setShowCreateCollection={setShowCreateCollection}
-            showDailyRecipe={showDailyRecipe}
-            setShowDailyRecipe={setShowDailyRecipe}
-            parentCollectionUuid={parentCollectionUuid}
-            onCollectionCreated={onCollectionCreated}
-        />
-    );
-}
-
-interface QuickActionsInternalProps {
-    showGenerationChoice: boolean;
-    setShowGenerationChoice: (show: boolean) => void;
-    showCreateCollection: boolean;
-    setShowCreateCollection: (show: boolean) => void;
-    showDailyRecipe: boolean;
-    setShowDailyRecipe: (show: boolean) => void;
-    parentCollectionUuid?: string;
-    onCollectionCreated?: () => void;
-}
-
-function QuickActionsDesktop({
-    showGenerationChoice,
-    setShowGenerationChoice,
-    showCreateCollection,
-    setShowCreateCollection,
-    showDailyRecipe,
-    setShowDailyRecipe,
-    parentCollectionUuid,
-    onCollectionCreated
-}: QuickActionsInternalProps) {
     return (
         <>
-            <div className="bg-primary rounded-xl p-6 shadow-md border border-border-color mb-6">
-                <h3 className="text-lg font-semibold text-text-primary mb-4">Actions rapides</h3>
-                <div className="flex flex-wrap gap-3">
-                    <GenerateAIRecipeButton disabled={false} onClick={() => setShowGenerationChoice(true)} />
-                    <CreateCollectionButton disabled={false} onClick={() => setShowCreateCollection(true)} />
-                    <DailyRecipeButton onClick={() => setShowDailyRecipe(true)} />
+            <div className={`bg-primary rounded-[12px] shadow-md border border-border-color w-full ${isMobile ? 'py-[17px] px-[17px] mb-4' : 'py-[17px] px-[17px] mb-6'}`}>
+                <h3 className="font-semibold text-text-primary text-center text-[16px] leading-[24px]">
+                    Actions rapides
+                </h3>
+                <div className="flex flex-col items-center gap-[18px] mt-[15px] max-w-[280px] mx-auto">
+                    <QuickActionButton
+                        icon="/icons/NouvelleRecette.svg"
+                        iconSize={14}
+                        title="Nouvelle Recette"
+                        onClick={() => navigate("/recettes/nouvelle")}
+                    />
+                    <QuickActionButton
+                        icon="/icons/RecetteDuJour.svg"
+                        title="Recettes du jour"
+                        onClick={() => setShowDailyRecipe(true)}
+                    />
+                    <QuickActionButton
+                        icon="/icons/ImportInstagram.svg"
+                        iconSize={16}
+                        title="Import Instagram"
+                        onClick={() => navigate("/instagram")}
+                    />
                 </div>
             </div>
-
-            <RecipeGenerationChoiceModal
-                isOpen={showGenerationChoice}
-                onClose={() => setShowGenerationChoice(false)}
-            />
-
-            <CreateCollectionModal
-                isOpen={showCreateCollection}
-                onClose={() => setShowCreateCollection(false)}
-                parentCollectionUuid={parentCollectionUuid}
-                onCollectionCreated={onCollectionCreated}
-            />
-
-            <DailyRecipeModal
-                isOpen={showDailyRecipe}
-                onClose={() => setShowDailyRecipe(false)}
-            />
-        </>
-    );
-}
-
-function QuickActionsMobile({
-    showGenerationChoice,
-    setShowGenerationChoice,
-    showCreateCollection,
-    setShowCreateCollection,
-    showDailyRecipe,
-    setShowDailyRecipe,
-    parentCollectionUuid,
-    onCollectionCreated
-}: QuickActionsInternalProps) {
-    return (
-        <>
-            <div className="bg-primary rounded-xl p-4 shadow-md border border-border-color mb-4">
-                <h3 className="text-base font-semibold text-text-primary mb-3">Actions rapides</h3>
-                <div className="flex flex-wrap gap-2">
-                    <GenerateAIRecipeButton disabled={false} onClick={() => setShowGenerationChoice(true)} />
-                    <CreateCollectionButton disabled={false} onClick={() => setShowCreateCollection(true)} />
-                    <DailyRecipeButton onClick={() => setShowDailyRecipe(true)} />
-                </div>
-            </div>
-
-            <RecipeGenerationChoiceModal
-                isOpen={showGenerationChoice}
-                onClose={() => setShowGenerationChoice(false)}
-            />
-
-            <CreateCollectionModal
-                isOpen={showCreateCollection}
-                onClose={() => setShowCreateCollection(false)}
-                parentCollectionUuid={parentCollectionUuid}
-                onCollectionCreated={onCollectionCreated}
-            />
 
             <DailyRecipeModal
                 isOpen={showDailyRecipe}

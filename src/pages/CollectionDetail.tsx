@@ -1,7 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FolderIcon, DocumentTextIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
+import { FolderIcon, DocumentTextIcon, ArrowLeftIcon, CheckIcon, XMarkIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import QuickActionButton from "../components/buttons/QuickActionButton";
+import CreateCollectionModal from "../components/popups/CreateCollectionModal";
+import SortableRecipeCard from "../components/dnd/SortableRecipeCard";
 import { useQueryClient } from "@tanstack/react-query";
 import {
     DndContext,
@@ -16,18 +19,19 @@ import {
     DragStartEvent,
     DragEndEvent,
     CollisionDetection,
+    MeasuringStrategy,
 } from "@dnd-kit/core";
 import {
     SortableContext,
     sortableKeyboardCoordinates,
     rectSortingStrategy,
+    verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import RecipeCollectionInterface from "../api/interfaces/collections/RecipeCollectionInterface";
 import RecipeSummaryInterface from "../api/interfaces/recipes/RecipeSummaryInterface";
 import { useCollection } from "../api/hooks/useCollectionQueries";
-import { useMoveRecipeToCollection, useMoveCollectionToParent, useReorderCollectionItems } from "../api/hooks/useCollectionMutations";
+import { useMoveCollectionToParent, useReorderCollectionItems } from "../api/hooks/useCollectionMutations";
 import { queryKeys } from "../api/queryConfig";
-import DraggableRecipeCard from "../components/dnd/DraggableRecipeCard";
 import DroppableCollectionCard from "../components/dnd/DroppableCollectionCard";
 import ParentDropZone from "../components/dnd/ParentDropZone";
 import RecipeCard from "../components/cards/RecipeCard";
@@ -35,6 +39,7 @@ import CollectionCard from "../components/cards/CollectionCard";
 import QuickActions from "../components/actions/QuickActions";
 import Header from "../components/global/Header";
 import EditableCollectionTitle from "../components/collections/EditableCollectionTitle";
+import RecipeSortSelect, { RecipeSortOption, getInitialSort, sortRecipes } from "../components/collections/RecipeSortSelect";
 
 type DragItemType = {
     type: 'recipe' | 'collection';
@@ -51,8 +56,14 @@ export default function CollectionDetail() {
     const [isMobile, setIsMobile] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [activeItem, setActiveItem] = useState<DragItemType | null>(null);
+    const [sortOption, setSortOption] = useState<RecipeSortOption>("custom");
+    const [isReordering, setIsReordering] = useState(false);
+    const recipeSnapshotRef = useRef<RecipeSummaryInterface[] | null>(null);
 
-    const moveRecipeMutation = useMoveRecipeToCollection();
+    useEffect(() => {
+        if (uuid) setSortOption(getInitialSort(uuid));
+    }, [uuid]);
+
     const moveCollectionMutation = useMoveCollectionToParent();
     const reorderMutation = useReorderCollectionItems();
 
@@ -69,14 +80,27 @@ export default function CollectionDetail() {
         },
     });
 
+    const reorderTouchSensor = useSensor(TouchSensor, {
+        activationConstraint: {
+            delay: 80,
+            tolerance: 5,
+        },
+    });
+
     const keyboardSensor = useSensor(KeyboardSensor, {
         coordinateGetter: sortableKeyboardCoordinates,
     });
 
     const sensors = useSensors(
-        ...(isMobile ? [touchSensor] : [pointerSensor]),
+        ...(isMobile ? [isReordering ? reorderTouchSensor : touchSensor] : [pointerSensor]),
         keyboardSensor
     );
+
+    const measuring = useMemo(() => ({
+        droppable: {
+            strategy: MeasuringStrategy.WhileDragging,
+        },
+    }), []);
 
     const customCollisionDetection: CollisionDetection = useCallback((args) => {
         const dominated = pointerWithin(args);
@@ -140,14 +164,9 @@ export default function CollectionDetail() {
         const overId = String(over.id);
         const activeData = active.data.current;
 
-        if (overId.startsWith('droppable-collection-') && activeData) {
+        if (overId.startsWith('droppable-collection-') && activeData?.type === 'collection' && activeData.collection) {
             const targetCollectionUuid = overId.replace('droppable-collection-', '');
-
-            if (activeData.type === 'recipe' && activeData.recipe) {
-                await handleMoveRecipeToCollection(activeData.recipe, targetCollectionUuid);
-            } else if (activeData.type === 'collection' && activeData.collection) {
-                await handleMoveCollectionToCollection(activeData.collection, targetCollectionUuid);
-            }
+            await handleMoveCollectionToCollection(activeData.collection, targetCollectionUuid);
             return;
         }
 
@@ -173,8 +192,6 @@ export default function CollectionDetail() {
                 }));
 
                 setCollectionCache(prev => ({ ...prev, recipes: updatedRecipes }));
-
-                await handleSaveRecipeOrder(updatedRecipes);
             }
         } else if (isActiveCollection && isOverCollection) {
             const subCollections = [...(collection.subCollections || [])];
@@ -197,24 +214,6 @@ export default function CollectionDetail() {
         }
     };
 
-    const handleMoveRecipeToCollection = async (recipe: RecipeSummaryInterface, targetCollectionUuid: string) => {
-        if (!collection || !uuid) return;
-
-        const updatedRecipes = (collection.recipes || []).filter(r => r.uuid !== recipe.uuid);
-        setCollectionCache(prev => ({ ...prev, recipes: updatedRecipes }));
-
-        try {
-            await moveRecipeMutation.mutateAsync({
-                recipeUuid: String(recipe.uuid),
-                sourceCollectionUuid: uuid,
-                targetCollectionUuid,
-            });
-        } catch (err) {
-            console.error('Erreur lors du déplacement de la recette:', err);
-            refetch();
-        }
-    };
-
     const handleMoveCollectionToCollection = async (movedCollection: RecipeCollectionInterface, targetCollectionUuid: string) => {
         if (!collection) return;
 
@@ -228,26 +227,6 @@ export default function CollectionDetail() {
             });
         } catch (err) {
             console.error('Erreur lors du déplacement de la collection:', err);
-            refetch();
-        }
-    };
-
-    const handleSaveRecipeOrder = async (recipes: RecipeSummaryInterface[]) => {
-        if (!uuid) return;
-
-        const recipeOrders = recipes.map((r, index) => ({
-            uuid: String(r.uuid),
-            displayOrder: index,
-        }));
-
-        try {
-            await reorderMutation.mutateAsync({
-                collectionUuid: uuid,
-                recipeOrders,
-                subCollectionOrders: undefined,
-            });
-        } catch (err) {
-            console.error('Erreur lors de la sauvegarde de l\'ordre des recettes:', err);
             refetch();
         }
     };
@@ -289,6 +268,44 @@ export default function CollectionDetail() {
         }
     }, [refetch]);
 
+    const handleStartReorder = useCallback(() => {
+        if (!collection) return;
+        recipeSnapshotRef.current = [...(collection.recipes || [])];
+        setSortOption("custom");
+        setIsReordering(true);
+    }, [collection]);
+
+    const handleValidateReorder = useCallback(async () => {
+        if (!collection || !uuid) return;
+        const recipes = collection.recipes || [];
+        const recipeOrders = recipes.map((r, index) => ({
+            uuid: String(r.uuid),
+            displayOrder: index,
+        }));
+        try {
+            await reorderMutation.mutateAsync({
+                collectionUuid: uuid,
+                recipeOrders,
+                subCollectionOrders: undefined,
+            });
+        } catch (err) {
+            console.error('Erreur lors de la sauvegarde de l\'ordre:', err);
+            if (recipeSnapshotRef.current) {
+                setCollectionCache(prev => ({ ...prev, recipes: recipeSnapshotRef.current! }));
+            }
+        }
+        recipeSnapshotRef.current = null;
+        setIsReordering(false);
+    }, [collection, uuid, reorderMutation, setCollectionCache]);
+
+    const handleCancelReorder = useCallback(() => {
+        if (recipeSnapshotRef.current) {
+            setCollectionCache(prev => ({ ...prev, recipes: recipeSnapshotRef.current! }));
+        }
+        recipeSnapshotRef.current = null;
+        setIsReordering(false);
+    }, [setCollectionCache]);
+
     if (isLoading || isRefreshing) {
         return <CollectionDetailSkeleton isMobile={isMobile} />;
     }
@@ -304,6 +321,7 @@ export default function CollectionDetail() {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragCancel={handleDragCancel}
+            measuring={measuring}
         >
             {isMobile ? (
                 <CollectionDetailMobile
@@ -312,6 +330,12 @@ export default function CollectionDetail() {
                     onNameChange={handleNameChange}
                     isDragging={activeItem !== null}
                     onRefresh={handleRefresh}
+                    sortOption={sortOption}
+                    onSortChange={setSortOption}
+                    isReordering={isReordering}
+                    onStartReorder={handleStartReorder}
+                    onValidateReorder={handleValidateReorder}
+                    onCancelReorder={handleCancelReorder}
                 />
             ) : (
                 <CollectionDetailDesktop
@@ -320,11 +344,19 @@ export default function CollectionDetail() {
                     onNameChange={handleNameChange}
                     isDragging={activeItem !== null}
                     onRefresh={handleRefresh}
+                    sortOption={sortOption}
+                    onSortChange={setSortOption}
+                    isReordering={isReordering}
+                    onStartReorder={handleStartReorder}
+                    onValidateReorder={handleValidateReorder}
+                    onCancelReorder={handleCancelReorder}
                 />
             )}
             <DragOverlay>
                 {activeItem?.type === 'recipe' && activeItem.recipe && (
-                    <RecipeCard recipe={activeItem.recipe} isMobile={isMobile} />
+                    <div className="flex items-center gap-3 bg-primary border border-cout-base rounded-xl px-4 py-3 shadow-lg select-none cursor-grabbing">
+                        <span className="text-sm font-medium text-text-primary truncate">{activeItem.recipe.name}</span>
+                    </div>
                 )}
                 {activeItem?.type === 'collection' && activeItem.collection && (
                     <CollectionCard collection={activeItem.collection} isMobile={isMobile} />
@@ -376,19 +408,28 @@ type CollectionDetailLayoutProps = {
     onNameChange: (newName: string) => void;
     isDragging: boolean;
     onRefresh: () => void;
+    sortOption: RecipeSortOption;
+    onSortChange: (sort: RecipeSortOption) => void;
+    isReordering: boolean;
+    onStartReorder: () => void;
+    onValidateReorder: () => void;
+    onCancelReorder: () => void;
 };
 
-function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh }: CollectionDetailLayoutProps) {
+function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh, sortOption, onSortChange, isReordering, onStartReorder, onValidateReorder, onCancelReorder }: CollectionDetailLayoutProps) {
+    const [showCreateCollection, setShowCreateCollection] = useState(false);
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
+    const sortedRecipes = useMemo(() => sortRecipes(recipes, sortOption), [recipes, sortOption]);
 
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
-    const recipeIds = recipes.map(r => `recipe-${r.uuid}`);
 
     const hasParent = !!collection.parentCollectionUuid;
 
+    const isEmpty = subCollections.length === 0 && recipes.length === 0;
+
     return (
-        <div className="min-h-screen bg-bg-color px-4 pb-8 mobile-content-with-header">
+        <div className={`min-h-screen bg-bg-color px-4 pb-8 mobile-content-with-header ${isEmpty ? 'flex flex-col' : ''}`}>
             <div className="mb-6">
                 <div className="flex items-center gap-2">
                     <EditableCollectionTitle
@@ -404,6 +445,15 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
                     >
                         <ArrowPathIcon className="w-5 h-5 text-cout-base" />
                     </button>
+                    <div className="mb-2 ml-auto">
+                        <QuickActionButton
+                            icon="/icons/AjouterCollection.svg"
+                            iconSize={22}
+                            title="Ajouter Collection"
+                            onClick={() => setShowCreateCollection(true)}
+                            mini
+                        />
+                    </div>
                 </div>
                 <p className="text-text-secondary text-sm">
                     {recipes.length} recette{recipes.length > 1 ? 's' : ''}
@@ -411,11 +461,11 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
                 </p>
             </div>
 
-            <QuickActions
-                parentCollectionUuid={collection.uuid}
-                onCollectionCreated={onCollectionCreated}
-                isMobile={true}
-            />
+            <div className={isEmpty ? 'flex-1 flex items-center justify-center' : ''}>
+                <QuickActions
+                    isMobile={true}
+                />
+            </div>
 
             {hasParent && (
                 <ParentDropZone
@@ -449,43 +499,87 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
 
             {recipes.length > 0 && (
                 <div>
-                    <h2 className="text-lg font-bold text-text-primary mb-3 flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-3">
                         <DocumentTextIcon className="w-5 h-5 text-cout-base" />
-                        Recettes
-                    </h2>
-                    <SortableContext items={recipeIds} strategy={rectSortingStrategy}>
-                        <div className="space-y-3">
-                            {recipes.map((recipe) => (
-                                <DraggableRecipeCard
+                        <h2 className="text-lg font-bold text-text-primary">Recettes</h2>
+                        {!isReordering && (
+                            <RecipeSortSelect
+                                collectionUuid={String(collection.uuid)}
+                                currentSort={sortOption}
+                                onSortChange={onSortChange}
+                            />
+                        )}
+                        {isReordering ? (
+                            <div className="flex items-center gap-2 ml-auto">
+                                <button
+                                    onClick={onCancelReorder}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-cancel-1 text-white text-sm font-bold rounded-lg hover:brightness-110 transition-all"
+                                >
+                                    <XMarkIcon className="w-4 h-4" />
+                                    Annuler
+                                </button>
+                                <button
+                                    onClick={onValidateReorder}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-confirmation-1 text-white text-sm font-bold rounded-lg hover:brightness-110 transition-all"
+                                >
+                                    <CheckIcon className="w-4 h-4" />
+                                    Valider
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={onStartReorder}
+                                className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
+                                title="Réorganiser les recettes"
+                            >
+                                <PencilIcon className="w-4 h-4 text-cout-base" />
+                            </button>
+                        )}
+                    </div>
+                    {isReordering ? (
+                        <SortableContext
+                            items={recipes.map(r => `recipe-${r.uuid}`)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            <div className="flex flex-col gap-2">
+                                {recipes.map((recipe) => (
+                                    <SortableRecipeCard
+                                        key={String(recipe.uuid)}
+                                        recipe={recipe}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-3">
+                            {sortedRecipes.map((recipe) => (
+                                <RecipeCard
                                     key={String(recipe.uuid)}
                                     recipe={recipe}
-                                    isMobile={true}
                                 />
                             ))}
                         </div>
-                    </SortableContext>
+                    )}
                 </div>
             )}
 
-            {subCollections.length === 0 && recipes.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12">
-                    <FolderIcon className="w-16 h-16 text-text-secondary opacity-50 mb-4" />
-                    <h3 className="text-xl font-bold text-text-primary mb-2">Collection vide</h3>
-                    <p className="text-text-secondary text-center">
-                        Cette collection ne contient pas encore de recettes.
-                    </p>
-                </div>
-            )}
+            <CreateCollectionModal
+                isOpen={showCreateCollection}
+                onClose={() => setShowCreateCollection(false)}
+                parentCollectionUuid={collection.uuid}
+                onCollectionCreated={onCollectionCreated}
+            />
         </div>
     );
 }
 
-function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh }: CollectionDetailLayoutProps) {
+function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange, isDragging, onRefresh, sortOption, onSortChange, isReordering, onStartReorder, onValidateReorder, onCancelReorder }: CollectionDetailLayoutProps) {
+    const [showCreateCollection, setShowCreateCollection] = useState(false);
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
+    const sortedRecipes = useMemo(() => sortRecipes(recipes, sortOption), [recipes, sortOption]);
 
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
-    const recipeIds = recipes.map(r => `recipe-${r.uuid}`);
 
     const hasParent = !!collection.parentCollectionUuid;
 
@@ -510,6 +604,13 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
                         >
                             <ArrowPathIcon className="w-5 h-5 text-cout-base" />
                         </button>
+                        <QuickActionButton
+                            icon="/icons/AjouterCollection.svg"
+                            iconSize={19}
+                            title="Ajouter Collection"
+                            onClick={() => setShowCreateCollection(true)}
+                            mini
+                        />
                     </div>
                 }
             />
@@ -522,10 +623,7 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
                     </p>
                 </div>
 
-                <QuickActions
-                    parentCollectionUuid={collection.uuid}
-                    onCollectionCreated={onCollectionCreated}
-                />
+                <QuickActions />
 
                 {hasParent && (
                     <ParentDropZone
@@ -564,31 +662,75 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
                             <DocumentTextIcon className="w-6 h-6 text-cout-base" />
                             <h2 className="text-xl font-bold text-text-primary">Recettes</h2>
                             <span className="text-text-secondary text-sm">({recipes.length})</span>
+                            {!isReordering && (
+                                <RecipeSortSelect
+                                    collectionUuid={String(collection.uuid)}
+                                    currentSort={sortOption}
+                                    onSortChange={onSortChange}
+                                />
+                            )}
+                            {isReordering ? (
+                                <div className="flex items-center gap-2 ml-auto">
+                                    <button
+                                        onClick={onCancelReorder}
+                                        className="flex items-center gap-1 px-3 py-1.5 bg-cancel-1 text-white text-sm font-bold rounded-lg hover:brightness-110 transition-all"
+                                    >
+                                        <XMarkIcon className="w-4 h-4" />
+                                        Annuler
+                                    </button>
+                                    <button
+                                        onClick={onValidateReorder}
+                                        className="flex items-center gap-1 px-3 py-1.5 bg-confirmation-1 text-white text-sm font-bold rounded-lg hover:brightness-110 transition-all"
+                                    >
+                                        <CheckIcon className="w-4 h-4" />
+                                        Valider
+                                    </button>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={onStartReorder}
+                                    className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
+                                    title="Réorganiser les recettes"
+                                >
+                                    <PencilIcon className="w-4 h-4 text-cout-base" />
+                                </button>
+                            )}
                         </div>
-                        <SortableContext items={recipeIds} strategy={rectSortingStrategy}>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                                {recipes.map((recipe) => (
-                                    <DraggableRecipeCard
+                        {isReordering ? (
+                            <SortableContext
+                                items={recipes.map(r => `recipe-${r.uuid}`)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                <div className="flex flex-col gap-2 max-w-lg">
+                                    {recipes.map((recipe) => (
+                                        <SortableRecipeCard
+                                            key={String(recipe.uuid)}
+                                            recipe={recipe}
+                                        />
+                                    ))}
+                                </div>
+                            </SortableContext>
+                        ) : (
+                            <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4">
+                                {sortedRecipes.map((recipe) => (
+                                    <RecipeCard
                                         key={String(recipe.uuid)}
                                         recipe={recipe}
-                                        isMobile={false}
                                     />
                                 ))}
                             </div>
-                        </SortableContext>
+                        )}
                     </div>
                 )}
 
-                {subCollections.length === 0 && recipes.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-16">
-                        <FolderIcon className="w-24 h-24 text-text-secondary opacity-50 mb-4" />
-                        <h3 className="text-2xl font-bold text-text-primary mb-2">Collection vide</h3>
-                        <p className="text-text-secondary text-center mb-6">
-                            Cette collection ne contient pas encore de recettes.
-                        </p>
-                    </div>
-                )}
             </div>
+
+            <CreateCollectionModal
+                isOpen={showCreateCollection}
+                onClose={() => setShowCreateCollection(false)}
+                parentCollectionUuid={collection.uuid}
+                onCollectionCreated={onCollectionCreated}
+            />
         </div>
     );
 }

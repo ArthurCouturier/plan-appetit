@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import { initializeMessaging } from "../authentication/firebase";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
+import posthog from "posthog-js";
 
 export type DeviceType = "IOS" | "ANDROID" | "WEB";
 
@@ -25,7 +26,37 @@ export default class NotificationService {
         return "WEB";
     }
 
-    public static async requestPermission(): Promise<boolean> {
+    public static async isPermissionGranted(): Promise<boolean> {
+        if (Capacitor.isNativePlatform()) {
+            try {
+                const permStatus = await FirebaseMessaging.checkPermissions();
+                return permStatus.receive === "granted";
+            } catch {
+                return false;
+            }
+        }
+
+        if (!("Notification" in window)) return false;
+        return Notification.permission === "granted";
+    }
+
+    public static async isPermissionUndetermined(): Promise<boolean> {
+        if (Capacitor.isNativePlatform()) {
+            try {
+                const permStatus = await FirebaseMessaging.checkPermissions();
+                return permStatus.receive === "prompt";
+            } catch {
+                return false;
+            }
+        }
+
+        if (!("Notification" in window)) return false;
+        return Notification.permission === "default";
+    }
+
+    public static async requestPermission(source?: string): Promise<boolean> {
+        const trackProps = { source: source ?? "unknown", platform: Capacitor.getPlatform() };
+
         if (Capacitor.isNativePlatform()) {
             try {
                 const permStatus = await FirebaseMessaging.checkPermissions();
@@ -39,8 +70,11 @@ export default class NotificationService {
                     return false;
                 }
 
+                posthog.capture("push_permission_prompted", trackProps);
                 const requestResult = await FirebaseMessaging.requestPermissions();
-                return requestResult.receive === "granted";
+                const granted = requestResult.receive === "granted";
+                posthog.capture(granted ? "push_permission_granted" : "push_permission_denied", trackProps);
+                return granted;
             } catch (error) {
                 console.error("Erreur lors de la demande de permission:", error);
                 return false;
@@ -62,8 +96,11 @@ export default class NotificationService {
             return false;
         }
 
+        posthog.capture("push_permission_prompted", trackProps);
         const permission = await Notification.requestPermission();
-        return permission === "granted";
+        const granted = permission === "granted";
+        posthog.capture(granted ? "push_permission_granted" : "push_permission_denied", trackProps);
+        return granted;
     }
 
     public static async getFcmToken(): Promise<string | null> {
@@ -233,15 +270,19 @@ export default class NotificationService {
 
     public static async initializeNotifications(
         email: string,
-        authToken: string
+        authToken: string,
+        source?: string
     ): Promise<boolean> {
-        const hasPermission = await this.requestPermission();
+        const hasPermission = await this.requestPermission(source);
         if (!hasPermission) {
             console.log("Permission notifications refusée");
             return false;
         }
 
         const registered = await this.registerTokenWithBackend(email, authToken);
+        if (registered) {
+            posthog.capture("push_token_registered", { source: source ?? "unknown", platform: Capacitor.getPlatform() });
+        }
         return registered;
     }
 

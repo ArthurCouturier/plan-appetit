@@ -25,6 +25,8 @@ export interface FridgeShoppingResponse {
     canCookNow: number;
     canCookWithShopping: number;
     items: FridgeShoppingItem[];
+    recipesWithoutShopping: string[];
+    recipesWithShopping: string[];
 }
 
 export interface FridgeQuestionsRequest {
@@ -33,11 +35,18 @@ export interface FridgeQuestionsRequest {
     timeCategory: string;
 }
 
+export interface FridgeQuestionContext {
+    id: string;
+    label: string;
+    emoji: string;
+}
+
 export interface FridgeShoppingRequest {
     ingredients: string;
     servings: number;
     timeCategory: string;
     answers: Record<string, unknown>;
+    questions: FridgeQuestionContext[];
 }
 
 export interface FridgeGenerateRequest {
@@ -45,8 +54,10 @@ export interface FridgeGenerateRequest {
     servings: number;
     timeCategory: string;
     answers: Record<string, unknown>;
+    questions: FridgeQuestionContext[];
     shoppingAccepted: boolean;
     shoppingItems: string[];
+    selectedRecipeTitle: string;
 }
 
 export type TimeCategory = "express" | "normal" | "long";

@@ -7,11 +7,13 @@ import FridgeStep1Ingredients from "../components/fridge/FridgeStep1Ingredients"
 import FridgeStep2Context from "../components/fridge/FridgeStep2Context";
 import FridgeStep3Questions from "../components/fridge/FridgeStep3Questions";
 import FridgeStep4Shopping from "../components/fridge/FridgeStep4Shopping";
+import FridgeStep5RecipeChoice from "../components/fridge/FridgeStep5RecipeChoice";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import type {
     TimeCategory,
     FridgeQuestion,
+    FridgeQuestionContext,
     FridgeShoppingResponse,
     FridgeDraft,
 } from "../api/interfaces/fridge/FridgeInterfaces";
@@ -55,6 +57,11 @@ export default function FridgeMode() {
 
     // Step 4 state
     const [shoppingData, setShoppingData] = useState<FridgeShoppingResponse | null>(null);
+
+    // Step 5 state
+    const [availableRecipes, setAvailableRecipes] = useState<string[]>([]);
+    const [shoppingAcceptedForStep5, setShoppingAcceptedForStep5] = useState(false);
+    const [shoppingItemsForStep5, setShoppingItemsForStep5] = useState<string[]>([]);
 
     // Loading & error states
     const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
@@ -145,32 +152,42 @@ export default function FridgeMode() {
         }
     };
 
+    const buildQuestionsContext = useCallback((): FridgeQuestionContext[] => {
+        return questions.map((q) => ({ id: q.id, label: q.label, emoji: q.emoji }));
+    }, [questions]);
+
     const handleStep3Next = async () => {
         setError(null);
         setIsLoadingShopping(true);
+        goToStep(4);
 
         try {
             const { email, token } = getAuthHeaders();
             const response = await FridgeService.analyzeShopping(
-                { ingredients, servings, timeCategory, answers },
+                { ingredients, servings, timeCategory, answers, questions: buildQuestionsContext() },
                 email,
                 token
             );
 
             if (!response.shoppingNeeded) {
-                await generateFinalRecipe(false, []);
+                setAvailableRecipes(response.recipesWithoutShopping ?? []);
+                setShoppingAcceptedForStep5(false);
+                setShoppingItemsForStep5([]);
+                setIsLoadingShopping(false);
+                goToStep(5);
             } else {
                 setShoppingData(response);
-                goToStep(4);
+                setIsLoadingShopping(false);
             }
         } catch {
             setError("Impossible d'analyser les courses. Réessaie.");
-        } finally {
+            setStep(3);
+            stepRef.current = 3;
             setIsLoadingShopping(false);
         }
     };
 
-    const generateFinalRecipe = async (shoppingAccepted: boolean, shoppingItems: string[]) => {
+    const generateFinalRecipe = async (shoppingAccepted: boolean, shoppingItems: string[], selectedRecipeTitle: string) => {
         setError(null);
         setIsGenerating(true);
 
@@ -182,8 +199,10 @@ export default function FridgeMode() {
                     servings,
                     timeCategory,
                     answers,
+                    questions: buildQuestionsContext(),
                     shoppingAccepted,
                     shoppingItems,
+                    selectedRecipeTitle,
                 },
                 email,
                 token
@@ -206,11 +225,21 @@ export default function FridgeMode() {
 
     const handleAcceptShopping = () => {
         const items = shoppingData?.items.map((i) => i.name) ?? [];
-        generateFinalRecipe(true, items);
+        const recipes = [
+            ...(shoppingData?.recipesWithoutShopping ?? []),
+            ...(shoppingData?.recipesWithShopping ?? []),
+        ];
+        setAvailableRecipes(recipes);
+        setShoppingAcceptedForStep5(true);
+        setShoppingItemsForStep5(items);
+        goToStep(5);
     };
 
     const handleDeclineShopping = () => {
-        generateFinalRecipe(false, []);
+        setAvailableRecipes(shoppingData?.recipesWithoutShopping ?? []);
+        setShoppingAcceptedForStep5(false);
+        setShoppingItemsForStep5([]);
+        goToStep(5);
     };
 
     return (
@@ -227,7 +256,7 @@ export default function FridgeMode() {
 
                 {/* Step indicator */}
                 <div className="flex justify-center gap-2 mb-6 px-4">
-                    {[1, 2, 3, 4].map((s) => (
+                    {[1, 2, 3, 4, 5].map((s) => (
                         <div
                             key={s}
                             className={`h-1.5 rounded-full transition-all duration-300 ${s === step ? "w-8 bg-cout-base" : s < step ? "w-8 bg-cout-yellow" : "w-8 bg-secondary"
@@ -269,7 +298,7 @@ export default function FridgeMode() {
                                             <span className="text-2xl">🔍</span>
                                         </div>
                                     </div>
-                                    <p className="text-text-secondary">On fouille dans tes placards...</p>
+                                    <p className="text-text-secondary">On fouille dans nos grimoires...</p>
                                 </div>
                             ) : (
                                 <FridgeStep3Questions
@@ -286,7 +315,7 @@ export default function FridgeMode() {
                         </>
                     )}
 
-                    {step === 4 && shoppingData && (
+                    {step === 4 && (
                         <>
                             {isLoadingShopping ? (
                                 <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -297,22 +326,30 @@ export default function FridgeMode() {
                                             <span className="text-2xl">🛒</span>
                                         </div>
                                     </div>
-                                    <p className="text-text-secondary">On analyse ce qu'il te manque...</p>
+                                    <p className="text-text-secondary text-center px-8">On vérifie qu'on a tout et on trouve des bonnes idées...</p>
                                 </div>
-                            ) : (
+                            ) : shoppingData ? (
                                 <FridgeStep4Shopping
                                     key="step4"
                                     shoppingData={shoppingData}
                                     onAcceptShopping={handleAcceptShopping}
                                     onDeclineShopping={handleDeclineShopping}
                                 />
-                            )}
+                            ) : null}
                         </>
+                    )}
+
+                    {step === 5 && (
+                        <FridgeStep5RecipeChoice
+                            key="step5"
+                            recipes={availableRecipes}
+                            onSelect={(title) => generateFinalRecipe(shoppingAcceptedForStep5, shoppingItemsForStep5, title)}
+                        />
                     )}
                 </AnimatePresence>
             </div>
 
-            <RecipeGenerationLoadingModal isOpen={isGenerating || (isLoadingShopping && step !== 4)} />
+            <RecipeGenerationLoadingModal isOpen={isGenerating} />
 
             {showPaywall && <CreditPaywallModal onClose={() => setShowPaywall(false)} />}
         </>

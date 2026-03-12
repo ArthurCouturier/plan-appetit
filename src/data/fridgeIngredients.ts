@@ -5,7 +5,9 @@ export interface FridgeIngredient {
 
 export const QUICK_SUGGESTIONS: FridgeIngredient[] = [
   { name: "Oeufs", emoji: "🥚" },
+  { name: "Farine", emoji: "🌾" },
   { name: "Pain", emoji: "🍞" },
+  { name: "Lait", emoji: "🥛" },
   { name: "Fromage rape", emoji: "🧀" },
   { name: "Basilic", emoji: "🌿" },
   { name: "Noix", emoji: "🌰" },

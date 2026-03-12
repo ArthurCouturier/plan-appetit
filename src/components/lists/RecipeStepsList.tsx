@@ -57,7 +57,7 @@ export default function RecipeStepsList({
                 }
             </div>
             <div className="">
-                {steps.map((step) => (
+                {[...steps].sort((a, b) => a.key - b.key).map((step) => (
                     <Step
                         key={step.key}
                         step={step}

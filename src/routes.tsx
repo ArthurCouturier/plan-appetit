@@ -20,6 +20,7 @@ import Admin from "./pages/Admin";
 import AdminBatchs from "./pages/AdminBatchs";
 import AdminUserRecipes from "./pages/AdminUserRecipes";
 import FridgeMode from "./pages/FridgeMode";
+import NewRecipePage from "./pages/NewRecipePage";
 
 const router = createBrowserRouter([
     {
@@ -102,6 +103,10 @@ const router = createBrowserRouter([
                             {
                                 path: "frigo",
                                 element: <FridgeMode />,
+                            },
+                            {
+                                path: "recettes/nouvelle",
+                                element: <NewRecipePage />,
                             },
                             {
                                 path: "premium",

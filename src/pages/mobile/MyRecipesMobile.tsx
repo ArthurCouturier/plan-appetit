@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import RecipeCollectionInterface from "../../api/interfaces/collections/RecipeCollectionInterface";
 import CollectionCard from "../../components/cards/CollectionCard";
 import { SparklesIcon, FolderIcon } from "@heroicons/react/24/solid";
@@ -6,7 +7,6 @@ import CollectionService from "../../api/services/CollectionService";
 import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
-import RecipeGenerationChoiceModal from "../../components/popups/RecipeGenerationChoiceModal";
 
 export default function MyRecipesMobile({
   isMobile: _isMobile
@@ -15,8 +15,8 @@ export default function MyRecipesMobile({
 }) {
 
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [showPaywall, setShowPaywall] = useState(false);
-  const [showGenerationChoice, setShowGenerationChoice] = useState(false);
   const [linkingRecipe, setLinkingRecipe] = useState(false);
   const [collections, setCollections] = useState<RecipeCollectionInterface[]>([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
@@ -137,7 +137,7 @@ export default function MyRecipesMobile({
             Commencez à créer votre bibliothèque de recettes en générant votre première recette avec l'IA !
           </p>
           <button
-            onClick={() => setShowGenerationChoice(true)}
+            onClick={() => navigate("/recettes/nouvelle")}
             className="flex items-center gap-2 px-6 py-3 bg-cout-yellow text-cout-purple font-bold rounded-xl shadow-lg hover:bg-yellow-400 active:scale-95 transition-all duration-200"
           >
             <SparklesIcon className="w-5 h-5" />
@@ -145,12 +145,6 @@ export default function MyRecipesMobile({
           </button>
         </div>
       )}
-
-      {/* Generation Choice Modal */}
-      <RecipeGenerationChoiceModal
-        isOpen={showGenerationChoice}
-        onClose={() => setShowGenerationChoice(false)}
-      />
 
       {/* Paywall Modal */}
       {showPaywall && (

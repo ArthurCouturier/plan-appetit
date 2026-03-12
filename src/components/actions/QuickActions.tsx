@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import QuickActionButton from "../buttons/QuickActionButton";
-import RecipeGenerationChoiceModal from "../popups/RecipeGenerationChoiceModal";
 import CreateCollectionModal from "../popups/CreateCollectionModal";
 import DailyRecipeModal from "../popups/DailyRecipeModal";
 
@@ -15,7 +15,7 @@ export default function QuickActions({
     onCollectionCreated,
     isMobile = false
 }: QuickActionsProps) {
-    const [showGenerationChoice, setShowGenerationChoice] = useState(false);
+    const navigate = useNavigate();
     const [showCreateCollection, setShowCreateCollection] = useState(false);
     const [showDailyRecipe, setShowDailyRecipe] = useState(false);
 
@@ -30,12 +30,18 @@ export default function QuickActions({
                         icon="/icons/NouvelleRecette.svg"
                         iconSize={14}
                         title="Nouvelle Recette"
-                        onClick={() => setShowGenerationChoice(true)}
+                        onClick={() => navigate("/recettes/nouvelle")}
                     />
                     <QuickActionButton
                         icon="/icons/RecetteDuJour.svg"
                         title="Recettes du jour"
                         onClick={() => setShowDailyRecipe(true)}
+                    />
+                    <QuickActionButton
+                        icon="/icons/ImportInstagram.svg"
+                        iconSize={16}
+                        title="Import Instagram"
+                        onClick={() => navigate("/instagram")}
                     />
                     <QuickActionButton
                         icon="/icons/AjouterCollection.svg"
@@ -44,11 +50,6 @@ export default function QuickActions({
                     />
                 </div>
             </div>
-
-            <RecipeGenerationChoiceModal
-                isOpen={showGenerationChoice}
-                onClose={() => setShowGenerationChoice(false)}
-            />
 
             <CreateCollectionModal
                 isOpen={showCreateCollection}

@@ -220,6 +220,26 @@ export default class BackendService {
         return response.json();
     }
 
+    public static async toggleMailingSubscription(
+        email: string,
+        token: string
+    ): Promise<{ unsubscribedFromMailing: boolean }> {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/mailing/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la mise à jour des préférences email');
+        }
+
+        return response.json();
+    }
+
     public static async connectUser(
         email: string,
         token: string

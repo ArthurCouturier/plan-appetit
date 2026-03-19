@@ -106,6 +106,29 @@ export default class ConsentService {
     private static async saveConsent(consent: ConsentPreferences): Promise<void> {
         await StorageService.setObject(CONSENT_KEY, consent);
         this.notifyListeners(consent);
+        this.syncMarketingConsentWithBackend(consent.marketing);
+    }
+
+    private static async syncMarketingConsentWithBackend(marketing: boolean): Promise<void> {
+        try {
+            const email = localStorage.getItem('email');
+            const token = localStorage.getItem('firebaseIdToken');
+            if (!email || !token) return;
+            const baseUrl = import.meta.env.VITE_API_URL;
+            const port = import.meta.env.VITE_API_PORT;
+            const apiUrl = port ? `${baseUrl}:${port}` : baseUrl;
+            await fetch(`${apiUrl}/api/v1/users/consent/marketing`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'Email': email,
+                },
+                body: JSON.stringify({ consent: marketing }),
+            });
+        } catch {
+            // fire-and-forget
+        }
     }
 
     private static async clearConsent(): Promise<void> {

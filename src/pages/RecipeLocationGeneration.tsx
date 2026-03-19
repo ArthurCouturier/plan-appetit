@@ -90,6 +90,7 @@ export default function RecipeLocationGeneration() {
         });
 
         setIsLoading(true);
+        TrackingService.logRecipeGenerationInitiated('localisation');
 
         try {
             const email = localStorage.getItem("email") || "";

@@ -177,6 +177,7 @@ export default function Sandbox() {
       remainingCredits: quotaInfo?.remainingFree || 0,
     });
     TrackingService.logSearch(prompt.trim());
+    TrackingService.logRecipeGenerationInitiated('sandbox');
 
     try {
       setSearchParams({ q: prompt });

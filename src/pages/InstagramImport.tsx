@@ -6,6 +6,7 @@ import Footer from "../components/global/Footer";
 import LogoButton from "../components/buttons/LogoButton";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import InstagramService from "../api/services/InstagramService";
+import { TrackingService } from "../api/services/TrackingService";
 import SandboxService from "../api/services/SandboxService";
 import useAuth from "../api/hooks/useAuth";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
@@ -128,6 +129,8 @@ export default function InstagramImport() {
     setIsGenerating(true);
     setError(null);
     setGeneratedRecipe(null);
+    TrackingService.logInstagramImportStarted();
+    TrackingService.logRecipeGenerationInitiated('instagram');
 
     try {
       const response = await InstagramService.generateRecipeFromPost(
@@ -149,6 +152,8 @@ export default function InstagramImport() {
 
       // Navigate to the newly created recipe
       if (response.recipe?.uuid) {
+        TrackingService.logRecipeGenerated('instagram');
+        TrackingService.logInstagramImportFinished();
         invalidateCollections();
         navigate(`/recettes/${response.recipe.uuid}`);
       } else {

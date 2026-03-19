@@ -187,39 +187,6 @@ export class TrackingService {
         return eventId;
     }
 
-    public static async logPurchase(value: number, currency: string = 'EUR', productType: string = ''): Promise<string> {
-        const eventId = this.generateEventId();
-        await this.logStandardEvent(
-            'fb_mobile_purchase',
-            'Purchase',
-            { value, currency, content_type: productType },
-            eventId,
-        );
-        return eventId;
-    }
-
-    public static async logSubscribe(value: number, currency: string = 'EUR'): Promise<string> {
-        const eventId = this.generateEventId();
-        await this.logStandardEvent(
-            'Subscribe',
-            'Subscribe',
-            { value, currency, predicted_ltv: value },
-            eventId,
-        );
-        return eventId;
-    }
-
-    public static async logAddToCart(contentId: string): Promise<string> {
-        const eventId = this.generateEventId();
-        await this.logStandardEvent(
-            'fb_mobile_add_to_cart',
-            'AddToCart',
-            { content_type: 'recipe', content_ids: [contentId] },
-            eventId,
-        );
-        return eventId;
-    }
-
     public static async logLead(source: string): Promise<string> {
         const eventId = this.generateEventId();
         await this.logStandardEvent(
@@ -236,6 +203,12 @@ export class TrackingService {
     public static async logRecipeGenerated(source: string): Promise<string> {
         const eventId = this.generateEventId();
         await this.logCustomEvent('RecipeGenerated', { source }, eventId);
+        return eventId;
+    }
+
+    public static async logRecipeGenerationInitiated(source: string): Promise<string> {
+        const eventId = this.generateEventId();
+        await this.logCustomEvent('RecipeGenerationInitiated', { source }, eventId);
         return eventId;
     }
 
@@ -257,15 +230,21 @@ export class TrackingService {
         return eventId;
     }
 
-    public static async logCollectionCreated(): Promise<string> {
+    public static async logFridgeFinishedStep3(): Promise<string> {
         const eventId = this.generateEventId();
-        await this.logCustomEvent('CollectionCreated', {}, eventId);
+        await this.logCustomEvent('FridgeFinishedStep3', {}, eventId);
         return eventId;
     }
 
     public static async logInstagramImportStarted(): Promise<string> {
         const eventId = this.generateEventId();
         await this.logCustomEvent('InstagramImportStarted', {}, eventId);
+        return eventId;
+    }
+
+    public static async logInstagramImportFinished(): Promise<string> {
+        const eventId = this.generateEventId();
+        await this.logCustomEvent('InstagramImportFinished', {}, eventId);
         return eventId;
     }
 }

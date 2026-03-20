@@ -3,6 +3,7 @@ import Capacitor
 import FirebaseCore
 import GoogleSignIn
 import FBSDKCoreKit
+import TikTokBusinessSDK
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {

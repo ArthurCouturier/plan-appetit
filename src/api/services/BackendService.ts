@@ -6,6 +6,7 @@ import UserAccountInfoInterface from "../interfaces/users/UserAccountInfoInterfa
 import StatisticsInterface from "../interfaces/users/StatisticsInterface";
 import SuccessInterface, { SuccessClaimResponse } from "../interfaces/users/SuccessInterface";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
+import ConsentService from "../tracking/consent/ConsentService";
 
 export default class BackendService {
     static baseUrl: string = import.meta.env.VITE_API_URL;
@@ -220,6 +221,42 @@ export default class BackendService {
         return response.json();
     }
 
+    public static async toggleMailingSubscription(
+        email: string,
+        token: string
+    ): Promise<{ unsubscribedFromMailing: boolean }> {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/mailing/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la mise à jour des préférences email');
+        }
+
+        return response.json();
+    }
+
+    public static async updateMarketingConsent(
+        email: string,
+        token: string,
+        consent: boolean
+    ): Promise<void> {
+        await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/consent/marketing`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email,
+            },
+            body: JSON.stringify({ consent }),
+        });
+    }
+
     public static async connectUser(
         email: string,
         token: string
@@ -236,6 +273,10 @@ export default class BackendService {
         if (!response.ok) {
             throw new Error('Erreur lors de la connexion utilisateur');
         }
+
+        ConsentService.hasMarketingConsent().then(hasMarketing => {
+            this.updateMarketingConsent(email, token, hasMarketing).catch(() => {});
+        });
 
         return response.json();
     }

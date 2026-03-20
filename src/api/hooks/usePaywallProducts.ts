@@ -5,7 +5,7 @@ import StripeService from "../services/StripeService";
 import IAPService, { IAPProduct } from "../services/IAPService";
 import { Product } from "../interfaces/stripe/Product";
 import { CartItem } from "../interfaces/stripe/CartItem";
-import { TrackingService } from "../services/TrackingService";
+import { TrackingService } from "../tracking/TrackingService";
 import { usePostHog } from "../../contexts/PostHogContext";
 import useAuth from "./useAuth";
 
@@ -136,7 +136,6 @@ export default function usePaywallProducts(): PaywallProducts {
                         result.transactionId, user.email, user.token || "", type
                     );
                     if (verified) {
-                        TrackingService.logSubscribe(iapProduct.price, iapProduct.currencyCode);
                         trackEvent('purchase_completed', { product_type: productType, amount: iapProduct.price });
                         navigate('/recettes');
                     } else {
@@ -187,7 +186,6 @@ export default function usePaywallProducts(): PaywallProducts {
                         result.transactionId, user.email, user.token || "", pack
                     );
                     if (verified) {
-                        TrackingService.logPurchase(iapProduct.price, iapProduct.currencyCode, 'credits');
                         trackEvent('purchase_completed', { product_type: productType, amount: iapProduct.price });
                         navigate('/recettes');
                     } else {

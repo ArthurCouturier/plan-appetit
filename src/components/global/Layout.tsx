@@ -3,7 +3,7 @@ import DarkModeButton from "../buttons/DarkModeButton";
 import { useEffect, useState } from "react";
 import HeaderMobile from "./HeaderMobile";
 import PlatformService from "../../api/services/PlatformService";
-import { TrackingService } from "../../api/services/TrackingService";
+import { TrackingService } from "../../api/tracking/TrackingService";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import DailyRecipeModal from "../popups/DailyRecipeModal";

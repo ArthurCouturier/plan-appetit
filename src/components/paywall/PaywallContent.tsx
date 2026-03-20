@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { usePostHog } from "../../contexts/PostHogContext";
 import type { PaywallProducts, SubscriptionType, CreditPack, ProductOption } from "../../api/hooks/usePaywallProducts";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
-import { getPrice, getFormattedPrice, formatPrice, monthlyEquivalent, discountPercent, pricePerRecipe, hasFreeTrial, getTrialText } from "../../utils/priceUtils";
+import { getPrice, getFormattedPrice, formatPrice, monthlyEquivalent, discountPercent, pricePerRecipe } from "../../utils/priceUtils";
 
 interface PaywallContentProps {
     products: PaywallProducts;
@@ -43,11 +43,10 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
 
     const pricePlaceholder = '—';
 
-    // Free trial detection (iOS only)
-    const yearlyTrialText = getTrialText(products.iapYearly);
-    const monthlyTrialText = getTrialText(products.iapMonthly);
-    const selectedHasTrial = selectedAbo === 'yearly' ? hasFreeTrial(products.iapYearly) : hasFreeTrial(products.iapMonthly);
-    const selectedTrialText = selectedAbo === 'yearly' ? yearlyTrialText : monthlyTrialText;
+    // Free trial: 7 days on yearly plan (configured in App Store Connect)
+    const yearlyTrialText = '7 jours gratuits';
+    const selectedHasTrial = selectedAbo === 'yearly';
+    const selectedTrialText = yearlyTrialText;
 
     const handleToggle = (tab: 'abo' | 'credits') => {
         setMode(tab);
@@ -87,9 +86,7 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
     const ctaText = mode === 'abo'
         ? selectedHasTrial
             ? `Commencer l'essai gratuit`
-            : selectedAbo === 'yearly'
-                ? `S'abonner — ${yearlyPrice ?? pricePlaceholder}/an`
-                : `S'abonner — ${monthlyPrice ?? pricePlaceholder}/mois`
+            : `S'abonner — ${monthlyPrice ?? pricePlaceholder}/mois`
         : selectedCredits === 20
             ? `Acheter — ${credits20Price ?? pricePlaceholder}`
             : `Acheter — ${credits10Price ?? pricePlaceholder}`;
@@ -207,15 +204,6 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                         }}
                     >
                         <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px' }}>
-                            {yearlyTrialText && (
-                                <span style={{
-                                    background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
-                                    color: 'white', fontSize: '11px', fontWeight: '700',
-                                    padding: '4px 10px', borderRadius: '8px', letterSpacing: '0.3px',
-                                }}>
-                                    🎁 {yearlyTrialText.toUpperCase()}
-                                </span>
-                            )}
                             <span style={{
                                 background: 'linear-gradient(135deg, #f2a96f 0%, #f17c63 100%)',
                                 color: 'white', fontSize: '11px', fontWeight: '700',
@@ -259,14 +247,14 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                                         soit {monthlyEquiv ?? pricePlaceholder}/mois
                                     </span>
                                     {yearlyDiscountPct != null && (
-                                    <span style={{
-                                        background: badgeBg(selectedAbo === 'yearly'),
-                                        color: badgeColor(selectedAbo === 'yearly'),
-                                        fontSize: '12px', fontWeight: '700',
-                                        padding: '2px 8px', borderRadius: '6px',
-                                    }}>
-                                        -{yearlyDiscountPct}%
-                                    </span>
+                                        <span style={{
+                                            background: badgeBg(selectedAbo === 'yearly'),
+                                            color: badgeColor(selectedAbo === 'yearly'),
+                                            fontSize: '12px', fontWeight: '700',
+                                            padding: '2px 8px', borderRadius: '6px',
+                                        }}>
+                                            -{yearlyDiscountPct}%
+                                        </span>
                                     )}
                                 </div>
                             </div>
@@ -286,16 +274,7 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                             position: 'relative', overflow: 'hidden',
                         }}
                     >
-                        {monthlyTrialText && (
-                            <div style={{
-                                position: 'absolute', top: '12px', right: '12px',
-                                background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
-                                color: 'white', fontSize: '11px', fontWeight: '700',
-                                padding: '4px 10px', borderRadius: '8px', letterSpacing: '0.3px',
-                            }}>
-                                🎁 {monthlyTrialText.toUpperCase()}
-                            </div>
-                        )}
+                        {/* Pas de trial sur le mensuel */}
                         <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                             <RadioButton selected={selectedAbo === 'monthly'} />
                             <div style={{ flex: 1 }}>
@@ -325,9 +304,23 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                         </div>
                     </div>
 
+                    {/* Trial Badge */}
+                    <div style={{
+                        textAlign: 'center', padding: '14px 0 4px',
+                    }}>
+                        <span style={{
+                            background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
+                            color: 'white', fontSize: '13px', fontWeight: '700',
+                            padding: '6px 16px', borderRadius: '10px', letterSpacing: '0.3px',
+                            display: 'inline-block',
+                        }}>
+                            🎁 7 JOURS GRATUITS
+                        </span>
+                    </div>
+
                     {/* Features List */}
                     <div style={{ padding: '12px 4px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {["Générations illimitées", "Recettes du jour complètes", "Import Instagram", "Collections illimitées"].map((feat, i) => (
+                        {["Nouvelles Recettes illimitées", "Recettes du jour complètes", "Crédits Illimités"].map((feat, i) => (
                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <span style={{ fontSize: '14px', color: 'white' }}>✓</span>
                                 <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', fontWeight: '500' }}>
@@ -389,14 +382,14 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
                                         soit {perRecipe20 ?? pricePlaceholder}/recette
                                     </span>
                                     {credits20DiscountPct != null && (
-                                    <span style={{
-                                        background: badgeBg(selectedCredits === 20),
-                                        color: badgeColor(selectedCredits === 20),
-                                        fontSize: '12px', fontWeight: '700',
-                                        padding: '2px 8px', borderRadius: '6px',
-                                    }}>
-                                        -{credits20DiscountPct}%
-                                    </span>
+                                        <span style={{
+                                            background: badgeBg(selectedCredits === 20),
+                                            color: badgeColor(selectedCredits === 20),
+                                            fontSize: '12px', fontWeight: '700',
+                                            padding: '2px 8px', borderRadius: '6px',
+                                        }}>
+                                            -{credits20DiscountPct}%
+                                        </span>
                                     )}
                                 </div>
                             </div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import useAuth from "../api/hooks/useAuth";
 import FridgeService from "../api/services/FridgeService";
+import { TrackingService } from "../api/tracking/TrackingService";
 import FridgeStep1Ingredients from "../components/fridge/FridgeStep1Ingredients";
 import FridgeStep2Context from "../components/fridge/FridgeStep2Context";
 import FridgeStep3Questions from "../components/fridge/FridgeStep3Questions";
@@ -157,6 +158,7 @@ export default function FridgeMode() {
     }, [questions]);
 
     const handleStep3Next = async () => {
+        TrackingService.logFridgeFinishedStep3();
         setError(null);
         setIsLoadingShopping(true);
         goToStep(4);
@@ -190,6 +192,7 @@ export default function FridgeMode() {
     const generateFinalRecipe = async (shoppingAccepted: boolean, shoppingItems: string[], selectedRecipeTitle: string) => {
         setError(null);
         setIsGenerating(true);
+        TrackingService.logRecipeGenerationInitiated('fridge');
 
         try {
             const { email, token } = getAuthHeaders();
@@ -210,6 +213,7 @@ export default function FridgeMode() {
 
             queryClient.invalidateQueries({ queryKey: queryKeys.collections.all() });
 
+            TrackingService.logRecipeGenerated('fridge');
             navigate(`/recettes/${recipe.uuid}`);
         } catch (err: unknown) {
             if (err && typeof err === "object" && "type" in err && (err as { type: string }).type === "INSUFFICIENT_CREDITS") {

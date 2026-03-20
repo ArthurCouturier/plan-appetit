@@ -16,7 +16,7 @@ import { SandboxRecipe } from "../api/interfaces/sandbox/SandboxRecipe";
 import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 import useAuth from "../api/hooks/useAuth";
 import { usePostHog } from "../contexts/PostHogContext";
-import { TrackingService } from "../api/services/TrackingService";
+import { TrackingService } from "../api/tracking/TrackingService";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 
 export default function Sandbox() {
@@ -177,6 +177,7 @@ export default function Sandbox() {
       remainingCredits: quotaInfo?.remainingFree || 0,
     });
     TrackingService.logSearch(prompt.trim());
+    TrackingService.logRecipeGenerationInitiated('sandbox');
 
     try {
       setSearchParams({ q: prompt });

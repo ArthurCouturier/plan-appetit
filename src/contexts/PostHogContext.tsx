@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import posthog, { PostHog } from 'posthog-js';
-import ConsentService from '../api/services/ConsentService';
+import ConsentService from '../api/tracking/consent/ConsentService';
 
 interface PostHogContextValue {
   posthog: PostHog | null;

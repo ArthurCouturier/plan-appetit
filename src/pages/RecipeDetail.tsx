@@ -12,7 +12,7 @@ import PurchaseModificationCreditsModal from "../components/popups/PurchaseModif
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import SaveToCollectionModal from "../components/popups/SaveToCollectionModal";
 import RecipeImage from "../components/recipes/RecipeImage";
-import { TrackingService } from "../api/services/TrackingService";
+import { TrackingService } from "../api/tracking/TrackingService";
 import LinkCopiedPopup from "../components/popups/LinkCopiedPopup";
 import { Capacitor } from "@capacitor/core";
 import { Clipboard } from "@capacitor/clipboard";

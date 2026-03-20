@@ -1,7 +1,7 @@
 import { createPortal } from "react-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import usePaywallProducts from "../../api/hooks/usePaywallProducts";
-import { TrackingService } from "../../api/services/TrackingService";
+import { TrackingService } from "../../api/tracking/TrackingService";
 import { useEffect, useState } from "react";
 import PaywallContent from "../paywall/PaywallContent";
 

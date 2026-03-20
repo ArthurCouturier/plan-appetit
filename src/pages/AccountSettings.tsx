@@ -12,6 +12,8 @@ import ExportDataModal from '../components/popups/ExportDataModal';
 import PremiumStatusCard from '../components/account/PremiumStatusCard';
 import NotificationSettings from '../components/account/NotificationSettings';
 import AccountDeletionService from '../api/services/AccountDeletionService';
+import BackendService from '../api/services/BackendService';
+import MailingSettings from '../components/account/MailingSettings';
 import { KeyIcon, TrashIcon, XCircleIcon, ArrowDownTrayIcon, ShieldCheckIcon } from "@heroicons/react/24/solid";
 import Modal from '../components/popups/Modal';
 import { CookieConsentManager } from '../components/global/CookieConsentBanner';
@@ -37,6 +39,7 @@ export default function AccountSettings() {
     const [deletionScheduled, setDeletionScheduled] = useState<string | null>(null);
     const [cancellingDeletion, setCancellingDeletion] = useState(false);
     const [showCookieModal, setShowCookieModal] = useState(false);
+    const [unsubscribedFromMailing, setUnsubscribedFromMailing] = useState(false);
 
     const fetchSubscriptionStatus = async () => {
         const token = localStorage.getItem('firebaseIdToken');
@@ -87,12 +90,26 @@ export default function AccountSettings() {
         }
     };
 
+    const fetchMailingStatus = async () => {
+        const token = localStorage.getItem('firebaseIdToken');
+        const email = localStorage.getItem('email');
+        if (token && email) {
+            try {
+                const info = await BackendService.getAccountInfo(email, token);
+                setUnsubscribedFromMailing(info.unsubscribedFromMailing);
+            } catch (error) {
+                console.error('Erreur lors de la récupération du statut mailing:', error);
+            }
+        }
+    };
+
     useEffect(() => {
         if (user === null) {
             navigate('/login');
         } else if (user) {
             fetchSubscriptionStatus();
             fetchDeletionStatus();
+            fetchMailingStatus();
         }
     }, [user, navigate, isUserPremium]);
 
@@ -158,6 +175,12 @@ export default function AccountSettings() {
 
                     {/* Paramètres de notifications */}
                     <NotificationSettings isPremium={isUserPremium} />
+
+                    {/* Paramètres emails / mailing */}
+                    <MailingSettings
+                        initialUnsubscribed={unsubscribedFromMailing}
+                        onStatusChanged={setUnsubscribedFromMailing}
+                    />
 
                     {/* Changement de mot de passe */}
                     <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">

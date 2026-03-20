@@ -5,7 +5,7 @@ import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import Modal from "./Modal";
 import DailyRecipeService, { DailyRecipeDTO } from "../../api/services/DailyRecipeService";
 import NotificationService from "../../api/services/NotificationService";
-import { TrackingService } from "../../api/services/TrackingService";
+import { TrackingService } from "../../api/tracking/TrackingService";
 
 interface DailyRecipeModalProps {
     isOpen: boolean;

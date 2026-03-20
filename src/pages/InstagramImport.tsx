@@ -6,7 +6,7 @@ import Footer from "../components/global/Footer";
 import LogoButton from "../components/buttons/LogoButton";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import InstagramService from "../api/services/InstagramService";
-import { TrackingService } from "../api/services/TrackingService";
+import { TrackingService } from "../api/tracking/TrackingService";
 import SandboxService from "../api/services/SandboxService";
 import useAuth from "../api/hooks/useAuth";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";

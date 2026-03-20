@@ -28,7 +28,7 @@ import { validatePassword, getPasswordStrengthText } from '../utils/passwordVali
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { UserRole } from '../api/interfaces/users/UserInterface';
 import { usePostHog } from '../contexts/PostHogContext';
-import { TrackingService } from '../api/services/TrackingService';
+import { TrackingService } from '../api/tracking/TrackingService';
 
 export default function LoginPage() {
     const navigate = useNavigate();

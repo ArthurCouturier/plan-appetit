@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { ShieldCheckIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
-import ConsentService from '../../api/services/ConsentService';
+import ConsentService from '../../api/tracking/consent/ConsentService';
 
 export default function CookieConsentBanner() {
     const [visible, setVisible] = useState(false);

@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
 import { usePostHog } from "../contexts/PostHogContext";
-import { TrackingService } from "../api/services/TrackingService";
+import { TrackingService } from "../api/tracking/TrackingService";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 
 const DRAFT_STORAGE_KEY = "recipeGenerationDraft";

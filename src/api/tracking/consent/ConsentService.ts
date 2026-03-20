@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import StorageService from './StorageService';
+import StorageService from '../../services/StorageService';
 
 const CONSENT_KEY = 'cookie_consent';
 const CONSENT_MAX_AGE_MONTHS = 13;

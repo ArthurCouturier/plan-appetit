@@ -5,7 +5,7 @@ import StripeService from "../services/StripeService";
 import IAPService, { IAPProduct } from "../services/IAPService";
 import { Product } from "../interfaces/stripe/Product";
 import { CartItem } from "../interfaces/stripe/CartItem";
-import { TrackingService } from "../services/TrackingService";
+import { TrackingService } from "../tracking/TrackingService";
 import { usePostHog } from "../../contexts/PostHogContext";
 import useAuth from "./useAuth";
 

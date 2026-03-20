@@ -6,7 +6,7 @@ import UserAccountInfoInterface from "../interfaces/users/UserAccountInfoInterfa
 import StatisticsInterface from "../interfaces/users/StatisticsInterface";
 import SuccessInterface, { SuccessClaimResponse } from "../interfaces/users/SuccessInterface";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
-import ConsentService from "./ConsentService";
+import ConsentService from "../tracking/consent/ConsentService";
 
 export default class BackendService {
     static baseUrl: string = import.meta.env.VITE_API_URL;

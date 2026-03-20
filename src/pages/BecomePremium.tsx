@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { HomeIcon } from "@heroicons/react/24/solid";
 import IAPService from "../api/services/IAPService";
 import usePaywallProducts from "../api/hooks/usePaywallProducts";
-import { TrackingService } from "../api/services/TrackingService";
+import { TrackingService } from "../api/tracking/TrackingService";
 import PaywallContent from "../components/paywall/PaywallContent";
 import { getPrice, formatPrice, monthlyEquivalent, discountPercent, hasFreeTrial, getTrialText } from "../utils/priceUtils";
 

@@ -1,4 +1,4 @@
-import ConsentService from './ConsentService';
+import ConsentService from '../../consent/ConsentService';
 
 declare global {
     interface Window {

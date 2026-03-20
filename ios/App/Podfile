@@ -32,6 +32,7 @@ target 'App' do
   # Add your Pods here
   pod 'CapacitorFirebaseAuthentication/Google', :path => '../../node_modules/@capacitor-firebase/authentication'
   pod 'FirebaseMessaging'
+  pod 'TikTokBusinessSDK'
 end
 
 post_install do |installer|

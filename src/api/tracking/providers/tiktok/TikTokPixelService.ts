@@ -31,6 +31,14 @@ export class TikTokPixelService {
         this.isInitialized = true;
     }
 
+    public static async forceInitialize(): Promise<void> {
+        if (this.isInitialized || !PIXEL_ID) return;
+
+        await this.loadScript();
+        window.ttq.load(PIXEL_ID);
+        this.isInitialized = true;
+    }
+
     public static trackPageView(): void {
         if (!this.isInitialized || !window.ttq) return;
         window.ttq.page();

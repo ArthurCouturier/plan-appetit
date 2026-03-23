@@ -1,17 +1,12 @@
-import { Capacitor } from '@capacitor/core';
 import { TrackingEvent } from '../../events/TrackingEvent';
 import { AbstractTrackingProvider } from '../AbstractTrackingProvider';
 import ConsentService from '../../consent/ConsentService';
 import { TikTokPixelService } from './TikTokPixelService';
-import TikTokSDK from './TikTokSDKPlugin';
-
-const APP_ID = import.meta.env.VITE_TIKTOK_APP_ID as string | undefined;
 
 export class TikTokTrackingProvider extends AbstractTrackingProvider {
     private isInitialized = false;
 
     protected readonly eventMap: Record<TrackingEvent, string> = {
-        // Standard events
         [TrackingEvent.COMPLETE_REGISTRATION]: 'CompleteRegistration',
         [TrackingEvent.VIEW_CONTENT]: 'ViewContent',
         [TrackingEvent.SEARCH]: 'Search',
@@ -20,7 +15,6 @@ export class TikTokTrackingProvider extends AbstractTrackingProvider {
         [TrackingEvent.SUBSCRIBE]: 'Subscribe',
         [TrackingEvent.ADD_TO_CART]: 'AddToCart',
         [TrackingEvent.LEAD]: 'SubmitForm',
-        // Custom events
         [TrackingEvent.RECIPE_GENERATED]: 'RecipeGenerated',
         [TrackingEvent.RECIPE_GENERATION_INITIATED]: 'RecipeGenerationInitiated',
         [TrackingEvent.RECIPE_GENERATION_FAILED]: 'RecipeGenerationFailed',
@@ -37,28 +31,19 @@ export class TikTokTrackingProvider extends AbstractTrackingProvider {
         const hasConsent = await ConsentService.hasMarketingConsent();
         if (!hasConsent) return;
 
-        if (Capacitor.isNativePlatform()) {
-            if (APP_ID) {
-                await TikTokSDK.initialize({ appId: APP_ID });
-            }
-        } else {
-            await TikTokPixelService.initialize();
-        }
-
+        // Le SDK natif TikTok est initialisé dans AppDelegate (iOS) / MainActivity (Android)
+        // Ici on initialise le Pixel JS qui fonctionne dans la WebView (web ET mobile)
+        await TikTokPixelService.initialize();
         this.isInitialized = true;
     }
 
     disable(): void {
         this.isInitialized = false;
-        if (!Capacitor.isNativePlatform()) {
-            TikTokPixelService.disable();
-        }
+        TikTokPixelService.disable();
     }
 
     trackPageView(): void {
-        if (!Capacitor.isNativePlatform()) {
-            TikTokPixelService.trackPageView();
-        }
+        TikTokPixelService.trackPageView();
     }
 
     protected async sendEvent(
@@ -75,15 +60,7 @@ export class TikTokTrackingProvider extends AbstractTrackingProvider {
         }
 
         try {
-            if (Capacitor.isNativePlatform()) {
-                await TikTokSDK.trackEvent({
-                    eventName: translatedName,
-                    eventId,
-                    properties: params,
-                });
-            } else {
-                TikTokPixelService.trackEvent(translatedName, params, eventId);
-            }
+            TikTokPixelService.trackEvent(translatedName, params, eventId);
         } catch (error) {
             console.error('Error logging TikTok event:', error);
         }

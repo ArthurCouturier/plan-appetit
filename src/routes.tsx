@@ -19,6 +19,7 @@ import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } f
 import Admin from "./pages/Admin";
 import AdminBatchs from "./pages/AdminBatchs";
 import AdminUserRecipes from "./pages/AdminUserRecipes";
+import AdminTrackingTest from "./pages/AdminTrackingTest";
 import FridgeMode from "./pages/FridgeMode";
 import NewRecipePage from "./pages/NewRecipePage";
 
@@ -123,6 +124,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/user-recipes",
                                 element: <AdminUserRecipes />
+                            },
+                            {
+                                path: "admin/tracking-test",
+                                element: <AdminTrackingTest />
                             }
                         ],
                     },

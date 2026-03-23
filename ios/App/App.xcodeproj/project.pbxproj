@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C0AA4552F6D75E90087E1E8 /* TikTokSDKPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */; };
 		1C737B412EE89AF3003B5695 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 1C737B402EE89AF3003B5695 /* Products.storekit */; };
 		1C80C3CD2F34F4F100675EBB /* FacebookAEM in Frameworks */ = {isa = PBXBuildFile; productRef = 1C80C3CC2F34F4F100675EBB /* FacebookAEM */; };
 		1C80C3CF2F34F4F100675EBB /* FacebookBasics in Frameworks */ = {isa = PBXBuildFile; productRef = 1C80C3CE2F34F4F100675EBB /* FacebookBasics */; };
@@ -29,6 +30,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TikTokSDKPlugin.swift; sourceTree = "<group>"; };
 		1C737B402EE89AF3003B5695 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		1CE3A4DC2EE41733008D87DB /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		1CE3A4DE2EE4349F008D87DB /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -98,6 +100,7 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
+				1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */,
 				1CE3A4E22EE46AB8008D87DB /* App.entitlements */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
@@ -249,6 +252,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+				1C0AA4552F6D75E90087E1E8 /* TikTokSDKPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -34,6 +34,13 @@ export interface BatchImageGenerationResponse {
     totalWithoutImageBefore: number;
 }
 
+export interface TrackingTestResponse {
+    provider: string;
+    statusCode: number;
+    responseBody: string;
+    success: boolean;
+}
+
 export default class AdminService {
 
     private static getAuthHeaders() {
@@ -113,6 +120,14 @@ export default class AdminService {
             method: "POST",
             headers: this.getAuthHeaders(),
             body: JSON.stringify({ email: targetEmail }),
+        });
+    }
+
+    static async sendTrackingTestEvent(provider: "meta" | "tiktok", testEventCode?: string): Promise<TrackingTestResponse> {
+        return this.request("/api/v1/admin/tracking/test", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ provider, testEventCode: testEventCode || "" }),
         });
     }
 }

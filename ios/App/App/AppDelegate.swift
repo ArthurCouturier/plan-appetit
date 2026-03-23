@@ -22,6 +22,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize Facebook SDK
         ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
 
+        // Initialize TikTok SDK
+        let tiktokAppId = "7619275274311548936"
+        let config = TikTokConfig(appId: tiktokAppId, tiktokAppId: tiktokAppId)
+        config?.setLogLevel(TikTokLogLevelDebug)
+        config?.enableDebugMode()
+        TikTokBusiness.initializeSdk(config)
+        print("[TikTokSDK] Initialized at app launch with appId: \(tiktokAppId)")
+
         return true
     }
 

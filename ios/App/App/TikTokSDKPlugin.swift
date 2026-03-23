@@ -12,20 +12,26 @@ public class TikTokSDKPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func initialize(_ call: CAPPluginCall) {
         guard let appId = call.getString("appId") else {
+            print("[TikTokSDK] ERROR: appId is required")
             call.reject("appId is required")
             return
         }
 
+        print("[TikTokSDK] Initializing with appId: \(appId)")
+
         DispatchQueue.main.async {
-            let config = TikTokConfig(appId: appId)
-            config?.setLogLevel(.suppress)
+            let config = TikTokConfig(appId: appId, tiktokAppId: appId)
+            config?.setLogLevel(TikTokLogLevelDebug)
+            config?.enableDebugMode()
             TikTokBusiness.initializeSdk(config)
+            print("[TikTokSDK] SDK initialized successfully")
             call.resolve()
         }
     }
 
     @objc func trackEvent(_ call: CAPPluginCall) {
         guard let eventName = call.getString("eventName") else {
+            print("[TikTokSDK] ERROR: eventName is required")
             call.reject("eventName is required")
             return
         }
@@ -33,14 +39,22 @@ public class TikTokSDKPlugin: CAPPlugin, CAPBridgedPlugin {
         let eventId = call.getString("eventId")
         let properties = call.getObject("properties")
 
+        print("[TikTokSDK] Tracking event: \(eventName), eventId: \(eventId ?? "nil")")
+
+        let event: TikTokBaseEvent
         if let eventId = eventId {
-            TikTokBusiness.trackEvent(eventName, withId: eventId)
-        } else if let properties = properties {
-            TikTokBusiness.trackEvent(eventName, withProperties: properties as [String: Any])
+            event = TikTokBaseEvent(eventName: eventName, eventId: eventId)
         } else {
-            TikTokBusiness.trackEvent(eventName)
+            event = TikTokBaseEvent(eventName: eventName)
         }
 
+        if let properties = properties {
+            for (key, value) in properties {
+                event.addProperty(withKey: key, value: value)
+            }
+        }
+
+        TikTokBusiness.trackTTEvent(event)
         call.resolve()
     }
 }

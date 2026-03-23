@@ -1,4 +1,4 @@
-import ConsentService from '../../consent/ConsentService';
+import ConsentService from './ConsentService';
 
 declare global {
     interface Window {
@@ -28,14 +28,6 @@ export class FacebookPixelService {
         await this.loadScript();
         window.fbq('init', PIXEL_ID);
         window.fbq('track', 'PageView');
-        this.isInitialized = true;
-    }
-
-    public static async forceInitialize(): Promise<void> {
-        if (this.isInitialized || !PIXEL_ID) return;
-
-        await this.loadScript();
-        window.fbq('init', PIXEL_ID);
         this.isInitialized = true;
     }
 

@@ -1,7 +1,9 @@
+import { Capacitor } from '@capacitor/core';
 import { TrackingEvent } from '../../events/TrackingEvent';
 import { AbstractTrackingProvider } from '../AbstractTrackingProvider';
 import ConsentService from '../../consent/ConsentService';
 import { TikTokPixelService } from './TikTokPixelService';
+import TikTokSDK from './TikTokSDKPlugin';
 
 export class TikTokTrackingProvider extends AbstractTrackingProvider {
     private isInitialized = false;
@@ -31,19 +33,24 @@ export class TikTokTrackingProvider extends AbstractTrackingProvider {
         const hasConsent = await ConsentService.hasMarketingConsent();
         if (!hasConsent) return;
 
-        // Le SDK natif TikTok est initialisé dans AppDelegate (iOS) / MainActivity (Android)
-        // Ici on initialise le Pixel JS qui fonctionne dans la WebView (web ET mobile)
-        await TikTokPixelService.initialize();
+        if (!Capacitor.isNativePlatform()) {
+            await TikTokPixelService.initialize();
+        }
+        // Le SDK natif est initialisé dans AppDelegate (iOS)
         this.isInitialized = true;
     }
 
     disable(): void {
         this.isInitialized = false;
-        TikTokPixelService.disable();
+        if (!Capacitor.isNativePlatform()) {
+            TikTokPixelService.disable();
+        }
     }
 
     trackPageView(): void {
-        TikTokPixelService.trackPageView();
+        if (!Capacitor.isNativePlatform()) {
+            TikTokPixelService.trackPageView();
+        }
     }
 
     protected async sendEvent(
@@ -60,7 +67,15 @@ export class TikTokTrackingProvider extends AbstractTrackingProvider {
         }
 
         try {
-            TikTokPixelService.trackEvent(translatedName, params, eventId);
+            if (Capacitor.isNativePlatform()) {
+                await TikTokSDK.trackEvent({
+                    eventName: translatedName,
+                    eventId,
+                    properties: params,
+                });
+            } else {
+                TikTokPixelService.trackEvent(translatedName, params, eventId);
+            }
         } catch (error) {
             console.error('Error logging TikTok event:', error);
         }

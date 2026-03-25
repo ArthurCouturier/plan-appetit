@@ -385,7 +385,7 @@ export default function Sandbox() {
                   key={index}
                   onClick={() => {
                     setPrompt(example);
-                    inputRef.current?.focus();
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm rounded-lg transition-all duration-200 border border-white/20 hover:border-white/40"
                 >
@@ -580,7 +580,6 @@ export default function Sandbox() {
                     key={index}
                     onClick={() => {
                       setPrompt(example);
-                      inputRef.current?.focus();
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     className="px-4 py-2 bg-secondary hover:bg-cout-base/10 text-text-primary text-sm rounded-lg transition-all duration-200 border border-border-color hover:border-cout-base"

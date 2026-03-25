@@ -37,6 +37,7 @@ import ParentDropZone from "../components/dnd/ParentDropZone";
 import RecipeCard from "../components/cards/RecipeCard";
 import CollectionCard from "../components/cards/CollectionCard";
 import QuickActions from "../components/actions/QuickActions";
+import EmptyCollectionCTA from "../components/collections/EmptyCollectionCTA";
 import Header from "../components/global/Header";
 import EditableCollectionTitle from "../components/collections/EditableCollectionTitle";
 import RecipeSortSelect, { RecipeSortOption, getInitialSort, sortRecipes } from "../components/collections/RecipeSortSelect";
@@ -429,43 +430,47 @@ function CollectionDetailMobile({ collection, onCollectionCreated, onNameChange,
     const isEmpty = subCollections.length === 0 && recipes.length === 0;
 
     return (
-        <div className={`min-h-screen bg-bg-color px-4 pb-8 mobile-content-with-header ${isEmpty ? 'flex flex-col' : ''}`}>
-            <div className="mb-6">
-                <div className="flex items-center gap-2">
-                    <EditableCollectionTitle
-                        collectionUuid={collection.uuid!}
-                        name={collection.name}
-                        onNameChange={onNameChange}
-                        isMobile={true}
-                    />
-                    <button
-                        onClick={onRefresh}
-                        className="p-1.5 rounded-lg hover:bg-secondary transition-colors mb-2 font-bold"
-                        title="Rafraîchir"
-                    >
-                        <ArrowPathIcon className="w-5 h-5 text-cout-base" />
-                    </button>
-                    <div className="mb-2 ml-auto">
-                        <QuickActionButton
-                            icon="/icons/AjouterCollection.svg"
-                            iconSize={22}
-                            title="Ajouter Collection"
-                            onClick={() => setShowCreateCollection(true)}
-                            mini
-                        />
-                    </div>
+        <div className={`min-h-screen bg-bg-color px-4 pb-8 mobile-content-with-header ${isEmpty && collection.isDefault ? 'flex flex-col' : ''}`}>
+            {isEmpty && collection.isDefault ? (
+                <div className="flex-1 flex items-center justify-center">
+                    <EmptyCollectionCTA />
                 </div>
-                <p className="text-text-secondary text-sm">
-                    {recipes.length} recette{recipes.length > 1 ? 's' : ''}
-                    {subCollections.length > 0 && ` • ${subCollections.length} sous-collection${subCollections.length > 1 ? 's' : ''}`}
-                </p>
-            </div>
+            ) : (
+                <>
+                    <div className="mb-6">
+                        <div className="flex items-center gap-2">
+                            <EditableCollectionTitle
+                                collectionUuid={collection.uuid!}
+                                name={collection.name}
+                                onNameChange={onNameChange}
+                                isMobile={true}
+                            />
+                            <button
+                                onClick={onRefresh}
+                                className="p-1.5 rounded-lg hover:bg-secondary transition-colors mb-2 font-bold"
+                                title="Rafraîchir"
+                            >
+                                <ArrowPathIcon className="w-5 h-5 text-cout-base" />
+                            </button>
+                            <div className="mb-2 ml-auto">
+                                <QuickActionButton
+                                    icon="/icons/AjouterCollection.svg"
+                                    iconSize={22}
+                                    title="Ajouter Collection"
+                                    onClick={() => setShowCreateCollection(true)}
+                                    mini
+                                />
+                            </div>
+                        </div>
+                        <p className="text-text-secondary text-sm">
+                            {recipes.length} recette{recipes.length > 1 ? 's' : ''}
+                            {subCollections.length > 0 && ` • ${subCollections.length} sous-collection${subCollections.length > 1 ? 's' : ''}`}
+                        </p>
+                    </div>
 
-            <div className={isEmpty ? 'flex-1 flex items-center justify-center' : ''}>
-                <QuickActions
-                    isMobile={true}
-                />
-            </div>
+                    <QuickActions isMobile={true} />
+                </>
+            )}
 
             {hasParent && (
                 <ParentDropZone
@@ -582,148 +587,159 @@ function CollectionDetailDesktop({ collection, onCollectionCreated, onNameChange
     const collectionIds = subCollections.map(c => `collection-${c.uuid}`);
 
     const hasParent = !!collection.parentCollectionUuid;
+    const isEmpty = subCollections.length === 0 && recipes.length === 0;
+
+    const showEmptyCTA = isEmpty && collection.isDefault;
 
     return (
-        <div className="min-h-screen bg-bg-color p-6">
-            <Header
-                back={true}
-                home={true}
-                title={true}
-                profile={true}
-                pageName={
-                    <div className="flex items-center gap-2">
-                        <EditableCollectionTitle
-                            collectionUuid={collection.uuid!}
-                            name={collection.name}
-                            onNameChange={onNameChange}
-                        />
-                        <button
-                            onClick={onRefresh}
-                            className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
-                            title="Rafraîchir"
-                        >
-                            <ArrowPathIcon className="w-5 h-5 text-cout-base" />
-                        </button>
-                        <QuickActionButton
-                            icon="/icons/AjouterCollection.svg"
-                            iconSize={19}
-                            title="Ajouter Collection"
-                            onClick={() => setShowCreateCollection(true)}
-                            mini
-                        />
-                    </div>
-                }
-            />
-
-            <div className="mt-6">
-                <div className="mb-8">
-                    <p className="text-text-secondary ml-14">
-                        {recipes.length} recette{recipes.length > 1 ? 's' : ''}
-                        {subCollections.length > 0 && ` • ${subCollections.length} sous-collection${subCollections.length > 1 ? 's' : ''}`}
-                    </p>
+        <div className={`min-h-screen bg-bg-color p-6 ${showEmptyCTA ? 'flex flex-col' : ''}`}>
+            {showEmptyCTA ? (
+                <div className="flex-1 flex items-center justify-center">
+                    <EmptyCollectionCTA />
                 </div>
-
-                <QuickActions />
-
-                {hasParent && (
-                    <ParentDropZone
-                        parentCollectionUuid={collection.parentCollectionUuid!}
-                        parentCollectionName={collection.parentCollectionName || undefined}
-                        isMobile={false}
-                        isVisible={isDragging}
-                    />
-                )}
-
-                {subCollections.length > 0 && (
-                    <div className="mb-8">
-                        <div className="flex items-center gap-2 mb-4">
-                            <FolderIcon className="w-6 h-6 text-cout-yellow" />
-                            <h2 className="text-xl font-bold text-text-primary">Sous-collections</h2>
-                            <span className="text-text-secondary text-sm">({subCollections.length})</span>
-                        </div>
-                        <SortableContext items={collectionIds} strategy={rectSortingStrategy}>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-                                {subCollections.map((subCollection) => (
-                                    <DroppableCollectionCard
-                                        key={subCollection.uuid}
-                                        collection={subCollection}
-                                        isMobile={false}
-                                        isDraggingItem={isDragging}
-                                    />
-                                ))}
-                            </div>
-                        </SortableContext>
-                    </div>
-                )}
-
-                {recipes.length > 0 && (
-                    <div className="mb-8">
-                        <div className="flex items-center gap-2 mb-4">
-                            <DocumentTextIcon className="w-6 h-6 text-cout-base" />
-                            <h2 className="text-xl font-bold text-text-primary">Recettes</h2>
-                            <span className="text-text-secondary text-sm">({recipes.length})</span>
-                            {!isReordering && (
-                                <RecipeSortSelect
-                                    collectionUuid={String(collection.uuid)}
-                                    currentSort={sortOption}
-                                    onSortChange={onSortChange}
+            ) : (
+                <>
+                    <Header
+                        back={true}
+                        home={true}
+                        title={true}
+                        profile={true}
+                        pageName={
+                            <div className="flex items-center gap-2">
+                                <EditableCollectionTitle
+                                    collectionUuid={collection.uuid!}
+                                    name={collection.name}
+                                    onNameChange={onNameChange}
                                 />
-                            )}
-                            {isReordering ? (
-                                <div className="flex items-center gap-2 ml-auto">
-                                    <button
-                                        onClick={onCancelReorder}
-                                        className="flex items-center gap-1 px-3 py-1.5 bg-cancel-1 text-white text-sm font-bold rounded-lg hover:brightness-110 transition-all"
-                                    >
-                                        <XMarkIcon className="w-4 h-4" />
-                                        Annuler
-                                    </button>
-                                    <button
-                                        onClick={onValidateReorder}
-                                        className="flex items-center gap-1 px-3 py-1.5 bg-confirmation-1 text-white text-sm font-bold rounded-lg hover:brightness-110 transition-all"
-                                    >
-                                        <CheckIcon className="w-4 h-4" />
-                                        Valider
-                                    </button>
-                                </div>
-                            ) : (
                                 <button
-                                    onClick={onStartReorder}
+                                    onClick={onRefresh}
                                     className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
-                                    title="Réorganiser les recettes"
+                                    title="Rafraîchir"
                                 >
-                                    <PencilIcon className="w-4 h-4 text-cout-base" />
+                                    <ArrowPathIcon className="w-5 h-5 text-cout-base" />
                                 </button>
-                            )}
+                                <QuickActionButton
+                                    icon="/icons/AjouterCollection.svg"
+                                    iconSize={19}
+                                    title="Ajouter Collection"
+                                    onClick={() => setShowCreateCollection(true)}
+                                    mini
+                                />
+                            </div>
+                        }
+                    />
+
+                    <div className="mt-6">
+                        <div className="mb-8">
+                            <p className="text-text-secondary ml-14">
+                                {recipes.length} recette{recipes.length > 1 ? 's' : ''}
+                                {subCollections.length > 0 && ` • ${subCollections.length} sous-collection${subCollections.length > 1 ? 's' : ''}`}
+                            </p>
                         </div>
-                        {isReordering ? (
-                            <SortableContext
-                                items={recipes.map(r => `recipe-${r.uuid}`)}
-                                strategy={verticalListSortingStrategy}
-                            >
-                                <div className="flex flex-col gap-2 max-w-lg">
-                                    {recipes.map((recipe) => (
-                                        <SortableRecipeCard
-                                            key={String(recipe.uuid)}
-                                            recipe={recipe}
-                                        />
-                                    ))}
+
+                        <QuickActions />
+
+                        {hasParent && (
+                            <ParentDropZone
+                                parentCollectionUuid={collection.parentCollectionUuid!}
+                                parentCollectionName={collection.parentCollectionName || undefined}
+                                isMobile={false}
+                                isVisible={isDragging}
+                            />
+                        )}
+
+                        {subCollections.length > 0 && (
+                            <div className="mb-8">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <FolderIcon className="w-6 h-6 text-cout-yellow" />
+                                    <h2 className="text-xl font-bold text-text-primary">Sous-collections</h2>
+                                    <span className="text-text-secondary text-sm">({subCollections.length})</span>
                                 </div>
-                            </SortableContext>
-                        ) : (
-                            <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4">
-                                {sortedRecipes.map((recipe) => (
-                                    <RecipeCard
-                                        key={String(recipe.uuid)}
-                                        recipe={recipe}
-                                    />
-                                ))}
+                                <SortableContext items={collectionIds} strategy={rectSortingStrategy}>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                                        {subCollections.map((subCollection) => (
+                                            <DroppableCollectionCard
+                                                key={subCollection.uuid}
+                                                collection={subCollection}
+                                                isMobile={false}
+                                                isDraggingItem={isDragging}
+                                            />
+                                        ))}
+                                    </div>
+                                </SortableContext>
                             </div>
                         )}
-                    </div>
-                )}
 
-            </div>
+                        {recipes.length > 0 && (
+                            <div className="mb-8">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <DocumentTextIcon className="w-6 h-6 text-cout-base" />
+                                    <h2 className="text-xl font-bold text-text-primary">Recettes</h2>
+                                    <span className="text-text-secondary text-sm">({recipes.length})</span>
+                                    {!isReordering && (
+                                        <RecipeSortSelect
+                                            collectionUuid={String(collection.uuid)}
+                                            currentSort={sortOption}
+                                            onSortChange={onSortChange}
+                                        />
+                                    )}
+                                    {isReordering ? (
+                                        <div className="flex items-center gap-2 ml-auto">
+                                            <button
+                                                onClick={onCancelReorder}
+                                                className="flex items-center gap-1 px-3 py-1.5 bg-cancel-1 text-white text-sm font-bold rounded-lg hover:brightness-110 transition-all"
+                                            >
+                                                <XMarkIcon className="w-4 h-4" />
+                                                Annuler
+                                            </button>
+                                            <button
+                                                onClick={onValidateReorder}
+                                                className="flex items-center gap-1 px-3 py-1.5 bg-confirmation-1 text-white text-sm font-bold rounded-lg hover:brightness-110 transition-all"
+                                            >
+                                                <CheckIcon className="w-4 h-4" />
+                                                Valider
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={onStartReorder}
+                                            className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
+                                            title="Réorganiser les recettes"
+                                        >
+                                            <PencilIcon className="w-4 h-4 text-cout-base" />
+                                        </button>
+                                    )}
+                                </div>
+                                {isReordering ? (
+                                    <SortableContext
+                                        items={recipes.map(r => `recipe-${r.uuid}`)}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        <div className="flex flex-col gap-2 max-w-lg">
+                                            {recipes.map((recipe) => (
+                                                <SortableRecipeCard
+                                                    key={String(recipe.uuid)}
+                                                    recipe={recipe}
+                                                />
+                                            ))}
+                                        </div>
+                                    </SortableContext>
+                                ) : (
+                                    <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4">
+                                        {sortedRecipes.map((recipe) => (
+                                            <RecipeCard
+                                                key={String(recipe.uuid)}
+                                                recipe={recipe}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                    </div>
+                </>
+            )}
 
             <CreateCollectionModal
                 isOpen={showCreateCollection}

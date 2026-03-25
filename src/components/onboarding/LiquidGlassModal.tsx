@@ -173,7 +173,7 @@ export default function LiquidGlassModal() {
                 <GlassProgressDots total={screenshots.length} current={currentIndex} />
               </div>
               <button
-                onClick={(e) => { e.stopPropagation(); navigate("/profile"); }}
+                onClick={(e) => { e.stopPropagation(); navigate("/login"); }}
                 className={`absolute h-[4vh] px-6 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold whitespace-nowrap cursor-pointer hover:bg-white/30 transition-all duration-[400ms] ${isLast ? "opacity-100 scale-100" : "opacity-0 scale-90 pointer-events-none"}`}
               >
                 Débuter

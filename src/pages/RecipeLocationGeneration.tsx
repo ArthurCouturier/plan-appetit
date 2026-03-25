@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import useIsMobile from "../hooks/useIsMobile";
 import TextualField from "../components/fields/TextualField";
 import { SeasonEnum } from "../api/enums/SeasonEnum";
 import LabeledSeasonSelectorField from "../components/fields/SeasonSelectorField";
@@ -146,18 +147,7 @@ export default function RecipeLocationGeneration() {
         }
     };
 
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    const isMobile = useIsMobile();
 
     return (
         <div className={`relative bg-bg-color min-h-screen ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>

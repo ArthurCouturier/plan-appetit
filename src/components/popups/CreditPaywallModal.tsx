@@ -4,8 +4,9 @@ import usePaywallProducts from "../../api/hooks/usePaywallProducts";
 import { TrackingService } from "../../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../../api/tracking/skadnetwork/SKAdNetworkService";
 import { SKAdNetworkConversionValue } from "../../api/tracking/skadnetwork/SKAdNetworkConversionValue";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import PaywallContent from "../paywall/PaywallContent";
+import useIsMobile from "../../hooks/useIsMobile";
 
 interface CreditPaywallModalProps {
     onClose: () => void;
@@ -13,14 +14,7 @@ interface CreditPaywallModalProps {
 
 export default function CreditPaywallModal({ onClose }: CreditPaywallModalProps) {
     const products = usePaywallProducts();
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth <= 768);
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';

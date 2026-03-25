@@ -13,6 +13,7 @@ import SandboxService from "../api/services/SandboxService";
 import useAuth from "../api/hooks/useAuth";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
+import useIsMobile from "../hooks/useIsMobile";
 
 export default function InstagramImport() {
   const navigate = useNavigate();
@@ -26,23 +27,12 @@ export default function InstagramImport() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedRecipe, setGeneratedRecipe] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
 
   const embedContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     if (user) {

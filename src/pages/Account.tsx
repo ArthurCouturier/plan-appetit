@@ -12,6 +12,7 @@ import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, W
 import { isPremiumUser, hasRoleLevel, UserRole } from '../api/interfaces/users/UserInterface';
 import CreditIcon from '../components/icons/CreditIcon';
 import UserAvatar from '../components/global/UserAvatar';
+import useIsMobile from '../hooks/useIsMobile';
 
 export default function Account() {
     const { user, logout, login } = useAuth();
@@ -19,7 +20,7 @@ export default function Account() {
 
     const isUserPremium = user && user.role ? isPremiumUser(user.role) : false;
 
-    const [isMobile, setIsMobile] = useState(false);
+    const isMobile = useIsMobile();
     const [enabled, setEnabled] = useState(false);
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
     const [credits, setCredits] = useState<number | null>(null);
@@ -56,16 +57,6 @@ export default function Account() {
         localStorage.setItem('theme', theme);
     }, [theme]);
 
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     if (user === undefined) {
         return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;

@@ -18,6 +18,7 @@ import { Capacitor } from "@capacitor/core";
 import { Clipboard } from "@capacitor/clipboard";
 import { Share } from "@capacitor/share";
 import { useDelayedNotificationPrompt } from "../api/hooks/useDelayedNotificationPrompt";
+import useIsMobile from "../hooks/useIsMobile";
 
 export default function RecipeDetail() {
 
@@ -30,7 +31,7 @@ export default function RecipeDetail() {
     const [loading, setLoading] = useState<boolean>(true);
     const [notFound, setNotFound] = useState<boolean>(false);
 
-    const [isMobile, setIsMobile] = useState(false);
+    const isMobile = useIsMobile();
 
     const [showModificationModal, setShowModificationModal] = useState(false);
     const [showPurchaseCreditsModal, setShowPurchaseCreditsModal] = useState(false);
@@ -101,17 +102,6 @@ export default function RecipeDetail() {
 
         fetchRecipe();
     }, [uuid]);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     useEffect(() => {
         const fetchUserCredits = async () => {

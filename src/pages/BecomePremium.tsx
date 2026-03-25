@@ -6,27 +6,17 @@ import usePaywallProducts from "../api/hooks/usePaywallProducts";
 import { TrackingService } from "../api/tracking/TrackingService";
 import PaywallContent from "../components/paywall/PaywallContent";
 import { getPrice, formatPrice, monthlyEquivalent, discountPercent, hasFreeTrial, getTrialText } from "../utils/priceUtils";
+import useIsMobile from "../hooks/useIsMobile";
 
 export default function BecomePremium() {
   const navigate = useNavigate();
   const products = usePaywallProducts();
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     TrackingService.logCreditPackViewed('premium_page');
     TrackingService.logViewContent('premium_page');
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const yearlyRaw = getPrice(products.iapYearly, products.premiumYearly);

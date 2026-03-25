@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     signInWithEmailAndPassword,
@@ -31,6 +31,7 @@ import { usePostHog } from '../contexts/PostHogContext';
 import { TrackingService } from '../api/tracking/TrackingService';
 import { SKAdNetworkService } from '../api/tracking/skadnetwork/SKAdNetworkService';
 import { SKAdNetworkConversionValue } from '../api/tracking/skadnetwork/SKAdNetworkConversionValue';
+import useIsMobile from "../hooks/useIsMobile";
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -604,7 +605,7 @@ export default function LoginPage() {
     //     setLoading(false);
     // };
 
-    const [isMobile, setIsMobile] = useState(false);
+    const isMobile = useIsMobile();
     const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 
     // Refs pour les inputs (navigation clavier et scroll)
@@ -639,17 +640,6 @@ export default function LoginPage() {
             confirmPasswordInputRef.current?.focus();
         }
     };
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     return (
         <div className={`flex flex-col min-h-screen bg-bg-color ${isMobile ? 'pt-[env(safe-area-inset-top)]' : ''}`}>

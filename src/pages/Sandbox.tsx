@@ -20,6 +20,7 @@ import { TrackingService } from "../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
 import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
+import useIsMobile from "../hooks/useIsMobile";
 
 export default function Sandbox() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export default function Sandbox() {
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [, setAnonymousRecipeUuid] = useState<string | null>(null);
   const [recipeCount, setRecipeCount] = useState(1);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -115,17 +116,6 @@ export default function Sandbox() {
       setPrompt(searchParams.get("q") || "");
     }
   }, [searchParams]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleGenerateClick = () => {
     if (!prompt.trim() || prompt.trim().length < 3) {

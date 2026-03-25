@@ -66,6 +66,8 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     }, []);
 
     const handleStart = useCallback((clientX: number, clientY: number, currentTarget: Element) => {
+        didSwipeRef.current = false;
+
         if (transitioning) return;
 
         const rect = currentTarget.getBoundingClientRect();
@@ -89,7 +91,6 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
             directionLocked: false,
         };
         isDraggingRef.current = false;
-        didSwipeRef.current = false;
     }, [transitioning, isCurrentlyFlipped]);
 
     const handleMove = useCallback((clientX: number, clientY: number) => {
@@ -257,6 +258,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                                     src={`data:image/png;base64,${imageData}`}
                                     alt={recipe.name}
                                     className="w-full h-full object-cover"
+                                    draggable={false}
                                 />
                             ) : (
                                 <div className="w-full h-full bg-border-color flex items-center justify-center">

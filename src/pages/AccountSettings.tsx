@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import useIsMobile from '../hooks/useIsMobile';
 import { updatePassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../api/authentication/firebase';
@@ -30,7 +31,7 @@ export default function AccountSettings() {
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
+    const isMobile = useIsMobile();
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
     const [showExportModal, setShowExportModal] = useState(false);
@@ -113,16 +114,6 @@ export default function AccountSettings() {
         }
     }, [user, navigate, isUserPremium]);
 
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     if (user === undefined) {
         return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;

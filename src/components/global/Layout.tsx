@@ -9,10 +9,11 @@ import { Capacitor } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import DailyRecipeModal from "../popups/DailyRecipeModal";
 import { useDailyRecipeContext } from "../../contexts/DailyRecipeContext";
+import useIsMobile from "../../hooks/useIsMobile";
 
 export default function Layout() {
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const isMobile = useIsMobile();
   const location = useLocation();
   const navigate = useNavigate();
   const { showDailyRecipeModal, setShowDailyRecipeModal } = useDailyRecipeContext();
@@ -41,12 +42,6 @@ export default function Layout() {
         FirebaseMessaging.removeAllListeners();
       }
     };
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {

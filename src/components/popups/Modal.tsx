@@ -1,5 +1,6 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import useIsMobile from "../../hooks/useIsMobile";
 
 interface ModalProps {
   isOpen: boolean;
@@ -18,18 +19,7 @@ export default function Modal({
   size = "md",
   showCloseButton = true,
 }: ModalProps) {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile();
 
   // Prevent body scroll when modal is open
   useEffect(() => {

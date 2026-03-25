@@ -12,6 +12,8 @@ import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
 import { usePostHog } from "../contexts/PostHogContext";
 import { TrackingService } from "../api/tracking/TrackingService";
+import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
+import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 
 const DRAFT_STORAGE_KEY = "recipeGenerationDraft";
@@ -109,6 +111,7 @@ export default function RecipeLocationGeneration() {
                     vegan,
                 });
                 TrackingService.logRecipeGenerated('localisation');
+                SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
                 TrackingService.promptATTIfNeeded();
 
                 invalidateCollections();
@@ -124,6 +127,7 @@ export default function RecipeLocationGeneration() {
                 });
                 TrackingService.logQuotaLimitReached('localisation');
                 TrackingService.logLead('localisation');
+                SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
                 showModalRechargerCredits();
                 return;
             }

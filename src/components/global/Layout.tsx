@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import HeaderMobile from "./HeaderMobile";
 import PlatformService from "../../api/services/PlatformService";
 import { TrackingService } from "../../api/tracking/TrackingService";
+import { SKAdNetworkService } from "../../api/tracking/skadnetwork/SKAdNetworkService";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import DailyRecipeModal from "../popups/DailyRecipeModal";
@@ -22,6 +23,7 @@ export default function Layout() {
     PlatformService.initializeStatusBar();
     PlatformService.onDeepLink(navigate);
     TrackingService.initialize();
+    SKAdNetworkService.syncFromBackend();
 
     // Listener pour les taps sur notifications (native uniquement)
     if (Capacitor.isNativePlatform()) {

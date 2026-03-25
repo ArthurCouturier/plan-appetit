@@ -29,6 +29,8 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { UserRole } from '../api/interfaces/users/UserInterface';
 import { usePostHog } from '../contexts/PostHogContext';
 import { TrackingService } from '../api/tracking/TrackingService';
+import { SKAdNetworkService } from '../api/tracking/skadnetwork/SKAdNetworkService';
+import { SKAdNetworkConversionValue } from '../api/tracking/skadnetwork/SKAdNetworkConversionValue';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -245,6 +247,7 @@ export default function LoginPage() {
                 method: 'email',
             });
             TrackingService.logCompleteRegistration('email');
+            SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.INSCRIPTION);
 
             trackEvent('user_logged_in', {
                 method: 'email',

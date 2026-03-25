@@ -7,6 +7,8 @@ import LogoButton from "../components/buttons/LogoButton";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import InstagramService from "../api/services/InstagramService";
 import { TrackingService } from "../api/tracking/TrackingService";
+import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
+import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import SandboxService from "../api/services/SandboxService";
 import useAuth from "../api/hooks/useAuth";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
@@ -154,6 +156,7 @@ export default function InstagramImport() {
       if (response.recipe?.uuid) {
         TrackingService.logRecipeGenerated('instagram');
         TrackingService.logInstagramImportFinished();
+        SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
         invalidateCollections();
         navigate(`/recettes/${response.recipe.uuid}`);
       } else {
@@ -164,6 +167,7 @@ export default function InstagramImport() {
 
       // Handle quota exceeded error (402 Payment Required)
       if (err.type === 'QUOTA_EXCEEDED' || err.status === 402) {
+        SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
         setError(err.message || "Quota de génération épuisé. Passez Premium pour continuer !");
         setShowPaywall(true);
 

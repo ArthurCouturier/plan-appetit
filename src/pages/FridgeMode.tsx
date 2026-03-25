@@ -4,6 +4,8 @@ import { AnimatePresence } from "framer-motion";
 import useAuth from "../api/hooks/useAuth";
 import FridgeService from "../api/services/FridgeService";
 import { TrackingService } from "../api/tracking/TrackingService";
+import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
+import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import FridgeStep1Ingredients from "../components/fridge/FridgeStep1Ingredients";
 import FridgeStep2Context from "../components/fridge/FridgeStep2Context";
 import FridgeStep3Questions from "../components/fridge/FridgeStep3Questions";
@@ -214,9 +216,11 @@ export default function FridgeMode() {
             queryClient.invalidateQueries({ queryKey: queryKeys.collections.all() });
 
             TrackingService.logRecipeGenerated('fridge');
+            SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
             navigate(`/recettes/${recipe.uuid}`);
         } catch (err: unknown) {
             if (err && typeof err === "object" && "type" in err && (err as { type: string }).type === "INSUFFICIENT_CREDITS") {
+                SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
                 setShowPaywall(true);
                 setIsGenerating(false);
                 return;

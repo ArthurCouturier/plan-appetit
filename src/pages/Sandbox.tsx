@@ -17,6 +17,8 @@ import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 import useAuth from "../api/hooks/useAuth";
 import { usePostHog } from "../contexts/PostHogContext";
 import { TrackingService } from "../api/tracking/TrackingService";
+import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
+import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 
 export default function Sandbox() {
@@ -205,6 +207,7 @@ export default function Sandbox() {
         recipeUuids: response.recipes.map(r => r.uuid).filter(Boolean),
       });
       TrackingService.logRecipeGenerated('sandbox');
+      SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
       TrackingService.promptATTIfNeeded();
       invalidateCollections();
 
@@ -229,6 +232,7 @@ export default function Sandbox() {
         });
         TrackingService.logQuotaLimitReached('sandbox');
         TrackingService.logLead('sandbox');
+        SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
 
         setShowPaywall(true);
       } else if (err.type === "VALIDATION_ERROR") {

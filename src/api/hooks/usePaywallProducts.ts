@@ -6,6 +6,8 @@ import IAPService, { IAPProduct } from "../services/IAPService";
 import { Product } from "../interfaces/stripe/Product";
 import { CartItem } from "../interfaces/stripe/CartItem";
 import { TrackingService } from "../tracking/TrackingService";
+import { SKAdNetworkService } from "../tracking/skadnetwork/SKAdNetworkService";
+import { SKAdNetworkConversionValue } from "../tracking/skadnetwork/SKAdNetworkConversionValue";
 import { usePostHog } from "../../contexts/PostHogContext";
 import useAuth from "./useAuth";
 
@@ -123,6 +125,7 @@ export default function usePaywallProducts(): PaywallProducts {
         const price = iapProduct?.price ?? (stripeProduct?.prices?.[0]?.unitAmount ? stripeProduct.prices[0].unitAmount / 100 : 0);
         const currency = iapProduct?.currencyCode ?? stripeProduct?.prices?.[0]?.currency ?? 'EUR';
         TrackingService.logInitiateCheckout('premium_subscription', price, currency);
+        SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.CHECKOUT_INITIATED);
         trackEvent('checkout_started', { product_type: productType, payment_method: isNativeIOS ? 'iap' : 'stripe', price });
 
         if (isNativeIOS && isIAPAvailable) {
@@ -137,6 +140,7 @@ export default function usePaywallProducts(): PaywallProducts {
                     );
                     if (verified) {
                         trackEvent('purchase_completed', { product_type: productType, amount: iapProduct.price });
+                        SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.PREMIUM_SUBSCRIPTION);
                         navigate('/recettes');
                     } else {
                         setPurchaseError('Erreur de validation. Contactez le support.');
@@ -173,6 +177,7 @@ export default function usePaywallProducts(): PaywallProducts {
         const price = iapProduct?.price ?? (stripeProduct?.prices?.[0]?.unitAmount ? stripeProduct.prices[0].unitAmount / 100 : 0);
         const currency = iapProduct?.currencyCode ?? stripeProduct?.prices?.[0]?.currency ?? 'EUR';
         TrackingService.logInitiateCheckout('credits', price, currency);
+        SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.CHECKOUT_INITIATED);
         trackEvent('checkout_started', { product_type: productType, payment_method: isNativeIOS ? 'iap' : 'stripe', price });
 
         if (isNativeIOS && isIAPAvailable) {
@@ -187,6 +192,7 @@ export default function usePaywallProducts(): PaywallProducts {
                     );
                     if (verified) {
                         trackEvent('purchase_completed', { product_type: productType, amount: iapProduct.price });
+                        SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.CREDIT_PURCHASE);
                         navigate('/recettes');
                     } else {
                         setPurchaseError('Erreur de validation. Contactez le support.');

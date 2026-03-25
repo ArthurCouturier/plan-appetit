@@ -2,6 +2,8 @@ import { createPortal } from "react-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import usePaywallProducts from "../../api/hooks/usePaywallProducts";
 import { TrackingService } from "../../api/tracking/TrackingService";
+import { SKAdNetworkService } from "../../api/tracking/skadnetwork/SKAdNetworkService";
+import { SKAdNetworkConversionValue } from "../../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import { useEffect, useState } from "react";
 import PaywallContent from "../paywall/PaywallContent";
 
@@ -30,6 +32,7 @@ export default function CreditPaywallModal({ onClose }: CreditPaywallModalProps)
             sessionStorage.setItem(COOLDOWN_KEY, String(Date.now()));
             TrackingService.logCreditPackViewed('paywall');
             TrackingService.logViewContent('paywall');
+            SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
         }
 
         return () => { document.body.style.overflow = 'unset'; };

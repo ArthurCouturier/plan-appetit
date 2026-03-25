@@ -3,8 +3,6 @@ import RecipeGenerationParametersInterface from "../interfaces/recipes/RecipeGen
 import RecipeInterface from "../interfaces/recipes/RecipeInterface";
 import UserInterface from "../interfaces/users/UserInterface";
 import UserAccountInfoInterface from "../interfaces/users/UserAccountInfoInterface";
-import StatisticsInterface from "../interfaces/users/StatisticsInterface";
-import SuccessInterface, { SuccessClaimResponse } from "../interfaces/users/SuccessInterface";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
 import ConsentService from "../tracking/consent/ConsentService";
 
@@ -277,67 +275,6 @@ export default class BackendService {
         ConsentService.hasMarketingConsent().then(hasMarketing => {
             this.updateMarketingConsent(email, token, hasMarketing).catch(() => {});
         });
-
-        return response.json();
-    }
-
-    public static async getUserStatistics(
-        email: string,
-        token: string
-    ): Promise<StatisticsInterface> {
-        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/statistics`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Email': email
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des statistiques');
-        }
-
-        return response.json();
-    }
-
-    public static async getUserSuccess(
-        email: string,
-        token: string
-    ): Promise<SuccessInterface> {
-        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/success`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Email': email
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des succès');
-        }
-
-        return response.json();
-    }
-
-    public static async claimSuccessReward(
-        email: string,
-        token: string,
-        successType: string
-    ): Promise<SuccessClaimResponse> {
-        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/users/success/claim/${successType}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Email': email
-            },
-        });
-
-        if (!response.ok && response.status !== 400) {
-            throw new Error('Erreur lors de la réclamation du succès');
-        }
 
         return response.json();
     }

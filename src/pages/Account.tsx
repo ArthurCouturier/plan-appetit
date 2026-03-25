@@ -11,7 +11,6 @@ import CreditPaywallModal from '../components/popups/CreditPaywallModal';
 import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/solid";
 import { isPremiumUser, hasRoleLevel, UserRole } from '../api/interfaces/users/UserInterface';
 import CreditIcon from '../components/icons/CreditIcon';
-import OnboardingChecklist from '../components/onboarding/OnboardingChecklist';
 import UserAvatar from '../components/global/UserAvatar';
 
 export default function Account() {
@@ -155,8 +154,6 @@ export default function Account() {
                     {showCreditModal && (
                         <CreditPaywallModal onClose={() => setShowCreditModal(false)} />
                     )}
-
-                    <OnboardingChecklist onCreditsUpdated={fetchAccountInfo} />
 
                     {/* Theme Switcher (Mobile only) */}
                     {isMobile && (

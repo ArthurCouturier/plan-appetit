@@ -7,11 +7,6 @@ afterEach(() => {
   cleanup();
 });
 
-// Mock de canvas-confetti globalement
-vi.mock('canvas-confetti', () => ({
-  default: vi.fn(),
-}));
-
 // Mock de localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};

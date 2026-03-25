@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import useAuth from "../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import Header from "../components/global/Header";
 import AdminService, { UserRecipesInfoResponse, BatchImageGenerationResponse } from "../api/services/AdminService";
 
 export default function AdminUserRecipes() {
@@ -59,7 +58,6 @@ export default function AdminUserRecipes() {
 
     return (
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-            <Header back pageName="User Recipes" />
 
             <div className="bg-primary rounded-xl p-6 shadow-md border border-border-color">
                 <h2 className="text-lg font-bold text-text-primary mb-4">Rechercher un utilisateur</h2>

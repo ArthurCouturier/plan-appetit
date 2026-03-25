@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import useAuth from "../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import Header from "../components/global/Header";
 import AdminService, { SchedulerStatusDTO } from "../api/services/AdminService";
 
 export default function AdminBatchs() {
@@ -35,7 +34,6 @@ export default function AdminBatchs() {
 
     return (
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-            <Header back pageName="Batchs" />
 
             {loading && (
                 <div className="flex justify-center py-12">

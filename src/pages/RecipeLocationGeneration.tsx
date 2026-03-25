@@ -7,7 +7,6 @@ import SwitchField from "../components/fields/SwitchField";
 import { generateRecipe } from "../api/recipes/OpenAIRecipeGenerator";
 import RecipeGenerationParametersInterface from "../api/interfaces/recipes/RecipeGenerationParametersInterface";
 import LinearNumberField from "../components/fields/LinearNumberField";
-import Header from "../components/global/Header";
 import { useNavigate } from "react-router-dom";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
@@ -153,8 +152,6 @@ export default function RecipeLocationGeneration() {
         <div className={`relative bg-bg-color min-h-screen ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
             <RecipeGenerationLoadingModal isOpen={isLoading} />
 
-            {isMobile ? null : <RecipeGenerationHeader />}
-
             {/* Modal crédits épuisés */}
             {showCreditModal && (
                 <CreditPaywallModal onClose={() => setShowCreditModal(false)} />
@@ -215,11 +212,3 @@ export default function RecipeLocationGeneration() {
     );
 }
 
-function RecipeGenerationHeader() {
-    return (
-        <Header
-            back={true}
-            pageName={"Génération par localité/saisonnalité"}
-        />
-    )
-}

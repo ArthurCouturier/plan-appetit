@@ -7,7 +7,6 @@ import LockedRecipeCard from "../components/sandbox/LockedRecipeCard";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import MultipleRecipeConfirmationModal from "../components/popups/MultipleRecipeConfirmationModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
-import Header from "../components/global/Header";
 import Footer from "../components/global/Footer";
 import LogoButton from "../components/buttons/LogoButton";
 import { useTypingPlaceholder } from "../hooks/useTypingPlaceholder";
@@ -20,7 +19,6 @@ import { TrackingService } from "../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
 import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
-import useIsMobile from "../hooks/useIsMobile";
 
 export default function Sandbox() {
   const navigate = useNavigate();
@@ -37,7 +35,6 @@ export default function Sandbox() {
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [, setAnonymousRecipeUuid] = useState<string | null>(null);
   const [recipeCount, setRecipeCount] = useState(1);
-  const isMobile = useIsMobile();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -263,18 +260,6 @@ export default function Sandbox() {
   return (
     <div className="min-h-screen bg-bg-color flex flex-col">
       <div className="flex-grow">
-        {/* Header - Only for logged in users on tablet/desktop */}
-        {user && !isMobile && (
-          <div className="p-6 pb-0">
-            <Header
-              back={true}
-              home={true}
-              title={true}
-              profile={true}
-              pageName="Sandbox - Création libre"
-            />
-          </div>
-        )}
 
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple pb-32 px-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { BellIcon } from "@heroicons/react/24/outline";
+import { Capacitor } from "@capacitor/core";
 
 interface NotificationPanelProps {
     isOpen: boolean;
@@ -30,12 +31,15 @@ export default function NotificationPanel({ isOpen, onClose, originRect }: Notif
         return () => { document.body.style.overflow = ""; };
     }, [isOpen]);
 
-    if (!mounted || !originRect) return null;
+    const [isLargeScreen, setIsLargeScreen] = useState(() => window.innerWidth >= 768);
 
-    const sideMargin = 12;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const isLargeScreen = vw >= 768;
+    useEffect(() => {
+        const onResize = () => setIsLargeScreen(window.innerWidth >= 768);
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, []);
+
+    if (!mounted || !originRect) return null;
 
     const closedRadius = originRect.width / 2;
 
@@ -49,19 +53,22 @@ export default function NotificationPanel({ isOpen, onClose, originRect }: Notif
 
     const openStyle: React.CSSProperties = isLargeScreen
         ? {
-            width: Math.min(480, vw * 0.45),
-            height: vh * 0.6,
-            top: (vh - vh * 0.6) / 2,
-            left: (vw - Math.min(480, vw * 0.45)) / 2,
+            width: "min(480px, 45vw)",
+            height: "60dvh",
+            top: "20dvh",
+            left: "calc((100vw - min(480px, 45vw)) / 2)",
             borderRadius: "1.5rem",
         }
-        : {
-            top: `calc(env(safe-area-inset-top, 0px) + 4px)`,
-            left: sideMargin,
-            width: `calc(100vw - ${sideMargin * 2}px)`,
-            height: `calc(100dvh - env(safe-area-inset-top, 0px) - ${sideMargin + 4}px)`,
-            borderRadius: "1.5rem",
-        };
+        : (() => {
+            const isIOS = Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
+            return {
+                top: `calc(env(safe-area-inset-top, 0px) + 4px)`,
+                left: "5vw",
+                width: "90vw",
+                height: `calc(100dvh - env(safe-area-inset-top, 0px) - 5vw - 4px)`,
+                borderRadius: isIOS ? "1.5rem 1.5rem 2.8rem 2.8rem" : "1.5rem",
+            };
+        })();
 
     const style = animating ? openStyle : closedStyle;
 

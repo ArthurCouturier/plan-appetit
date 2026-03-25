@@ -13,7 +13,6 @@ import ParentDropZone from "../components/dnd/ParentDropZone";
 import CollectionCard from "../components/cards/CollectionCard";
 import QuickActions from "../components/actions/QuickActions";
 import EmptyCollectionCTA from "../components/collections/EmptyCollectionCTA";
-import Header from "../components/global/Header";
 import EditableCollectionTitle from "../components/collections/EditableCollectionTitle";
 import RecipeSection from "../components/collections/RecipeSection";
 import useIsMobile from "../hooks/useIsMobile";
@@ -126,39 +125,6 @@ function CollectionDetailContent({
 
     return (
         <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-8 mobile-content-with-header' : 'p-6'}`}>
-            {/* Desktop Header */}
-            {!isMobile && (
-                <Header
-                    back={true}
-                    home={true}
-                    title={true}
-                    profile={true}
-                    pageName={
-                        <div className="flex items-center gap-2">
-                            <EditableCollectionTitle
-                                collectionUuid={collection.uuid!}
-                                name={collection.name}
-                                onNameChange={onNameChange}
-                            />
-                            <button
-                                onClick={onRefresh}
-                                className="p-1.5 rounded-lg hover:bg-secondary transition-colors"
-                                title="Rafraîchir"
-                            >
-                                <ArrowPathIcon className="w-5 h-5 text-cout-base" />
-                            </button>
-                            <QuickActionButton
-                                icon="/icons/AjouterCollection.svg"
-                                iconSize={19}
-                                title="Ajouter Collection"
-                                onClick={() => setShowCreateCollection(true)}
-                                mini
-                            />
-                        </div>
-                    }
-                />
-            )}
-
             {/* Mobile Header */}
             {isMobile && (
                 <div className="mb-6">
@@ -268,9 +234,6 @@ function CollectionNotFound({ error, isMobile }: { error: string | null; isMobil
 
     return (
         <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-            {!isMobile && (
-                <Header back={true} home={true} title={true} profile={true} pageName="Collection" />
-            )}
             <div className="flex flex-col items-center justify-center py-16">
                 <FolderIcon className="w-24 h-24 text-text-secondary opacity-50 mb-4" />
                 <h2 className="text-2xl font-bold text-text-primary mb-2">

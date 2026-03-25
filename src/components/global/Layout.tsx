@@ -1,6 +1,5 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import DarkModeButton from "../buttons/DarkModeButton";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import HeaderMobile from "./HeaderMobile";
 import PlatformService from "../../api/services/PlatformService";
 import { TrackingService } from "../../api/tracking/TrackingService";
@@ -9,11 +8,9 @@ import { Capacitor } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import DailyRecipeModal from "../popups/DailyRecipeModal";
 import { useDailyRecipeContext } from "../../contexts/DailyRecipeContext";
-import useIsMobile from "../../hooks/useIsMobile";
 
 export default function Layout() {
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
-  const isMobile = useIsMobile();
+  const theme = localStorage.getItem('theme') || 'theme1';
   const location = useLocation();
   const navigate = useNavigate();
   const { showDailyRecipeModal, setShowDailyRecipeModal } = useDailyRecipeContext();
@@ -44,12 +41,12 @@ export default function Layout() {
     };
   }, []);
 
+  // Apply theme classes on mount
   useEffect(() => {
     document.documentElement.classList.remove('theme1', 'theme2');
     document.documentElement.classList.add(theme);
     document.body.classList.remove('theme1', 'theme2');
     document.body.classList.add(theme);
-    localStorage.setItem('theme', theme);
   }, [theme]);
 
   // Scroll to top + PageView tracking on route change
@@ -58,14 +55,9 @@ export default function Layout() {
     TrackingService.trackPageView();
   }, [location.pathname]);
 
-  const changeTheme = () => {
-    setTheme(prev => (prev === 'theme1' ? 'theme2' : 'theme1'));
-  };
-
   return (
     <div className={`w-full min-h-screen min-h-dvh bg-bg-color ${theme}`}>
-      {!isMobile && <DarkModeButton mode={theme} changeMode={changeTheme} />}
-      {isMobile && <HeaderMobile />}
+      <HeaderMobile />
       <Outlet />
 
       <DailyRecipeModal

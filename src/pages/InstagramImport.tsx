@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ClipboardDocumentIcon, ArrowPathIcon, SparklesIcon, CheckCircleIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import Header from "../components/global/Header";
 import Footer from "../components/global/Footer";
 import LogoButton from "../components/buttons/LogoButton";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
@@ -186,18 +185,6 @@ export default function InstagramImport() {
   return (
     <div className="min-h-screen bg-bg-color flex flex-col">
       <div className="flex-grow">
-        {/* Header - Only for logged in users on tablet/desktop */}
-        {user && !isMobile && (
-          <div className="p-6 pb-0">
-            <Header
-              back={true}
-              home={true}
-              title={true}
-              profile={true}
-              pageName="Import Instagram"
-            />
-          </div>
-        )}
 
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple pb-32 px-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}>

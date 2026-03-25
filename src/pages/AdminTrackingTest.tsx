@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import useAuth from "../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import Header from "../components/global/Header";
 import AdminService, { TrackingTestResponse } from "../api/services/AdminService";
 import { FacebookPixelService } from "../api/tracking/providers/meta/FacebookPixelService";
 import { TikTokPixelService } from "../api/tracking/providers/tiktok/TikTokPixelService";
@@ -24,7 +23,6 @@ export default function AdminTrackingTest() {
 
     return (
         <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-            <Header back pageName="Test Tracking" />
 
             <div className="bg-primary rounded-xl p-5 shadow-md border border-border-color">
                 <label className="block text-sm font-medium text-text-primary mb-2">

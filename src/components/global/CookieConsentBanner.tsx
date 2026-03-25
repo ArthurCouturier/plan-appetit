@@ -87,7 +87,7 @@ export default function CookieConsentBanner() {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-text-primary text-sm font-semibold">Marketing</p>
-                                <p className="text-text-secondary text-xs">Publicités personnalisées (Meta/Facebook)</p>
+                                <p className="text-text-secondary text-xs">Publicités personnalisées (Meta, TikTok)</p>
                             </div>
                             <button
                                 onClick={() => setMarketing(!marketing)}
@@ -219,7 +219,7 @@ export function CookieConsentManager({ onClose }: CookieConsentManagerProps) {
                 <div className="flex items-center justify-between p-3 bg-secondary rounded-lg">
                     <div>
                         <p className="text-text-primary text-sm font-semibold">Marketing</p>
-                        <p className="text-text-secondary text-xs">Publicités personnalisées (Meta)</p>
+                        <p className="text-text-secondary text-xs">Publicités personnalisées (Meta, TikTok)</p>
                     </div>
                     <button
                         onClick={() => setMarketing(!marketing)}

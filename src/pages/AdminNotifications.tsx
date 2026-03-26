@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import useAuth from "../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
 import AdminService, { AudienceQueryDTO } from "../api/services/AdminService";
@@ -13,8 +13,31 @@ const SEGMENTS = [
     { value: "INACTIVE", label: "Inactifs uniquement" },
 ] as const;
 
+const DRAFT_KEY = "adminNotifDraft";
+
+const KNOWN_HOSTS = ["localhost", "plan-appetit.fr", "www.plan-appetit.fr"];
+
+function cleanActionUrl(input: string): string {
+    const trimmed = input.trim();
+    if (!trimmed) return "";
+    if (trimmed.startsWith("/")) return trimmed.split(/[?#]/)[0];
+
+    const urlMatch = trimmed.match(/(?:https?:\/\/)?([^/\s]+)(\/[^\s?#]*)?/);
+    if (!urlMatch) return trimmed;
+
+    const host = urlMatch[1].replace(/:\d+$/, "");
+    const path = urlMatch[2] || "/";
+
+    if (KNOWN_HOSTS.includes(host)) {
+        return path;
+    }
+
+    return trimmed;
+}
+
 export default function AdminNotifications() {
     const { user } = useAuth();
+    const navigate = useNavigate();
 
     const [title, setTitle] = useState("");
     const [body, setBody] = useState("");
@@ -27,7 +50,26 @@ export default function AdminNotifications() {
     const [sendPush, setSendPush] = useState(false);
     const [showPushConfirm, setShowPushConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<{ status: string; id: string } | null>(null);
+    const [result, setResult] = useState<{ status: string; id: string } | null>(null)
+
+    useEffect(() => {
+        const raw = sessionStorage.getItem(DRAFT_KEY);
+        if (raw) {
+            try {
+                const draft = JSON.parse(raw);
+                if (draft.title) setTitle(draft.title);
+                if (draft.body) setBody(draft.body);
+                if (draft.segment) setSegment(draft.segment);
+                if (draft.actionUrl) setActionUrl(draft.actionUrl);
+                if (draft.iconType) setIconType(draft.iconType);
+                if (draft.expiresIn) setExpiresIn(draft.expiresIn);
+                if (draft.linkToStores) setLinkToStores(draft.linkToStores);
+                if (draft.sendPush) setSendPush(draft.sendPush);
+                if (draft.audience) setAudience(draft.audience);
+            } catch { /* */ }
+            sessionStorage.removeItem(DRAFT_KEY);
+        }
+    }, []);
     const [error, setError] = useState<string | null>(null);
 
     if (!user || !hasRoleLevel(user.role, UserRole.ADMIN)) {
@@ -150,7 +192,7 @@ export default function AdminNotifications() {
                     </div>
 
                     {/* Ciblage avance */}
-                    <AudienceBuilder onChange={setAudience} />
+                    <AudienceBuilder onChange={setAudience} initialValue={audience} />
 
                     {/* Lien vers les stores */}
                     <div className="flex items-center gap-3 p-4 border border-border-color rounded-lg">
@@ -178,13 +220,39 @@ export default function AdminNotifications() {
                             <label className="block text-sm font-medium text-text-primary mb-1">
                                 Lien d'action <span className="text-text-secondary text-xs">(optionnel)</span>
                             </label>
-                            <input
-                                type="text"
-                                value={actionUrl}
-                                onChange={(e) => setActionUrl(e.target.value)}
-                                placeholder="Ex: /frigo, /premium, /recettes/nouvelle"
-                                className="w-full px-3 py-2 rounded-lg border border-border-color bg-secondary text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            />
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={actionUrl}
+                                    onChange={(e) => setActionUrl(e.target.value)}
+                                    onBlur={() => setActionUrl(cleanActionUrl(actionUrl))}
+                                    onPaste={(e) => {
+                                        e.preventDefault();
+                                        const pasted = e.clipboardData.getData("text");
+                                        setActionUrl(cleanActionUrl(pasted));
+                                    }}
+                                    placeholder="Ex: /frigo, /premium, /recettes/nouvelle"
+                                    className="flex-1 px-3 py-2 rounded-lg border border-border-color bg-secondary text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                />
+                                {actionUrl.trim() && (
+                                    <button
+                                        onClick={() => {
+                                            sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+                                                title, body, segment, actionUrl, iconType, expiresIn, linkToStores, sendPush, audience
+                                            }));
+                                            const url = actionUrl.trim();
+                                            if (url.startsWith("http")) {
+                                                window.open(url, "_blank");
+                                            } else {
+                                                navigate(url);
+                                            }
+                                        }}
+                                        className="px-3 py-2 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors whitespace-nowrap"
+                                    >
+                                        Tester
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     )}
 

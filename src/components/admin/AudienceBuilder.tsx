@@ -26,12 +26,13 @@ const ROLES = ["MEMBER", "PREMIUM", "PREMIUM_FOR_EVER", "ADMIN", "BETA_USER"] as
 
 interface AudienceBuilderProps {
     onChange: (query: AudienceQueryDTO | null) => void;
+    initialValue?: AudienceQueryDTO | null;
 }
 
-export default function AudienceBuilder({ onChange }: AudienceBuilderProps) {
-    const [enabled, setEnabled] = useState(false);
-    const [combinator, setCombinator] = useState<"AND" | "OR">("AND");
-    const [conditions, setConditions] = useState<AudienceConditionDTO[]>([]);
+export default function AudienceBuilder({ onChange, initialValue }: AudienceBuilderProps) {
+    const [enabled, setEnabled] = useState(!!initialValue?.conditions?.length);
+    const [combinator, setCombinator] = useState<"AND" | "OR">(initialValue?.combinator ?? "AND");
+    const [conditions, setConditions] = useState<AudienceConditionDTO[]>(initialValue?.conditions ?? []);
     const [previewCount, setPreviewCount] = useState<number | null>(null);
     const [previewQuery, setPreviewQuery] = useState<string | null>(null);
     const [previewLoading, setPreviewLoading] = useState(false);

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import useAuth from "../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import AdminService from "../api/services/AdminService";
+import AdminService, { AudienceQueryDTO } from "../api/services/AdminService";
+import AudienceBuilder from "../components/admin/AudienceBuilder";
 
 const ICON_TYPES = ["INFO", "CREDIT", "RECIPE", "PROMO", "MILESTONE"] as const;
 const SEGMENTS = [
@@ -22,6 +23,7 @@ export default function AdminNotifications() {
     const [iconType, setIconType] = useState<string>("INFO");
     const [expiresIn, setExpiresIn] = useState("");
     const [linkToStores, setLinkToStores] = useState(false);
+    const [audience, setAudience] = useState<AudienceQueryDTO | null>(null);
     const [sendPush, setSendPush] = useState(false);
     const [showPushConfirm, setShowPushConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -57,6 +59,7 @@ export default function AdminNotifications() {
                 expiresAt,
                 sendPush,
                 linkToStores,
+                audience,
             });
             setResult(response);
             setTitle("");
@@ -65,6 +68,7 @@ export default function AdminNotifications() {
             setExpiresIn("");
             setSendPush(false);
             setLinkToStores(false);
+            setAudience(null);
         } catch (e) {
             setError(e instanceof Error ? e.message : "Erreur inconnue");
         } finally {
@@ -116,19 +120,21 @@ export default function AdminNotifications() {
                     </div>
 
                     {/* Segment + Icone */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-text-primary mb-1">Audience</label>
-                            <select
-                                value={segment}
-                                onChange={(e) => setSegment(e.target.value)}
-                                className="w-full px-3 py-2 rounded-lg border border-border-color bg-secondary text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                            >
-                                {SEGMENTS.map((s) => (
-                                    <option key={s.value} value={s.value}>{s.label}</option>
-                                ))}
-                            </select>
-                        </div>
+                    <div className={`grid gap-4 ${audience ? "grid-cols-1" : "grid-cols-2"}`}>
+                        {!audience && (
+                            <div>
+                                <label className="block text-sm font-medium text-text-primary mb-1">Audience</label>
+                                <select
+                                    value={segment}
+                                    onChange={(e) => setSegment(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg border border-border-color bg-secondary text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                >
+                                    {SEGMENTS.map((s) => (
+                                        <option key={s.value} value={s.value}>{s.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                         <div>
                             <label className="block text-sm font-medium text-text-primary mb-1">Icone</label>
                             <select
@@ -142,6 +148,9 @@ export default function AdminNotifications() {
                             </select>
                         </div>
                     </div>
+
+                    {/* Ciblage avance */}
+                    <AudienceBuilder onChange={setAudience} />
 
                     {/* Lien vers les stores */}
                     <div className="flex items-center gap-3 p-4 border border-border-color rounded-lg">

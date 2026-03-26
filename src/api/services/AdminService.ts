@@ -131,6 +131,14 @@ export default class AdminService {
         });
     }
 
+    static async getAudienceCount(query: AudienceQueryDTO): Promise<{ count: number; query: string }> {
+        return this.request("/api/v1/admin/notifications/audience-count", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify(query),
+        });
+    }
+
     static async createBroadcastNotification(data: {
         title: string;
         body: string;
@@ -140,6 +148,7 @@ export default class AdminService {
         expiresAt?: string | null;
         sendPush?: boolean;
         linkToStores?: boolean;
+        audience?: AudienceQueryDTO | null;
     }): Promise<{ status: string; id: string }> {
         return this.request("/api/v1/admin/notifications", {
             method: "POST",
@@ -186,6 +195,17 @@ export interface NotificationTemplateDTO {
     actionUrl: string | null;
     push: boolean;
     inApp: boolean;
+}
+
+export interface AudienceConditionDTO {
+    field: string;
+    operator: string;
+    value: string;
+}
+
+export interface AudienceQueryDTO {
+    combinator: "AND" | "OR";
+    conditions: AudienceConditionDTO[];
 }
 
 export interface BroadcastNotificationDTO {

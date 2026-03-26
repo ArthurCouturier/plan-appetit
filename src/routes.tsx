@@ -24,11 +24,13 @@ import AdminNotifications from "./pages/AdminNotifications";
 import AdminNotificationsList from "./pages/AdminNotificationsList";
 import AdminSendNotification from "./pages/AdminSendNotification";
 import FridgeMode from "./pages/FridgeMode";
+import NotFound from "./pages/NotFound";
 import NewRecipePage from "./pages/NewRecipePage";
 
 const router = createBrowserRouter([
     {
         path: "/",
+        errorElement: <NotFound />,
         children: [
             {
                 index: true,

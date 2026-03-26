@@ -161,6 +161,31 @@ export default class AdminService {
             headers: this.getAuthHeaders(),
         });
     }
+
+    static async getNotificationTemplates(): Promise<NotificationTemplateDTO[]> {
+        return this.request("/api/v1/admin/notifications/templates", {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async sendTemplateToUser(email: string, templateKey: string): Promise<{ status: string; pushSent: boolean; inAppSent: boolean }> {
+        return this.request("/api/v1/admin/notifications/send-template", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ email, templateKey }),
+        });
+    }
+}
+
+export interface NotificationTemplateDTO {
+    key: string;
+    title: string;
+    body: string;
+    iconType: string;
+    actionUrl: string | null;
+    push: boolean;
+    inApp: boolean;
 }
 
 export interface BroadcastNotificationDTO {

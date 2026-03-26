@@ -138,6 +138,8 @@ export default class AdminService {
         actionUrl?: string;
         iconType: string;
         expiresAt?: string | null;
+        sendPush?: boolean;
+        linkToStores?: boolean;
     }): Promise<{ status: string; id: string }> {
         return this.request("/api/v1/admin/notifications", {
             method: "POST",
@@ -145,4 +147,30 @@ export default class AdminService {
             body: JSON.stringify(data),
         });
     }
+
+    static async getAllBroadcastNotifications(): Promise<BroadcastNotificationDTO[]> {
+        return this.request("/api/v1/admin/notifications", {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async cancelBroadcastNotification(id: string): Promise<{ status: string; id: string }> {
+        return this.request(`/api/v1/admin/notifications/${id}/cancel`, {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+        });
+    }
+}
+
+export interface BroadcastNotificationDTO {
+    id: string;
+    type: string;
+    title: string;
+    body: string;
+    segment: string | null;
+    iconType: string;
+    actionUrl: string | null;
+    createdAt: string;
+    expiresAt: string | null;
 }

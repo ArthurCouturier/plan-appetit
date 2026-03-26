@@ -5,17 +5,19 @@ interface NotificationItemProps {
     notif: NotificationInterface;
     onClick: (notif: NotificationInterface) => void;
     onToggleRead: (notif: NotificationInterface) => void;
+    onDismiss: (notif: NotificationInterface) => void;
 }
 
 const SNAP_PERCENT = 25;
 const AUTO_TRIGGER_PERCENT = 50;
 const SLOW_RATIO = 0.15;
 
-export default function NotificationItem({ notif, onClick, onToggleRead }: NotificationItemProps) {
+export default function NotificationItem({ notif, onClick, onToggleRead, onDismiss }: NotificationItemProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const touchStartX = useRef(0);
     const touchStartY = useRef(0);
     const startOffsetX = useRef(0);
+    // offsetX: positive = swipe left (toggle read), negative = swipe right (dismiss)
     const [offsetX, setOffsetX] = useState(0);
     const [snapped, setSnapped] = useState(false);
     const [transitioning, setTransitioning] = useState(false);
@@ -41,7 +43,7 @@ export default function NotificationItem({ notif, onClick, onToggleRead }: Notif
     }, [offsetX]);
 
     const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        const dx = touchStartX.current - e.touches[0].clientX;
+        const dx = touchStartX.current - e.touches[0].clientX; // positive = swipe left
         const dy = e.touches[0].clientY - touchStartY.current;
 
         if (isHorizontalSwipe.current === null) {
@@ -54,10 +56,13 @@ export default function NotificationItem({ notif, onClick, onToggleRead }: Notif
         if (!isHorizontalSwipe.current) return;
 
         const newOffset = startOffsetX.current + dx;
+
         if (newOffset >= 0) {
-            setOffsetX(snapped ? Math.max(0, newOffset) : computeOffset(Math.max(0, newOffset)));
+            // Swipe left: toggle read
+            setOffsetX(snapped ? Math.max(0, newOffset) : computeOffset(newOffset));
         } else {
-            setOffsetX(0);
+            // Swipe right: dismiss
+            setOffsetX(-computeOffset(Math.abs(newOffset)));
         }
     }, [snapped]);
 
@@ -65,29 +70,50 @@ export default function NotificationItem({ notif, onClick, onToggleRead }: Notif
         if (!isHorizontalSwipe.current) return;
 
         const width = getWidth();
-        const rawPercent = (offsetX / width) * 100;
+        const absOffset = Math.abs(offsetX);
+        const rawPercent = (absOffset / width) * 100;
 
         setTransitioning(true);
 
-        if (rawPercent >= AUTO_TRIGGER_PERCENT * 0.6) {
-            setOffsetX(0);
-            setSnapped(false);
-            onToggleRead(notif);
-        } else if (rawPercent >= SNAP_PERCENT * 0.8) {
-            setOffsetX(width * SNAP_PERCENT / 100);
-            setSnapped(true);
+        if (offsetX > 0) {
+            // Swipe left: toggle read
+            if (rawPercent >= AUTO_TRIGGER_PERCENT * 0.6) {
+                setOffsetX(0);
+                setSnapped(false);
+                onToggleRead(notif);
+            } else if (rawPercent >= SNAP_PERCENT * 0.8) {
+                setOffsetX(width * SNAP_PERCENT / 100);
+                setSnapped(true);
+            } else {
+                setOffsetX(0);
+                setSnapped(false);
+            }
         } else {
-            setOffsetX(0);
-            setSnapped(false);
+            // Swipe right: dismiss
+            if (rawPercent >= AUTO_TRIGGER_PERCENT * 0.6) {
+                setOffsetX(0);
+                setSnapped(false);
+                onDismiss(notif);
+            } else if (rawPercent >= SNAP_PERCENT * 0.8) {
+                setOffsetX(-(width * SNAP_PERCENT / 100));
+                setSnapped(true);
+            } else {
+                setOffsetX(0);
+                setSnapped(false);
+            }
         }
-    }, [offsetX, notif, onToggleRead]);
+    }, [offsetX, notif, onToggleRead, onDismiss]);
 
     const handleActionClick = useCallback(() => {
         setTransitioning(true);
         setOffsetX(0);
         setSnapped(false);
-        onToggleRead(notif);
-    }, [notif, onToggleRead]);
+        if (offsetX > 0) {
+            onToggleRead(notif);
+        } else {
+            onDismiss(notif);
+        }
+    }, [offsetX, notif, onToggleRead, onDismiss]);
 
     const handleContentClick = useCallback(() => {
         if (snapped) {
@@ -99,25 +125,40 @@ export default function NotificationItem({ notif, onClick, onToggleRead }: Notif
         onClick(notif);
     }, [snapped, notif, onClick]);
 
-    const actionLabel = notif.read ? "Non lue" : "Lue";
+    const toggleReadLabel = notif.read ? "Non lue" : "Lue";
+    const absOffset = Math.abs(offsetX);
 
     return (
         <div ref={containerRef} className="relative rounded-xl overflow-hidden">
-            {/* Bouton bleu en arriere-plan, cale a droite */}
-            <div
-                className="absolute top-0 bottom-0 right-0 flex items-center justify-center rounded-xl bg-blue-500"
-                style={{
-                    width: Math.max(offsetX, 0),
-                    opacity: offsetX > 0 ? 1 : 0,
-                }}
-            >
-                <button
-                    onClick={handleActionClick}
-                    className="h-full w-full flex items-center justify-center text-white text-xs font-semibold px-2"
+            {/* Bouton bleu a droite (swipe left = toggle read) */}
+            {offsetX > 0 && (
+                <div
+                    className="absolute top-0 bottom-0 right-0 flex items-center justify-center rounded-xl bg-blue-500"
+                    style={{ width: absOffset }}
                 >
-                    {actionLabel}
-                </button>
-            </div>
+                    <button
+                        onClick={handleActionClick}
+                        className="h-full w-full flex items-center justify-center text-white text-xs font-semibold px-2"
+                    >
+                        {toggleReadLabel}
+                    </button>
+                </div>
+            )}
+
+            {/* Bouton rouge a gauche (swipe right = dismiss) */}
+            {offsetX < 0 && (
+                <div
+                    className="absolute top-0 bottom-0 left-0 flex items-center justify-center rounded-xl bg-red-500"
+                    style={{ width: absOffset }}
+                >
+                    <button
+                        onClick={handleActionClick}
+                        className="h-full w-full flex items-center justify-center text-white text-xs font-semibold px-2"
+                    >
+                        Retirer
+                    </button>
+                </div>
+            )}
 
             {/* Contenu de la notification */}
             <div
@@ -130,7 +171,7 @@ export default function NotificationItem({ notif, onClick, onToggleRead }: Notif
                         ? "bg-white/5"
                         : "bg-white/15"
                 } ${transitioning ? "transition-transform duration-300 ease-out" : ""}`}
-                style={{ transform: `translateX(-${offsetX}px)` }}
+                style={{ transform: `translateX(${-offsetX}px)` }}
             >
                 <div className="flex items-start gap-3">
                     {!notif.read && (

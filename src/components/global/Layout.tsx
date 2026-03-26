@@ -1,6 +1,7 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import HeaderMobile from "./HeaderMobile";
+import { Browser } from "@capacitor/browser";
 import PlatformService from "../../api/services/PlatformService";
 import { TrackingService } from "../../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../../api/tracking/skadnetwork/SKAdNetworkService";
@@ -30,6 +31,14 @@ export default function Layout() {
         const type = data?.type;
         if (type === "daily_recipe") {
           setShowDailyRecipeModal(true);
+        } else if (type === "broadcast") {
+          const platform = Capacitor.getPlatform();
+          const storeUrl = platform === "ios" ? data?.iosUrl : data?.androidUrl;
+          if (storeUrl) {
+            Browser.open({ url: storeUrl });
+          } else if (data?.actionUrl) {
+            navigate(data.actionUrl);
+          }
         }
       });
     }

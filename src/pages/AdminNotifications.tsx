@@ -21,6 +21,9 @@ export default function AdminNotifications() {
     const [actionUrl, setActionUrl] = useState("");
     const [iconType, setIconType] = useState<string>("INFO");
     const [expiresIn, setExpiresIn] = useState("");
+    const [linkToStores, setLinkToStores] = useState(false);
+    const [sendPush, setSendPush] = useState(false);
+    const [showPushConfirm, setShowPushConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<{ status: string; id: string } | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -29,8 +32,9 @@ export default function AdminNotifications() {
         return <Navigate to="/" replace />;
     }
 
-    const handleSubmit = async () => {
+    const doSubmit = async () => {
         if (!title.trim() || !body.trim()) return;
+        setShowPushConfirm(false);
         setLoading(true);
         setResult(null);
         setError(null);
@@ -48,19 +52,32 @@ export default function AdminNotifications() {
                 title: title.trim(),
                 body: body.trim(),
                 segment: segment || null,
-                actionUrl: actionUrl.trim() || undefined,
+                actionUrl: linkToStores ? undefined : (actionUrl.trim() || undefined),
                 iconType,
                 expiresAt,
+                sendPush,
+                linkToStores,
             });
             setResult(response);
             setTitle("");
             setBody("");
             setActionUrl("");
             setExpiresIn("");
+            setSendPush(false);
+            setLinkToStores(false);
         } catch (e) {
             setError(e instanceof Error ? e.message : "Erreur inconnue");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSubmit = () => {
+        if (!title.trim() || !body.trim()) return;
+        if (sendPush) {
+            setShowPushConfirm(true);
+        } else {
+            doSubmit();
         }
     };
 
@@ -126,19 +143,41 @@ export default function AdminNotifications() {
                         </div>
                     </div>
 
-                    {/* Action URL */}
-                    <div>
-                        <label className="block text-sm font-medium text-text-primary mb-1">
-                            Lien d'action <span className="text-text-secondary text-xs">(optionnel)</span>
-                        </label>
+                    {/* Lien vers les stores */}
+                    <div className="flex items-center gap-3 p-4 border border-border-color rounded-lg">
                         <input
-                            type="text"
-                            value={actionUrl}
-                            onChange={(e) => setActionUrl(e.target.value)}
-                            placeholder="Ex: /frigo, /premium, /recettes/nouvelle"
-                            className="w-full px-3 py-2 rounded-lg border border-border-color bg-secondary text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            type="checkbox"
+                            id="linkToStores"
+                            checked={linkToStores}
+                            onChange={(e) => {
+                                setLinkToStores(e.target.checked);
+                                if (e.target.checked) setActionUrl("");
+                            }}
+                            className="w-4 h-4 rounded accent-orange-500"
                         />
+                        <label htmlFor="linkToStores" className="flex-1">
+                            <span className="text-sm font-medium text-text-primary">Lien vers les stores</span>
+                            <p className="text-xs text-text-secondary">
+                                Le clic redirigera vers l'App Store (iOS) ou le Play Store (Android) automatiquement
+                            </p>
+                        </label>
                     </div>
+
+                    {/* Action URL (masque si lien stores) */}
+                    {!linkToStores && (
+                        <div>
+                            <label className="block text-sm font-medium text-text-primary mb-1">
+                                Lien d'action <span className="text-text-secondary text-xs">(optionnel)</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={actionUrl}
+                                onChange={(e) => setActionUrl(e.target.value)}
+                                placeholder="Ex: /frigo, /premium, /recettes/nouvelle"
+                                className="w-full px-3 py-2 rounded-lg border border-border-color bg-secondary text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                            />
+                        </div>
+                    )}
 
                     {/* Expiration */}
                     <div>
@@ -153,6 +192,23 @@ export default function AdminNotifications() {
                             min="1"
                             className="w-full px-3 py-2 rounded-lg border border-border-color bg-secondary text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                         />
+                    </div>
+
+                    {/* Push notification */}
+                    <div className="flex items-center gap-3 p-4 border border-border-color rounded-lg">
+                        <input
+                            type="checkbox"
+                            id="sendPush"
+                            checked={sendPush}
+                            onChange={(e) => setSendPush(e.target.checked)}
+                            className="w-4 h-4 rounded accent-orange-500"
+                        />
+                        <label htmlFor="sendPush" className="flex-1">
+                            <span className="text-sm font-medium text-text-primary">Envoyer aussi en push</span>
+                            <p className="text-xs text-text-secondary">
+                                Envoie une notification push a tous les appareils mobiles enregistres
+                            </p>
+                        </label>
                     </div>
 
                     {/* Preview */}
@@ -182,6 +238,33 @@ export default function AdminNotifications() {
                             </span>
                         ) : "Envoyer la notification"}
                     </button>
+
+                    {/* Confirmation push */}
+                    {showPushConfirm && (
+                        <div className="p-4 bg-red-50 border-2 border-red-300 rounded-lg space-y-3">
+                            <p className="text-sm font-bold text-red-700">
+                                Attention : notification push
+                            </p>
+                            <p className="text-xs text-red-600">
+                                Tu es sur le point d'envoyer une notification push a tous les appareils mobiles.
+                                Cette action est irreversible.
+                            </p>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={doSubmit}
+                                    className="flex-1 px-4 py-2 rounded-lg font-semibold text-sm bg-red-500 text-white hover:bg-red-600 transition-colors"
+                                >
+                                    Confirmer l'envoi push
+                                </button>
+                                <button
+                                    onClick={() => setShowPushConfirm(false)}
+                                    className="flex-1 px-4 py-2 rounded-lg font-semibold text-sm bg-secondary border border-border-color hover:bg-thirdary transition-colors"
+                                >
+                                    Annuler
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Resultat */}
                     {result && (

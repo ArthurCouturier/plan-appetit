@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { BellIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import InAppNotificationService from "../../api/services/InAppNotificationService";
 import type { NotificationInterface, NotificationPageInterface } from "../../api/interfaces/notifications/NotificationInterface";
 import NotificationItem from "./NotificationItem";
@@ -130,9 +131,33 @@ export default function NotificationPanel({ isOpen, onClose, originRect }: Notif
                 setPageInfo(prev => ({ ...prev, unreadCount: Math.max(0, prev.unreadCount - 1) }));
             } catch { /* */ }
         }
+
+        const meta = notif.metadata as Record<string, string> | null;
+        const iosUrl = meta?.iosUrl;
+        const androidUrl = meta?.androidUrl;
+
+        if (iosUrl || androidUrl) {
+            const platform = Capacitor.getPlatform();
+            const externalUrl = platform === "ios" ? iosUrl : platform === "android" ? androidUrl : (iosUrl || androidUrl);
+            if (externalUrl) {
+                onClose();
+                if (Capacitor.isNativePlatform()) {
+                    Browser.open({ url: externalUrl });
+                } else {
+                    window.open(externalUrl, "_blank");
+                }
+                return;
+            }
+        }
+
         if (notif.actionUrl) {
             onClose();
-            navigate(notif.actionUrl);
+            try {
+                const url = new URL(notif.actionUrl, window.location.origin);
+                navigate(url.pathname + url.search + url.hash);
+            } catch {
+                navigate(notif.actionUrl);
+            }
         }
     }, [navigate, onClose]);
 
@@ -148,6 +173,16 @@ export default function NotificationPanel({ isOpen, onClose, originRect }: Notif
                 setPageInfo(prev => ({ ...prev, unreadCount: Math.max(0, prev.unreadCount - 1) }));
             }
         } catch { /* */ }
+    }, []);
+
+    const handleDismiss = useCallback(async (notif: NotificationInterface) => {
+        if (!notif.read) {
+            try {
+                await InAppNotificationService.markAsRead(notif.id);
+                setPageInfo(prev => ({ ...prev, unreadCount: Math.max(0, prev.unreadCount - 1) }));
+            } catch { /* */ }
+        }
+        setNotifications(prev => prev.filter(n => n.id !== notif.id));
     }, []);
 
     const handleMarkAllRead = useCallback(async () => {
@@ -286,6 +321,7 @@ export default function NotificationPanel({ isOpen, onClose, originRect }: Notif
                                         notif={notif}
                                         onClick={handleNotificationClick}
                                         onToggleRead={handleToggleRead}
+                                        onDismiss={handleDismiss}
                                     />
                                 ))}
                                 {loading && (

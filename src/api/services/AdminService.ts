@@ -130,4 +130,19 @@ export default class AdminService {
             body: JSON.stringify({ provider, testEventCode: testEventCode || "" }),
         });
     }
+
+    static async createBroadcastNotification(data: {
+        title: string;
+        body: string;
+        segment?: string | null;
+        actionUrl?: string;
+        iconType: string;
+        expiresAt?: string | null;
+    }): Promise<{ status: string; id: string }> {
+        return this.request("/api/v1/admin/notifications", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify(data),
+        });
+    }
 }

@@ -20,6 +20,7 @@ import Admin from "./pages/Admin";
 import AdminBatchs from "./pages/AdminBatchs";
 import AdminUserRecipes from "./pages/AdminUserRecipes";
 import AdminTrackingTest from "./pages/AdminTrackingTest";
+import AdminNotifications from "./pages/AdminNotifications";
 import FridgeMode from "./pages/FridgeMode";
 import NewRecipePage from "./pages/NewRecipePage";
 
@@ -128,6 +129,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/tracking-test",
                                 element: <AdminTrackingTest />
+                            },
+                            {
+                                path: "admin/notifications",
+                                element: <AdminNotifications />
                             }
                         ],
                     },

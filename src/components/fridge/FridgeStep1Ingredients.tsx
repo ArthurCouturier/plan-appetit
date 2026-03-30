@@ -3,6 +3,7 @@ import { motion, useAnimation } from "framer-motion";
 import { QUICK_SUGGESTIONS } from "../../data/fridgeIngredients";
 import { searchIngredients, extractCurrentWord, replaceCurrentWord } from "../../api/utils/fuzzySearch";
 import type { FridgeIngredient } from "../../data/fridgeIngredients";
+import { lightHaptic } from "../../haptics/light";
 
 const MAX_CHARS = 300;
 
@@ -133,6 +134,7 @@ export default function FridgeStep1Ingredients({ value, onChange, onNext }: Frid
     };
 
     const handleChipClick = (ingredient: FridgeIngredient) => {
+        lightHaptic();
         const name = ingredient.name.toLowerCase();
 
         if (isChipInValue(name)) {

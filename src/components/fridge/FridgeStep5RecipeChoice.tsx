@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { lightHaptic } from "../../haptics/light";
 
 interface FridgeStep5RecipeChoiceProps {
     recipes: string[];
@@ -34,7 +35,7 @@ export default function FridgeStep5RecipeChoice({ recipes, onSelect }: FridgeSte
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: index * 0.08 }}
-                            onClick={() => setSelected(title)}
+                            onClick={() => { setSelected(title); lightHaptic(); }}
                             className={`w-full text-left px-5 py-4 rounded-xl border transition-all duration-200 ${
                                 selected === title
                                     ? "bg-cout-base/15 border-cout-base text-text-primary"

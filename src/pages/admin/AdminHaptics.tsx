@@ -6,6 +6,9 @@ import PlatformService from "../../api/services/PlatformService";
 import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 import RecipeGenerationLoadingModal from "../../components/popups/RecipeGenerationLoadingModal";
 import { fireworkHaptic } from "../../haptics/firework";
+import { lightHaptic } from "../../haptics/light";
+import { mediumHaptic } from "../../haptics/medium";
+import { heavyHaptic } from "../../haptics/heavy";
 
 const IMPACT_STYLES = [
   { label: "Light", style: "light" as const },
@@ -152,6 +155,56 @@ export default function AdminHaptics() {
           </button>
         </div>
 
+        {/* Interactive examples */}
+        <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Exemples interactifs</h3>
+        <div className="space-y-4 mb-6">
+          {/* Slider */}
+          <div className="bg-secondary border border-border-color rounded-xl p-4">
+            <p className="text-sm font-medium text-text-primary mb-2">Slider (light haptic)</p>
+            <input
+              type="range" min={0} max={10}
+              defaultValue={5}
+              onChange={() => lightHaptic()}
+              className="w-full h-2 bg-bg-color rounded-lg appearance-none cursor-pointer accent-cout-base"
+            />
+          </div>
+
+          {/* Level choice */}
+          <div className="bg-secondary border border-border-color rounded-xl p-4">
+            <p className="text-sm font-medium text-text-primary mb-2">Choix niveau (light haptic)</p>
+            <LevelExample />
+          </div>
+
+          {/* Boolean */}
+          <div className="bg-secondary border border-border-color rounded-xl p-4">
+            <p className="text-sm font-medium text-text-primary mb-2">Oui / Non (light haptic)</p>
+            <BooleanExample />
+          </div>
+
+          {/* Step highlight */}
+          <div className="bg-secondary border border-border-color rounded-xl p-4">
+            <p className="text-sm font-medium text-text-primary mb-2">Etape recette (medium haptic)</p>
+            <StepExample />
+          </div>
+
+          {/* Card flip */}
+          <div className="bg-secondary border border-border-color rounded-xl p-4">
+            <p className="text-sm font-medium text-text-primary mb-2">Flip carte (heavy haptic)</p>
+            <button
+              onClick={() => heavyHaptic()}
+              className="w-full py-3 bg-primary border border-border-color rounded-lg text-sm font-medium text-text-primary hover:bg-tertiary transition-colors"
+            >
+              Simuler flip
+            </button>
+          </div>
+
+          {/* Subcollection toggle */}
+          <div className="bg-secondary border border-border-color rounded-xl p-4">
+            <p className="text-sm font-medium text-text-primary mb-2">Toggle sous-collection (medium haptic)</p>
+            <ToggleExample />
+          </div>
+        </div>
+
         {/* Modal test */}
         <h3 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Modale de generation</h3>
         <button
@@ -163,6 +216,71 @@ export default function AdminHaptics() {
       </div>
 
       <RecipeGenerationLoadingModal isOpen={showModal} />
+    </div>
+  );
+}
+
+function LevelExample() {
+  const [val, setVal] = useState("Moyen");
+  const options = ["Peu", "Moyen", "Beaucoup"];
+  return (
+    <div className="flex gap-2">
+      {options.map(o => (
+        <button key={o} onClick={() => { setVal(o); lightHaptic(); }}
+          className={`flex-1 py-2 rounded-xl text-sm font-medium transition-all ${val === o ? "bg-cout-yellow text-cout-purple shadow-md scale-105" : "bg-primary border border-border-color text-text-primary"}`}
+        >{o}</button>
+      ))}
+    </div>
+  );
+}
+
+function BooleanExample() {
+  const [val, setVal] = useState<boolean | null>(null);
+  return (
+    <div className="flex gap-3">
+      <button onClick={() => { setVal(false); lightHaptic(); }}
+        className={`flex-1 py-2 rounded-xl font-medium transition-all ${val === false ? "bg-cancel-1 text-white shadow-md scale-105" : "bg-primary border border-border-color text-text-primary"}`}
+      >Non</button>
+      <button onClick={() => { setVal(true); lightHaptic(); }}
+        className={`flex-1 py-2 rounded-xl font-medium transition-all ${val === true ? "bg-confirmation-1 text-white shadow-md scale-105" : "bg-primary border border-border-color text-text-primary"}`}
+      >Oui</button>
+    </div>
+  );
+}
+
+function StepExample() {
+  const [active, setActive] = useState<number | null>(null);
+  const steps = ["Couper les legumes", "Faire revenir dans la poele", "Assaisonner et servir"];
+  return (
+    <div className="space-y-2">
+      {steps.map((s, i) => (
+        <div key={i} onClick={() => { setActive(active === i ? null : i); mediumHaptic(); }}
+          className={`p-2 rounded-lg cursor-pointer text-sm transition-all ${active === i ? "bg-primary shadow-md scale-[1.02]" : "bg-bg-color text-text-secondary"}`}
+        ><span className="font-bold">Etape {i + 1}:</span> {s}</div>
+      ))}
+    </div>
+  );
+}
+
+function ToggleExample() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button onClick={() => { setOpen(!open); mediumHaptic(); }} className="flex items-center gap-2 text-sm font-medium text-text-primary">
+        <svg className={`w-4 h-4 transition-transform duration-200 ${!open ? '-rotate-90' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+        </svg>
+        Sous-collections (3)
+      </button>
+      <div className="grid transition-[grid-template-rows] duration-200" style={{ gridTemplateRows: open ? '1fr' : '0fr' }}>
+        <div className="overflow-hidden">
+          <div className="pt-2 space-y-1">
+            {["Entrees", "Plats", "Desserts"].map(c => (
+              <div key={c} className="bg-primary border border-border-color rounded-lg p-2 text-sm text-text-primary">{c}</div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

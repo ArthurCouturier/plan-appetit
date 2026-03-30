@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import InstagramGenerationLoader from "../instagram/InstagramGenerationLoader";
 import { modalTapHaptic } from "../../haptics/modalTap";
+import { fireworkHaptic } from "../../haptics/firework";
 
 interface RecipeGenerationLoadingModalProps {
   isOpen: boolean;
@@ -12,6 +14,17 @@ interface RecipeGenerationLoadingModalProps {
 }
 
 export default function RecipeGenerationLoadingModal({ isOpen, progress }: RecipeGenerationLoadingModalProps) {
+  const wasOpen = useRef(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      wasOpen.current = true;
+    } else if (wasOpen.current) {
+      wasOpen.current = false;
+      fireworkHaptic();
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (

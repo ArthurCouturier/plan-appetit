@@ -16,7 +16,7 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import RecipeCollectionInterface from "../api/interfaces/collections/RecipeCollectionInterface";
 import RecipeSummaryInterface from "../api/interfaces/recipes/RecipeSummaryInterface";
-import { useMoveCollectionToParent, useReorderCollectionItems } from "../api/hooks/useCollectionMutations";
+import { useMoveCollectionToParent, useMoveRecipeToCollection, useReorderCollectionItems } from "../api/hooks/useCollectionMutations";
 import { queryKeys } from "../api/queryConfig";
 import { RecipeSortOption, getInitialSort } from "../components/collections/RecipeSortSelect";
 
@@ -41,6 +41,7 @@ export default function useCollectionDnD({ collection, uuid, isMobile, refetch }
     const recipeSnapshotRef = useRef<RecipeSummaryInterface[] | null>(null);
 
     const moveCollectionMutation = useMoveCollectionToParent();
+    const moveRecipeMutation = useMoveRecipeToCollection();
     const reorderMutation = useReorderCollectionItems();
 
     useEffect(() => {
@@ -125,6 +126,24 @@ export default function useCollectionDnD({ collection, uuid, isMobile, refetch }
             return;
         }
 
+        if (overId.startsWith('droppable-collection-') && activeData?.type === 'recipe' && activeData.recipe) {
+            const targetCollectionUuid = overId.replace('droppable-collection-', '');
+            const recipeUuid = String(activeData.recipe.uuid);
+            const updatedRecipes = (collection.recipes || []).filter(r => String(r.uuid) !== recipeUuid);
+            setCollectionCache(prev => ({ ...prev, recipes: updatedRecipes }));
+            try {
+                await moveRecipeMutation.mutateAsync({
+                    recipeUuid,
+                    sourceCollectionUuid: uuid!,
+                    targetCollectionUuid,
+                });
+            } catch (err) {
+                console.error('Erreur lors du déplacement de la recette:', err);
+                refetch();
+            }
+            return;
+        }
+
         if (activeId === overId) return;
 
         const isActiveRecipe = activeId.startsWith('recipe-');
@@ -167,7 +186,7 @@ export default function useCollectionDnD({ collection, uuid, isMobile, refetch }
                 }
             }
         }
-    }, [collection, uuid, setCollectionCache, moveCollectionMutation, reorderMutation, refetch]);
+    }, [collection, uuid, setCollectionCache, moveCollectionMutation, moveRecipeMutation, reorderMutation, refetch]);
 
     const onDragCancel = useCallback(() => setActiveItem(null), []);
 

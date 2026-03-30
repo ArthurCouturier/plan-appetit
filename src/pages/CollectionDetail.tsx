@@ -1,6 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FolderIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
+import { mediumHaptic } from "../haptics/medium";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import QuickActionButton from "../components/buttons/QuickActionButton";
 import CreateCollectionModal from "../components/popups/CreateCollectionModal";
@@ -102,6 +103,14 @@ function CollectionDetailContent({
     sortOption, onSortChange, isReordering, onStartReorder, onValidateReorder, onCancelReorder, onCollectionCreated,
 }: CollectionDetailContentProps) {
     const [showCreateCollection, setShowCreateCollection] = useState(false);
+    const collUuid = String(collection.uuid);
+    const [subCollectionsCollapsed, setSubCollectionsCollapsed] = useState(
+        () => localStorage.getItem(`subcollections-collapsed-${collUuid}`) !== '0'
+    );
+
+    useEffect(() => {
+        setSubCollectionsCollapsed(localStorage.getItem(`subcollections-collapsed-${collUuid}`) !== '0');
+    }, [collUuid]);
 
     const subCollections = collection.subCollections || [];
     const recipes = collection.recipes || [];
@@ -173,23 +182,45 @@ function CollectionDetailContent({
                 {/* Sub-collections */}
                 {subCollections.length > 0 && (
                     <div className="mb-6 md:mb-8">
-                        <div className="flex items-center gap-2 mb-3 md:mb-4">
+                        <button
+                            onClick={() => {
+                                const key = `subcollections-collapsed-${collUuid}`;
+                                const next = !subCollectionsCollapsed;
+                                setSubCollectionsCollapsed(next);
+                                localStorage.setItem(key, next ? '1' : '0');
+                                mediumHaptic();
+                            }}
+                            className="flex items-center gap-2 mb-3 md:mb-4 group"
+                        >
                             <FolderIcon className="w-5 h-5 md:w-6 md:h-6 text-cout-yellow" />
                             <h2 className="text-lg md:text-xl font-bold text-text-primary">Sous-collections</h2>
                             <span className="text-text-secondary text-sm">({subCollections.length})</span>
-                        </div>
-                        <SortableContext items={collectionIds} strategy={rectSortingStrategy}>
-                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 md:gap-6">
-                                {subCollections.map((subCollection) => (
-                                    <DroppableCollectionCard
-                                        key={subCollection.uuid}
-                                        collection={subCollection}
-                                        isMobile={isMobile}
-                                        isDraggingItem={isDragging}
-                                    />
-                                ))}
+                            <svg
+                                className={`w-4 h-4 text-text-secondary transition-transform duration-200 ${subCollectionsCollapsed ? '-rotate-90' : ''}`}
+                                viewBox="0 0 20 20" fill="currentColor"
+                            >
+                                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                        <div
+                            className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+                            style={{ gridTemplateRows: subCollectionsCollapsed ? '0fr' : '1fr' }}
+                        >
+                            <div className="overflow-hidden">
+                                <SortableContext items={collectionIds} strategy={rectSortingStrategy}>
+                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 md:gap-6">
+                                        {subCollections.map((subCollection) => (
+                                            <DroppableCollectionCard
+                                                key={subCollection.uuid}
+                                                collection={subCollection}
+                                                isMobile={isMobile}
+                                                isDraggingItem={isDragging}
+                                            />
+                                        ))}
+                                    </div>
+                                </SortableContext>
                             </div>
-                        </SortableContext>
+                        </div>
                     </div>
                 )}
 

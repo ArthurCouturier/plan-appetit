@@ -401,6 +401,19 @@ export default class BackendService {
         return response.json();
     }
 
+    public static async getRecipeImagesBatch(
+        uuids: string[]
+    ): Promise<{ images: Record<string, string>; pending: string[] }> {
+        const response = await fetch(`${this.getApiUrl()}/api/v1/recipes/images/batch`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uuids }),
+        });
+
+        if (!response.ok) return { images: {}, pending: [] };
+        return response.json();
+    }
+
     public static async generateRecipeImage(
         email: string,
         token: string,

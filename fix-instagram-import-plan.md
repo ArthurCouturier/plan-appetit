@@ -1,53 +1,99 @@
 ---
 name: Fix Instagram Import
-description: Plan de correction des problèmes identifiés sur l'import Instagram
+description: Plan de correction et d'amelioration de l'import Instagram
 status: en cours
 created: 2026-03-29
+updated: 2026-03-30
 ---
 
 # Fix Instagram Import - Plan
 
-## Problèmes identifiés
+## Corrections appliquees
 
-### 1. Les posts video (reels) ne fonctionnent pas
-**Statut** : FAIT
-**Priorite** : Haute
-**Description** : L'import d'un reel Instagram (ex: `/reel/XXX/`) echouait car Instagram servait une coquille SPA (JavaScript only, sans contenu) au lieu du HTML SSR quand le User-Agent ressemblait a un navigateur moderne. Les photos fonctionnaient par chance avec l'ancien UA.
-**Cause racine** : Le User-Agent `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36` recevait du SSR pour les photos mais du SPA pour les reels.
-**Fix applique** : (`InstagramService.kt`)
-- Ajout d'une liste de User-Agents avec fallback (Googlebot en premier, ancien UA en second)
-- Boucle qui teste chaque UA et verifie que le HTML contient du contenu reel (`EmbeddedMediaImage`, `CaptionUsername`, ou `og:image`)
-- Si aucun UA ne retourne de SSR, erreur explicite
-**Exemples** :
-- Photo (OK) : `https://www.instagram.com/p/DWYUNx4DFn3/`
-- Video (OK apres fix) : `https://www.instagram.com/reel/DWMcNWWCCYD/`
+### 1. Les posts video (reels) ne fonctionnent pas - FAIT
+**Cause** : Instagram servait du SPA au lieu du SSR selon le User-Agent.
+**Fix** : User-Agent Googlebot en premier + fallback. Extraction `srcset` pour les images CDN.
 
-### 2. Double appel inutile au scraping Instagram
-**Statut** : A FAIRE
-**Priorité** : Moyenne
-**Description** : Le front appelle `/fetch` dans `handleDisplay` (InstagramImport.tsx:92), mais le resultat n'est pas utilise pour la generation. Ensuite `/generate-recipe` refait `instagramService.getPostInfo(url)` (InstagramController.kt:87). C'est 2 requetes HTTP vers Instagram pour le meme post.
-**Solution proposee** : Supprimer l'appel `/fetch` du `handleDisplay` cote front. Le front n'en a pas besoin pour afficher l'embed (qui utilise le script Instagram). Le backend fait deja le scraping dans `/generate-recipe`.
+### 2. `incrementInstagramRecipes` manquant - FAIT
+**Fix** : Ajoute dans `InstagramController.generateRecipeFromInstagram()`.
 
-### 3. `fetchImageAsBase64` et `imageBase64` jamais utilises
-**Statut** : A FAIRE
-**Priorite** : Basse
-**Description** : `InstagramService.ts:76-88` contient une methode `fetchImageAsBase64` jamais appelee. Le parametre `imageBase64` de `generateRecipeFromPost` est optionnel et jamais passe. Le controller backend ne lit pas non plus ce champ.
-**Solution proposee** : Supprimer la methode `fetchImageAsBase64` et le parametre `imageBase64` du front.
+### 3. Nesting depth 1001 sur la reponse - FAIT
+**Fix** : Reponse simplifiee avec `mapOf("uuid", "name")` au lieu de l'entite JPA complete.
 
-### 4. `incrementInstagramRecipes` manquant dans le controller
-**Statut** : A FAIRE
+### 4. Token refresh automatique - FAIT
+**Fix** : `InstagramService.ts` utilise `fetchWithTokenRefresh` au lieu de `fetch`.
+
+### 5. LazyInitializationException image generation - FAIT
+**Fix** : `TransactionTemplate` + `Hibernate.initialize()` dans `ImageGenerationService`.
+
+### 6. Code mort supprime - FAIT
+- `fetchImageAsBase64` et parametre `imageBase64` supprimes du front
+- Methodes `create*Prompt` inline supprimees (remplacees par fichiers externes)
+
+## Ameliorations appliquees
+
+### Analyse video par frames
+- Detection de scene ffmpeg (`select='gt(scene,0.3)'`) au lieu d'un fps fixe
+- Non-premium : 1 frame par changement de scene
+- Premium : 2 frames par scene (debut + 0.5s apres)
+- Fallback si < 3 scenes : interval fixe (2s si <= 30s, 4s si > 30s)
+- Analyse parallele avec `CachedThreadPool` (autant de threads que de frames)
+
+### Transcription audio (Whisper)
+- Extraction audio MP3 via ffmpeg
+- Transcription via Whisper API (langue fr)
+- Ajoutee au contexte de generation de la recette
+
+### Debug admin
+- Modal debug visible uniquement pour les admins apres generation
+- Affiche : frames extraites, analyses par frame, transcription audio
+- Navigation vers la recette depuis la modal
+
+### Progression SSE temps reel
+- Endpoint SSE `/generation-progress` au lieu de polling
+- Barre de progression avec etapes : download, extraction, analyse frame X/Y, generation
+- Simulation 90->99% pendant la generation finale (1%/700ms, bloque a 99)
+
+### Image de recette referencee Instagram
+- `ImageGenerationService` decrit l'image Instagram via GPT-4o-mini
+- Description injectee dans le prompt DALL-E pour que l'image generee ressemble au post
+
+### Prompts externalises
+- `PromptService` avec substitution `{{variable}}`
+- Fichiers dans `src/main/resources/prompts/instagram/`
+- Permet d'iterer les prompts sans modifier le code Kotlin
+
+## Approches documentees (pour comparaison future)
+
+### Approche A : Analyse par frame en parallele (ACTUELLE)
+- Chaque frame est analysee individuellement par GPT-4o-mini
+- Toutes les analyses en parallele via CachedThreadPool
+- **Avantages** : granularite fine, barre de progression detaillee
+- **Inconvenients** : beaucoup d'appels API, risque de rate limit avec beaucoup de frames
+- **Cout** : ~$0.01-0.03 par import (selon nombre de frames)
+
+### Approche B : Analyse batch en un seul appel
+- Toutes les frames envoyees dans un seul appel GPT-4o-mini
+- **Avantages** : 1 seul appel, pas de rate limit, vision d'ensemble, plus rapide
+- **Inconvenients** : moins granulaire, pas de progression par frame
+- **Cout** : ~$0.005 par import
+- **Note** : a considerer si les rate limits posent probleme en production
+
+### Approche C : Hybride (a explorer)
+- Batch pour l'analyse visuelle + per-frame pour les details
+- Ou batch avec response structuree par timestamp
+
+## Reste a faire
+
+### Double appel scraping Instagram
 **Priorite** : Moyenne
-**Description** : Le controller appelle `incrementTotalGeneratedRecipes` et `incrementImportedRecipes` mais pas `incrementInstagramRecipes` (qui existe dans `StatisticsService`). La stat Instagram n'est donc jamais incrementee.
-**Solution proposee** : Ajouter `statisticsService.incrementInstagramRecipes(user)` dans `InstagramController.generateRecipeFromInstagram()`.
+Le front appelle `/fetch` dans `handleDisplay` mais le resultat n'est pas utilise. `/generate-recipe` refait le scraping.
+**Solution** : Supprimer l'appel `/fetch` du `handleDisplay` front.
 
-### 5. Endpoint `/fetch` sans authentification
-**Statut** : A FAIRE
+### Endpoint `/fetch` sans authentification
 **Priorite** : Basse
-**Description** : N'importe qui peut scraper des posts Instagram via `/api/v1/instagram/fetch` sans token Firebase. Risque d'abus.
-**Solution proposee** : Soit ajouter l'authentification, soit supprimer l'endpoint si on retire l'appel `/fetch` du front (cf point 2). Si on le garde pour un usage futur, ajouter les headers `Email` et `Authorization`.
+**Solution** : Ajouter auth ou supprimer si on retire l'appel `/fetch` du front.
 
-### 6. State `generatedRecipe` inutile
-**Statut** : A FAIRE
+### State `generatedRecipe` inutile
 **Priorite** : Basse
-**Description** : Le state `generatedRecipe` (InstagramImport.tsx:27) n'est jamais effectivement utilise pour l'affichage. L'utilisateur est redirige immediatement via `navigate`. Le state sert uniquement a desactiver le bouton via `!!generatedRecipe`, mais le `navigate` se fait avant que ce state ne soit mis a jour.
-**Solution proposee** : Supprimer le state `generatedRecipe` et simplifier la logique du bouton.
+**Solution** : Supprimer le state et simplifier la logique du bouton.

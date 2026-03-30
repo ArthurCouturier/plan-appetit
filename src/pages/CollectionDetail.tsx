@@ -23,20 +23,17 @@ export default function CollectionDetail() {
     const { data: collection, isLoading, isError, refetch } = useCollection(uuid);
     const isMobile = useIsMobile();
 
-    const [isRefreshing, setIsRefreshing] = useState(false);
-
     const dnd = useCollectionDnD({ collection, uuid, isMobile, refetch });
 
     const handleRefresh = useCallback(async () => {
-        setIsRefreshing(true);
-        try { await refetch(); } finally { setIsRefreshing(false); }
+        await refetch();
     }, [refetch]);
 
     const handleNameChange = (newName: string) => {
         dnd.setCollectionCache(prev => ({ ...prev, name: newName }));
     };
 
-    if (isLoading || isRefreshing) {
+    if (isLoading && !collection) {
         return <CollectionDetailSkeleton isMobile={isMobile} />;
     }
 

@@ -3,6 +3,7 @@ export interface InstagramPostInfo {
     description: string;
     title: string;
     imageUrl: string | null;
+    imageBase64: string | null;
 }
 
 export interface GeneratedRecipeResponse {

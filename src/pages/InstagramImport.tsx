@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { ClipboardDocumentIcon, ArrowPathIcon, SparklesIcon, CheckCircleIcon, ExclamationTriangleIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ClipboardDocumentIcon, ArrowPathIcon, SparklesIcon, ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Footer from "../components/global/Footer";
 import LogoButton from "../components/buttons/LogoButton";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
-import InstagramService from "../api/services/InstagramService";
+import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
+import InstagramDebugModal from "../components/instagram/InstagramDebugModal";
+import InstagramService, { InstagramPostInfo } from "../api/services/InstagramService";
 import { TrackingService } from "../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
 import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
@@ -12,69 +14,51 @@ import SandboxService from "../api/services/SandboxService";
 import useAuth from "../api/hooks/useAuth";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
-import useIsMobile from "../hooks/useIsMobile";
 import { UserRole, hasRoleLevel } from "../api/interfaces/users/UserInterface";
+import AdminService from "../api/services/AdminService";
 
 export default function InstagramImport() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const invalidateCollections = useInvalidateCollections();
 
+  const isAdminMode = !!(location.state as any)?.adminMode
+    && !!user && hasRoleLevel(user.role, UserRole.ADMIN);
+
   const [instagramUrl, setInstagramUrl] = useState("");
-  const [showEmbed, setShowEmbed] = useState(false);
-  const [embedUrl, setEmbedUrl] = useState("");
+  const [postInfo, setPostInfo] = useState<InstagramPostInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedRecipe, setGeneratedRecipe] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const isMobile = useIsMobile();
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
-  const [debugData, setDebugData] = useState<{
-    frameCount: number;
-    frames: string[];
-    frameAnalyses: string[];
-    audioTranscription: string | null;
-    recipeUuid: string;
-    recipeName: string;
+  const [progress, setProgress] = useState<{
+    step: string; currentFrame: number; totalFrames: number; percent: number;
   } | null>(null);
-  const [debugFrameIndex, setDebugFrameIndex] = useState(0);
+  const eventSourceRef = useRef<{ close: () => void } | null>(null);
 
-  const isAdmin = user && hasRoleLevel(user.role, UserRole.ADMIN);
+  // Admin
+  const [analysisApproach, setAnalysisApproach] = useState<string | null>(null);
+  const [effectiveApproach, setEffectiveApproach] = useState<string | null>(null);
+  const [debugData, setDebugData] = useState<{
+    frameCount: number; frames: string[]; frameAnalyses: string[];
+    audioTranscription: string | null; recipeUuid: string; recipeName: string;
+  } | null>(null);
 
-  const embedContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
       SandboxService.getQuotaStatus().then(setQuotaInfo);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (showEmbed && embedContainerRef.current && embedUrl) {
-      const processEmbed = () => {
-        if ((window as any).instgrm) {
-          (window as any).instgrm.Embeds.process();
-        }
-      };
-
-      if ((window as any).instgrm) {
-        processEmbed();
-      } else {
-        const existingScript = document.querySelector('script[src*="instagram.com/embed.js"]');
-        if (existingScript) {
-          existingScript.remove();
-        }
-
-        const script = document.createElement("script");
-        script.src = "//www.instagram.com/embed.js";
-        script.async = true;
-        script.onload = processEmbed;
-        document.body.appendChild(script);
+      if (isAdminMode) {
+        AdminService.getInstagramAnalysisConfig().then(data => {
+          setAnalysisApproach(data.currentApproach);
+          setEffectiveApproach(data.effectiveApproach);
+        }).catch(() => { });
       }
     }
-  }, [showEmbed, embedUrl]);
+  }, [user]);
 
   const handlePaste = async () => {
     try {
@@ -85,7 +69,7 @@ export default function InstagramImport() {
     }
   };
 
-  const handleDisplay = async () => {
+  const handleFetchPost = async () => {
     if (!instagramUrl.trim()) {
       setError("Veuillez entrer un lien Instagram");
       return;
@@ -93,64 +77,71 @@ export default function InstagramImport() {
 
     setIsLoading(true);
     setError(null);
-    setGeneratedRecipe(null);
-
-    let url = instagramUrl.trim();
-    url = url.replace(/\/$/, "").replace("/embed", "");
-    setEmbedUrl(url);
-    setShowEmbed(true);
+    setPostInfo(null);
 
     try {
-      await InstagramService.fetchPostInfo(url);
+      const url = instagramUrl.trim().replace(/\/$/, "").replace("/embed", "");
+      const info = await InstagramService.fetchPostInfo(url);
+      setPostInfo(info);
     } catch (err: any) {
-      console.error("Error fetching post info from backend:", err);
-      setError(err.message || "Erreur lors de la récupération du post Instagram");
+      setError(err.message || "Erreur lors de la recuperation du post Instagram");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGenerateRecipe = async () => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
+    if (!user) { navigate("/login"); return; }
+    if (!postInfo) return;
 
-    // Check quota before generating
     if (quotaInfo && !quotaInfo.isSubscriber && quotaInfo.remainingFree <= 0) {
-      setError(`Crédits insuffisants. Vous avez ${quotaInfo.remainingFree} crédit${quotaInfo.remainingFree > 1 ? 's' : ''}.`);
       setShowPaywall(true);
       return;
     }
 
     const token = user.token || localStorage.getItem("firebaseIdToken");
-    if (!token) {
-      setError("Vous devez être connecté pour générer une recette");
-      return;
-    }
+    if (!token) { setError("Vous devez être connecté pour générer une recette"); return; }
 
     setIsGenerating(true);
     setError(null);
-    setGeneratedRecipe(null);
+    setProgress(null);
     TrackingService.logInstagramImportStarted();
     TrackingService.logRecipeGenerationInitiated('instagram');
 
-    try {
-      const response = await InstagramService.generateRecipeFromPost(
-        embedUrl,
-        user.email,
-        token
-      );
-      console.log("Generated recipe:", response);
+    // SSE progress
+    const baseUrl = import.meta.env.VITE_API_URL;
+    const port = import.meta.env.VITE_API_PORT;
+    const abortController = new AbortController();
 
-      // Refetch quota
-      if (user) {
-        try {
-          const updatedQuota = await SandboxService.getQuotaStatus();
-          setQuotaInfo(updatedQuota);
-        } catch (err) {
-          console.error('Erreur lors du fetch du quota:', err);
+    fetch(`${baseUrl}:${port}/api/v1/instagram/generation-progress`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Email': user.email, 'Accept': 'text/event-stream' },
+      signal: abortController.signal,
+    }).then(async (res) => {
+      const reader = res.body?.getReader();
+      if (!reader) return;
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (line.startsWith('data:')) {
+            try { setProgress(JSON.parse(line.slice(5).trim())); } catch { }
+          }
         }
+      }
+    }).catch(() => { });
+
+    eventSourceRef.current = { close: () => abortController.abort() };
+
+    try {
+      const response = await InstagramService.generateRecipeFromPost(postInfo.url, user.email, token);
+
+      if (user) {
+        SandboxService.getQuotaStatus().then(setQuotaInfo).catch(() => { });
       }
 
       if (response.recipe?.uuid) {
@@ -159,393 +150,204 @@ export default function InstagramImport() {
         SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
         invalidateCollections();
 
-        if (isAdmin && response.debug) {
-          setDebugData({
-            ...response.debug,
-            recipeUuid: response.recipe.uuid,
-            recipeName: response.recipe.name,
-          });
-          setDebugFrameIndex(0);
+        if (isAdminMode && response.debug) {
+          setDebugData({ ...response.debug, recipeUuid: response.recipe.uuid, recipeName: response.recipe.name });
         } else {
           navigate(`/recettes/${response.recipe.uuid}`);
         }
       } else {
-        setError("Recette générée mais impossible de récupérer son identifiant");
+        setError("Recette generee mais impossible de recuperer son identifiant");
       }
     } catch (err: any) {
-      console.error("Error generating recipe:", err);
-
-      // Handle quota exceeded error (402 Payment Required)
       if (err.type === 'QUOTA_EXCEEDED' || err.status === 402) {
         SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
-        setError(err.message || "Quota de génération épuisé. Passez Premium pour continuer !");
         setShowPaywall(true);
-
-        // Refetch quota to get updated info
-        try {
-          const updatedQuota = await SandboxService.getQuotaStatus();
-          setQuotaInfo(updatedQuota);
-        } catch (quotaErr) {
-          console.error('Erreur lors du fetch du quota:', quotaErr);
-        }
+        SandboxService.getQuotaStatus().then(setQuotaInfo).catch(() => { });
       } else {
-        setError(err.message || "Erreur lors de la génération de la recette");
+        setError(err.message || "Erreur lors de la generation de la recette");
       }
     } finally {
+      eventSourceRef.current?.close();
+      eventSourceRef.current = null;
       setIsGenerating(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleDisplay();
-    }
+    if (e.key === "Enter") { e.preventDefault(); handleFetchPost(); }
   };
 
   return (
-    <div className="min-h-screen bg-bg-color flex flex-col">
-      <div className="flex-grow">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple">
+      {/* Background effects */}
+      <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-cout-yellow rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      </div>
 
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple pb-32 px-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}>
-          <div className="absolute inset-0 overflow-hidden opacity-20">
-            <div className="absolute top-20 left-10 w-64 h-64 bg-cout-yellow rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-          </div>
+      <div className="flex-grow relative z-10 pb-16" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}>
+        <div className="max-w-2xl mx-auto px-4 mb-12">
 
-          <div className="max-w-4xl mx-auto relative z-10">
-            {/* Logo Button - Only for non-logged users */}
-            {!user && (
-              <div className="flex justify-center mb-6 md:mb-12 mt-4 md:mt-8 scale-[2] lg:scale-[2.5] p-4">
-                <LogoButton clickable={false} size="2xl" />
+          {/* Logo - non-logged users */}
+          {!user && (
+            <div className="flex justify-center mb-6 md:mb-12 mt-4 md:mt-8 scale-[2] lg:scale-[2.5] p-4">
+              <LogoButton clickable={false} size="2xl" />
+            </div>
+          )}
+
+          {/* Title */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl md:text-5xl font-bold text-white mb-3 leading-tight">
+              Importez vos recettes Instagram
+            </h1>
+            <p className="text-base md:text-lg text-white/80">
+              Collez le lien d'un post pour le transformer en recette
+            </p>
+            {user && quotaInfo && !quotaInfo.isSubscriber && (
+              <p className="text-sm text-cout-yellow font-semibold mt-2">
+                {quotaInfo.remainingFree} credit{quotaInfo.remainingFree > 1 ? 's' : ''} restant{quotaInfo.remainingFree > 1 ? 's' : ''}
+              </p>
+            )}
+            {isAdminMode && analysisApproach && (
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <span className="text-xs text-white/60">Approche :</span>
+                {['PARALLEL', 'BATCH', 'HYBRID'].map(a => (
+                  <button
+                    key={a}
+                    onClick={() => {
+                      AdminService.setInstagramAnalysisApproach(a).then(data => {
+                        setAnalysisApproach(data.currentApproach);
+                        setEffectiveApproach(data.effectiveApproach);
+                      }).catch(() => { });
+                    }}
+                    className={`text-xs px-2 py-1 rounded-md transition-colors ${analysisApproach === a
+                      ? 'bg-cout-yellow text-cout-purple font-bold'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20'
+                      }`}
+                  >
+                    {a}{effectiveApproach !== analysisApproach && effectiveApproach === a ? ' (actif)' : ''}
+                  </button>
+                ))}
               </div>
             )}
+          </div>
 
-            <div className="text-center mb-8">
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight">
-                Importez vos recettes Instagram
-              </h1>
-              <p className="text-lg md:text-xl text-white/90 mb-2">
-                Collez le lien d'un post Instagram pour transformer la recette en fiche technique
-              </p>
-              {user && quotaInfo && !quotaInfo.isSubscriber && (
-                <p className="text-sm text-cout-yellow font-semibold">
-                  {quotaInfo.remainingFree} crédit{quotaInfo.remainingFree > 1 ? 's' : ''} restant{quotaInfo.remainingFree > 1 ? 's' : ''}
-                </p>
-              )}
+          {/* Input */}
+          <div className="mb-6 flex items-center gap-3 bg-white rounded-2xl px-4 py-3 shadow-lg border-2 border-cout-yellow/50 focus-within:border-cout-yellow transition-colors duration-300">
+            <input
+              ref={inputRef}
+              type="text"
+              value={instagramUrl}
+              onChange={(e) => setInstagramUrl(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="https://www.instagram.com/p/..."
+              disabled={isLoading || isGenerating}
+              className="flex-1 bg-transparent text-gray-800 text-base focus:outline-none placeholder:text-gray-400"
+            />
+            <button
+              onClick={handlePaste}
+              className="p-2 bg-cout-purple/10 hover:bg-cout-purple/20 rounded-lg transition-colors"
+              title="Coller depuis le presse-papier"
+            >
+              <ClipboardDocumentIcon className="w-5 h-5 text-cout-purple" />
+            </button>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-500/20 border border-red-400/30 rounded-xl p-4 flex items-start gap-3 mb-6">
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-300 flex-shrink-0 mt-0.5" />
+              <p className="text-red-200 text-sm flex-1">{error}</p>
+              <button onClick={() => setError(null)} className="text-red-300 hover:text-white">
+                <XMarkIcon className="w-4 h-4" />
+              </button>
             </div>
+          )}
 
-            {/* Input Section */}
-            <div className="max-w-3xl mx-auto">
-              <div className="relative group">
-                <div className="absolute inset-0 rounded-2xl p-[2px] bg-gradient-to-r from-cout-base via-cout-purple to-cout-yellow opacity-75 group-focus-within:opacity-100 transition duration-300 animate-gradient-x">
-                  <div className="absolute inset-[2px] bg-primary rounded-2xl"></div>
-                </div>
-
-                <div className="relative flex items-center gap-3">
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={instagramUrl}
-                    onChange={(e) => setInstagramUrl(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="https://www.instagram.com/p/..."
-                    disabled={isLoading}
-                    className="flex-1 px-6 py-4 bg-transparent text-text-primary rounded-2xl border-0 focus:outline-none focus:ring-0 transition-all duration-300 placeholder:text-text-secondary placeholder:opacity-60 relative z-10"
-                  />
-                  <button
-                    onClick={handlePaste}
-                    className="relative z-20 p-2 bg-cout-base/20 hover:bg-cout-base/40 rounded-lg transition-colors mr-2"
-                    title="Coller depuis le presse-papier"
-                  >
-                    <ClipboardDocumentIcon className="w-5 h-5 text-cout-base" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-center">
-                <button
-                  onClick={handleDisplay}
-                  disabled={isLoading || !instagramUrl.trim()}
-                  className="group px-8 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl text-lg shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                >
-                  {isLoading ? (
-                    <>
-                      <ArrowPathIcon className="w-6 h-6 animate-spin" />
-                      Chargement...
-                    </>
-                  ) : (
-                    <>
-                      <SparklesIcon className="w-6 h-6 group-hover:rotate-12 transition-transform" />
-                      Afficher le post
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Login Button - Only for non-logged users */}
-            {!user && (
-              <div className="mt-6 flex justify-center">
+          {/* Post preview + actions */}
+          {!postInfo && !isLoading && (
+            <div className="flex flex-col items-center gap-4">
+              <button
+                onClick={handleFetchPost}
+                disabled={!instagramUrl.trim() || isLoading}
+                className="px-8 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl text-lg shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                <SparklesIcon className="w-6 h-6" />
+                Charger le post
+              </button>
+              {!user && (
                 <button
                   onClick={() => navigate('/login')}
-                  className="px-6 py-3 bg-cout-yellow hover:bg-yellow-400 text-cout-purple font-bold rounded-xl transition-all duration-200 shadow-lg hover:scale-105 transform"
+                  className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all"
                 >
-                  Me Connecter
+                  Me connecter
                 </button>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Error Section */}
-        {error && (
-          <div className="max-w-4xl mx-auto px-4 -mt-16 relative z-20">
-            <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3">
-              <ExclamationTriangleIcon className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-red-800 font-semibold">Erreur</p>
-                <p className="text-red-700 text-sm mt-1">{error}</p>
-              </div>
-              <button
-                onClick={() => setError(null)}
-                className="text-red-500 hover:text-red-700 transition-colors"
-              >
-                ✕
-              </button>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Instagram Post Display */}
-        {showEmbed && embedUrl && (
-          <section className="py-12 px-4">
-            <div className="max-w-4xl mx-auto">
-              <button
-                onClick={handleGenerateRecipe}
-                disabled={isGenerating || !!generatedRecipe}
-                className="w-full px-6 py-4 bg-gradient-to-r from-cout-purple to-cout-base text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
-              >
-                {isGenerating ? (
-                  <>
-                    <ArrowPathIcon className="w-6 h-6 animate-spin" />
-                    <span className="text-sm md:text-base">Génération en cours...</span>
-                  </>
-                ) : generatedRecipe ? (
-                  <>
-                    <CheckCircleIcon className="w-6 h-6" />
-                    <span className="text-sm md:text-base">Recette générée avec succès !</span>
-                  </>
-                ) : (
-                  <>
-                    <SparklesIcon className="w-6 h-6" />
-                    <span className="text-sm md:text-base">Générer la recette avec l'IA</span>
-                  </>
-                )}
-              </button>
+          {isLoading && (
+            <div className="flex justify-center py-8">
+              <ArrowPathIcon className="w-8 h-8 text-white animate-spin" />
+            </div>
+          )}
 
-              {/* Instagram Embed */}
-              <div className="bg-primary rounded-xl border-2 border-border-color p-4 md:p-6 flex justify-center mb-6 mt-6" ref={embedContainerRef}>
-                <blockquote
-                  className="instagram-media"
-                  data-instgrm-captioned
-                  data-instgrm-permalink={embedUrl}
-                  data-instgrm-version="14"
-                  style={{
-                    background: "#FFF",
-                    border: "0",
-                    borderRadius: "3px",
-                    boxShadow: "0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15)",
-                    margin: "1px",
-                    maxWidth: "540px",
-                    minWidth: isMobile ? "280px" : "326px",
-                    padding: "0",
-                    width: "calc(100% - 2px)",
-                  }}
-                >
-                  <div style={{ padding: "16px" }}>
-                    <a
-                      href={embedUrl}
-                      style={{
-                        background: "#FFFFFF",
-                        lineHeight: "0",
-                        padding: "0 0",
-                        textAlign: "center",
-                        textDecoration: "none",
-                        width: "100%",
-                      }}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Chargement du post Instagram...
-                    </a>
+          {postInfo && (
+            <div className="space-y-6">
+              {/* Thumbnail */}
+              {postInfo.imageBase64 && (
+                <div className="flex justify-center">
+                  <div className="w-44 h-44 md:w-56 md:h-56 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/20">
+                    <img
+                      src={postInfo.imageBase64}
+                      alt={postInfo.title}
+                      draggable={false}
+                      className="w-full h-full object-cover select-none"
+                    />
                   </div>
-                </blockquote>
+                </div>
+              )}
+
+              {/* Post info */}
+              <div className="text-center">
+                <p className="text-white/70 text-sm">{postInfo.title}</p>
+                {postInfo.description && (
+                  <p className="text-white/50 text-xs mt-1 line-clamp-2">{postInfo.description}</p>
+                )}
               </div>
 
-              {/* Description and Generate Button */}
+              {/* Generate button */}
               <button
                 onClick={handleGenerateRecipe}
-                disabled={isGenerating || !!generatedRecipe}
-                className="w-full px-6 py-4 bg-gradient-to-r from-cout-purple to-cout-base text-white font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
+                disabled={isGenerating}
+                className="w-full px-6 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl shadow-lg hover:bg-yellow-400 transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
               >
                 {isGenerating ? (
-                  <>
-                    <ArrowPathIcon className="w-6 h-6 animate-spin" />
-                    <span className="text-sm md:text-base">Génération en cours...</span>
-                  </>
-                ) : generatedRecipe ? (
-                  <>
-                    <CheckCircleIcon className="w-6 h-6" />
-                    <span className="text-sm md:text-base">Recette générée avec succès !</span>
-                  </>
+                  <><ArrowPathIcon className="w-6 h-6 animate-spin" /> Demarrage...</>
                 ) : (
-                  <>
-                    <SparklesIcon className="w-6 h-6" />
-                    <span className="text-sm md:text-base">Générer la recette avec l'IA</span>
-                  </>
+                  <><SparklesIcon className="w-6 h-6" />Avoir les secrets de cette recette!</>
                 )}
               </button>
             </div>
-          </section>
-        )}
+          )}
+        </div>
       </div>
 
       {!user && <Footer />}
 
-      {/* Debug Modal (Admin only) */}
+      <RecipeGenerationLoadingModal isOpen={isGenerating} progress={progress} />
+
       {debugData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="bg-primary rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border-2 border-border-color">
-            <div className="sticky top-0 bg-primary border-b border-border-color p-4 flex items-center justify-between rounded-t-2xl z-10">
-              <div>
-                <h2 className="text-lg font-bold text-text-primary">Debug Import Instagram</h2>
-                <p className="text-sm text-text-secondary">{debugData.recipeName} - {debugData.frameCount} frames</p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    navigate(`/recettes/${debugData.recipeUuid}`);
-                    setDebugData(null);
-                  }}
-                  className="px-4 py-2 bg-cout-purple text-white font-semibold rounded-lg hover:bg-cout-base transition-colors"
-                >
-                  Voir la recette
-                </button>
-                <button
-                  onClick={() => setDebugData(null)}
-                  className="p-2 hover:bg-bg-color rounded-lg transition-colors"
-                >
-                  <XMarkIcon className="w-5 h-5 text-text-secondary" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-4 space-y-6">
-              {/* Frame viewer */}
-              <div>
-                <h3 className="text-sm font-semibold text-text-secondary mb-3 uppercase tracking-wide">
-                  Frame {debugFrameIndex + 1}/{debugData.frameCount} (t={debugFrameIndex}s)
-                </h3>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setDebugFrameIndex(Math.max(0, debugFrameIndex - 1))}
-                    disabled={debugFrameIndex === 0}
-                    className="p-2 bg-bg-color rounded-lg hover:bg-border-color transition-colors disabled:opacity-30"
-                  >
-                    <ChevronLeftIcon className="w-5 h-5 text-text-primary" />
-                  </button>
-
-                  <div className="flex-1 flex flex-col items-center">
-                    <img
-                      src={debugData.frames[debugFrameIndex]}
-                      alt={`Frame ${debugFrameIndex + 1}`}
-                      className="rounded-lg max-h-64 object-contain border border-border-color"
-                    />
-                    <p className="mt-3 text-sm text-text-primary bg-bg-color rounded-lg p-3 w-full">
-                      {debugData.frameAnalyses[debugFrameIndex]}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => setDebugFrameIndex(Math.min(debugData.frameCount - 1, debugFrameIndex + 1))}
-                    disabled={debugFrameIndex === debugData.frameCount - 1}
-                    className="p-2 bg-bg-color rounded-lg hover:bg-border-color transition-colors disabled:opacity-30"
-                  >
-                    <ChevronRightIcon className="w-5 h-5 text-text-primary" />
-                  </button>
-                </div>
-
-                {/* Frame thumbnails */}
-                <div className="flex gap-1.5 mt-3 overflow-x-auto pb-2">
-                  {debugData.frames.map((frame, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setDebugFrameIndex(i)}
-                      className={`flex-shrink-0 rounded-md overflow-hidden border-2 transition-colors ${
-                        i === debugFrameIndex ? "border-cout-purple" : "border-transparent opacity-60 hover:opacity-100"
-                      }`}
-                    >
-                      <img src={frame} alt={`Thumb ${i + 1}`} className="w-14 h-14 object-cover" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Audio transcription */}
-              {debugData.audioTranscription && (
-                <div>
-                  <h3 className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wide">
-                    Transcription audio
-                  </h3>
-                  <p className="text-sm text-text-primary bg-bg-color rounded-lg p-3 whitespace-pre-wrap">
-                    {debugData.audioTranscription}
-                  </p>
-                </div>
-              )}
-
-              {/* All analyses summary */}
-              <div>
-                <h3 className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wide">
-                  Toutes les analyses
-                </h3>
-                <div className="space-y-2">
-                  {debugData.frameAnalyses.map((analysis, i) => (
-                    <div
-                      key={i}
-                      onClick={() => setDebugFrameIndex(i)}
-                      className={`text-sm p-2 rounded-lg cursor-pointer transition-colors ${
-                        i === debugFrameIndex
-                          ? "bg-cout-purple/10 border border-cout-purple/30 text-text-primary"
-                          : "bg-bg-color text-text-secondary hover:bg-border-color"
-                      }`}
-                    >
-                      <span className="font-semibold text-cout-purple">t={i}s</span> {analysis}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <InstagramDebugModal debugData={debugData} onClose={() => setDebugData(null)} />
       )}
 
-      {/* Paywall Modal */}
-      {showPaywall && (
-        <CreditPaywallModal onClose={() => setShowPaywall(false)} />
-      )}
+      {showPaywall && <CreditPaywallModal onClose={() => setShowPaywall(false)} />}
 
       <style>{`
         @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
         }
-
         .animate-gradient-x {
           background-size: 200% 200%;
           animation: gradient-x 3s ease infinite;

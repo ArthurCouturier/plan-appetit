@@ -185,6 +185,27 @@ export default class AdminService {
             body: JSON.stringify({ email, templateKey }),
         });
     }
+
+    static async getInstagramAnalysisConfig(): Promise<InstagramAnalysisConfig> {
+        return this.request("/api/v1/admin/instagram/analysis-config", {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async setInstagramAnalysisApproach(approach: string): Promise<InstagramAnalysisConfig> {
+        return this.request("/api/v1/admin/instagram/analysis-config", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ approach }),
+        });
+    }
+}
+
+export interface InstagramAnalysisConfig {
+    currentApproach: string;
+    effectiveApproach: string;
+    approaches?: string[];
 }
 
 export interface NotificationTemplateDTO {

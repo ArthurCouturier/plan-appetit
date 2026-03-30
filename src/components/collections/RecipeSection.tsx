@@ -1,10 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { DocumentTextIcon, CheckIcon, XMarkIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import RecipeSummaryInterface from "../../api/interfaces/recipes/RecipeSummaryInterface";
 import RecipeCard from "../cards/RecipeCard";
 import SortableRecipeCard from "../dnd/SortableRecipeCard";
 import RecipeSortSelect, { RecipeSortOption, sortRecipes } from "./RecipeSortSelect";
+
+const CHUNK_SIZE = 10;
 
 interface RecipeSectionProps {
     recipes: RecipeSummaryInterface[];
@@ -28,6 +30,22 @@ export default function RecipeSection({
     onCancelReorder,
 }: RecipeSectionProps) {
     const sortedRecipes = useMemo(() => sortRecipes(recipes, sortOption), [recipes, sortOption]);
+    const [visibleCount, setVisibleCount] = useState(CHUNK_SIZE);
+
+    useEffect(() => {
+        setVisibleCount(CHUNK_SIZE);
+        if (sortedRecipes.length <= CHUNK_SIZE) return;
+
+        let current = CHUNK_SIZE;
+        const timer = setInterval(() => {
+            current += CHUNK_SIZE;
+            setVisibleCount(current);
+            if (current >= sortedRecipes.length) clearInterval(timer);
+        }, 100);
+        return () => clearInterval(timer);
+    }, [sortedRecipes]);
+
+    const visibleRecipes = isReordering ? sortedRecipes : sortedRecipes.slice(0, visibleCount);
 
     if (recipes.length === 0) return null;
 
@@ -87,7 +105,7 @@ export default function RecipeSection({
                 </SortableContext>
             ) : (
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] md:gap-4">
-                    {sortedRecipes.map((recipe) => (
+                    {visibleRecipes.map((recipe) => (
                         <RecipeCard
                             key={String(recipe.uuid)}
                             recipe={recipe}

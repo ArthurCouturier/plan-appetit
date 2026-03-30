@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ClipboardDocumentIcon, ArrowPathIcon, SparklesIcon, CheckCircleIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { ClipboardDocumentIcon, ArrowPathIcon, SparklesIcon, CheckCircleIcon, ExclamationTriangleIcon, XMarkIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import Footer from "../components/global/Footer";
 import LogoButton from "../components/buttons/LogoButton";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
@@ -13,6 +13,7 @@ import useAuth from "../api/hooks/useAuth";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 import useIsMobile from "../hooks/useIsMobile";
+import { UserRole, hasRoleLevel } from "../api/interfaces/users/UserInterface";
 
 export default function InstagramImport() {
   const navigate = useNavigate();
@@ -29,6 +30,17 @@ export default function InstagramImport() {
   const isMobile = useIsMobile();
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [debugData, setDebugData] = useState<{
+    frameCount: number;
+    frames: string[];
+    frameAnalyses: string[];
+    audioTranscription: string | null;
+    recipeUuid: string;
+    recipeName: string;
+  } | null>(null);
+  const [debugFrameIndex, setDebugFrameIndex] = useState(0);
+
+  const isAdmin = user && hasRoleLevel(user.role, UserRole.ADMIN);
 
   const embedContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -141,13 +153,22 @@ export default function InstagramImport() {
         }
       }
 
-      // Navigate to the newly created recipe
       if (response.recipe?.uuid) {
         TrackingService.logRecipeGenerated('instagram');
         TrackingService.logInstagramImportFinished();
         SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
         invalidateCollections();
-        navigate(`/recettes/${response.recipe.uuid}`);
+
+        if (isAdmin && response.debug) {
+          setDebugData({
+            ...response.debug,
+            recipeUuid: response.recipe.uuid,
+            recipeName: response.recipe.name,
+          });
+          setDebugFrameIndex(0);
+        } else {
+          navigate(`/recettes/${response.recipe.uuid}`);
+        }
       } else {
         setError("Recette générée mais impossible de récupérer son identifiant");
       }
@@ -392,6 +413,123 @@ export default function InstagramImport() {
       </div>
 
       {!user && <Footer />}
+
+      {/* Debug Modal (Admin only) */}
+      {debugData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-primary rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border-2 border-border-color">
+            <div className="sticky top-0 bg-primary border-b border-border-color p-4 flex items-center justify-between rounded-t-2xl z-10">
+              <div>
+                <h2 className="text-lg font-bold text-text-primary">Debug Import Instagram</h2>
+                <p className="text-sm text-text-secondary">{debugData.recipeName} - {debugData.frameCount} frames</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    navigate(`/recettes/${debugData.recipeUuid}`);
+                    setDebugData(null);
+                  }}
+                  className="px-4 py-2 bg-cout-purple text-white font-semibold rounded-lg hover:bg-cout-base transition-colors"
+                >
+                  Voir la recette
+                </button>
+                <button
+                  onClick={() => setDebugData(null)}
+                  className="p-2 hover:bg-bg-color rounded-lg transition-colors"
+                >
+                  <XMarkIcon className="w-5 h-5 text-text-secondary" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-6">
+              {/* Frame viewer */}
+              <div>
+                <h3 className="text-sm font-semibold text-text-secondary mb-3 uppercase tracking-wide">
+                  Frame {debugFrameIndex + 1}/{debugData.frameCount} (t={debugFrameIndex}s)
+                </h3>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setDebugFrameIndex(Math.max(0, debugFrameIndex - 1))}
+                    disabled={debugFrameIndex === 0}
+                    className="p-2 bg-bg-color rounded-lg hover:bg-border-color transition-colors disabled:opacity-30"
+                  >
+                    <ChevronLeftIcon className="w-5 h-5 text-text-primary" />
+                  </button>
+
+                  <div className="flex-1 flex flex-col items-center">
+                    <img
+                      src={debugData.frames[debugFrameIndex]}
+                      alt={`Frame ${debugFrameIndex + 1}`}
+                      className="rounded-lg max-h-64 object-contain border border-border-color"
+                    />
+                    <p className="mt-3 text-sm text-text-primary bg-bg-color rounded-lg p-3 w-full">
+                      {debugData.frameAnalyses[debugFrameIndex]}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setDebugFrameIndex(Math.min(debugData.frameCount - 1, debugFrameIndex + 1))}
+                    disabled={debugFrameIndex === debugData.frameCount - 1}
+                    className="p-2 bg-bg-color rounded-lg hover:bg-border-color transition-colors disabled:opacity-30"
+                  >
+                    <ChevronRightIcon className="w-5 h-5 text-text-primary" />
+                  </button>
+                </div>
+
+                {/* Frame thumbnails */}
+                <div className="flex gap-1.5 mt-3 overflow-x-auto pb-2">
+                  {debugData.frames.map((frame, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setDebugFrameIndex(i)}
+                      className={`flex-shrink-0 rounded-md overflow-hidden border-2 transition-colors ${
+                        i === debugFrameIndex ? "border-cout-purple" : "border-transparent opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      <img src={frame} alt={`Thumb ${i + 1}`} className="w-14 h-14 object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Audio transcription */}
+              {debugData.audioTranscription && (
+                <div>
+                  <h3 className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wide">
+                    Transcription audio
+                  </h3>
+                  <p className="text-sm text-text-primary bg-bg-color rounded-lg p-3 whitespace-pre-wrap">
+                    {debugData.audioTranscription}
+                  </p>
+                </div>
+              )}
+
+              {/* All analyses summary */}
+              <div>
+                <h3 className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wide">
+                  Toutes les analyses
+                </h3>
+                <div className="space-y-2">
+                  {debugData.frameAnalyses.map((analysis, i) => (
+                    <div
+                      key={i}
+                      onClick={() => setDebugFrameIndex(i)}
+                      className={`text-sm p-2 rounded-lg cursor-pointer transition-colors ${
+                        i === debugFrameIndex
+                          ? "bg-cout-purple/10 border border-cout-purple/30 text-text-primary"
+                          : "bg-bg-color text-text-secondary hover:bg-border-color"
+                      }`}
+                    >
+                      <span className="font-semibold text-cout-purple">t={i}s</span> {analysis}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Paywall Modal */}
       {showPaywall && (

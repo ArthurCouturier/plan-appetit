@@ -8,6 +8,12 @@ export interface InstagramPostInfo {
 export interface GeneratedRecipeResponse {
     message: string;
     recipe: any;
+    debug?: {
+        frameCount: number;
+        frames: string[];
+        frameAnalyses: string[];
+        audioTranscription: string | null;
+    };
 }
 
 export default class InstagramService {
@@ -38,9 +44,10 @@ export default class InstagramService {
         instagramUrl: string,
         email: string,
         token: string,
-        imageBase64?: string
     ): Promise<GeneratedRecipeResponse> {
-        const response = await fetch(
+        const { fetchWithTokenRefresh } = await import('../utils/fetchWithTokenRefresh');
+
+        const response = await fetchWithTokenRefresh(
             `${this.baseUrl}:${this.port}/api/v1/instagram/generate-recipe`,
             {
                 method: 'POST',
@@ -49,10 +56,7 @@ export default class InstagramService {
                     'Authorization': `Bearer ${token}`,
                     'Email': email,
                 },
-                body: JSON.stringify({
-                    url: instagramUrl,
-                    imageBase64: imageBase64
-                }),
+                body: JSON.stringify({ url: instagramUrl }),
             }
         );
 
@@ -71,19 +75,5 @@ export default class InstagramService {
         }
 
         return response.json();
-    }
-
-    public static async fetchImageAsBase64(imageUrl: string): Promise<string> {
-        const response = await fetch(imageUrl);
-        if (!response.ok) {
-            throw new Error('Impossible de télécharger l\'image');
-        }
-        const blob = await response.blob();
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
     }
 }

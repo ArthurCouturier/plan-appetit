@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import useAuth from "../api/hooks/useAuth";
-import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import AdminService, { TrackingTestResponse } from "../api/services/AdminService";
-import { FacebookPixelService } from "../api/tracking/providers/meta/FacebookPixelService";
-import { TikTokPixelService } from "../api/tracking/providers/tiktok/TikTokPixelService";
+import useAuth from "../../api/hooks/useAuth";
+import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
+import AdminService, { TrackingTestResponse } from "../../api/services/AdminService";
+import { FacebookPixelService } from "../../api/tracking/providers/meta/FacebookPixelService";
+import { TikTokPixelService } from "../../api/tracking/providers/tiktok/TikTokPixelService";
 
 type Provider = "meta" | "tiktok";
 
@@ -152,12 +152,12 @@ function ProviderSection({ provider, label, color, testEventCode }: {
                     <div className={`p-3 rounded-lg border ${serverResult.success
                         ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
                         : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
-                    }`}>
+                        }`}>
                         <div className="flex items-center gap-2 mb-1">
                             <span className={`text-sm font-semibold ${serverResult.success
                                 ? "text-green-700 dark:text-green-400"
                                 : "text-red-700 dark:text-red-400"
-                            }`}>
+                                }`}>
                                 {serverResult.success ? "Succès" : "Erreur"} — HTTP {serverResult.statusCode}
                             </span>
                         </div>
@@ -204,11 +204,11 @@ function ResultBanner({ success, message }: { success: boolean; message: string 
         <div className={`p-3 rounded-lg border ${success
             ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
             : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
-        }`}>
+            }`}>
             <p className={`text-sm ${success
                 ? "text-green-700 dark:text-green-400"
                 : "text-red-700 dark:text-red-400"
-            }`}>
+                }`}>
                 {message}
             </p>
         </div>

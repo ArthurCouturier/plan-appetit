@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import useAuth from "../api/hooks/useAuth";
-import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import AdminService, { NotificationTemplateDTO } from "../api/services/AdminService";
+import useAuth from "../../api/hooks/useAuth";
+import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
+import AdminService, { NotificationTemplateDTO } from "../../api/services/AdminService";
 
 export default function AdminSendNotification() {
     const { user } = useAuth();
@@ -132,8 +132,8 @@ export default function AdminSendNotification() {
                                 <p className="text-sm font-medium text-green-700">
                                     Notification envoyee
                                     {result.pushSent && result.inAppSent ? " (push + in-app)" :
-                                     result.pushSent ? " (push)" :
-                                     result.inAppSent ? " (in-app)" : ""}
+                                        result.pushSent ? " (push)" :
+                                            result.inAppSent ? " (in-app)" : ""}
                                 </p>
                             </div>
                         )}

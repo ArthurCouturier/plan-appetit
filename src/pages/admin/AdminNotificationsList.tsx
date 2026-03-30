@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import useAuth from "../api/hooks/useAuth";
-import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import AdminService, { BroadcastNotificationDTO } from "../api/services/AdminService";
+import useAuth from "../../api/hooks/useAuth";
+import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
+import AdminService, { BroadcastNotificationDTO } from "../../api/services/AdminService";
 
 export default function AdminNotificationsList() {
     const { user } = useAuth();
@@ -89,11 +89,10 @@ export default function AdminNotificationsList() {
                             return (
                                 <div
                                     key={notif.id}
-                                    className={`border rounded-lg p-4 ${
-                                        isCancelled
+                                    className={`border rounded-lg p-4 ${isCancelled
                                             ? "border-red-300 bg-red-50/50 opacity-60"
                                             : "border-border-color bg-secondary"
-                                    }`}
+                                        }`}
                                 >
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex-1 min-w-0">

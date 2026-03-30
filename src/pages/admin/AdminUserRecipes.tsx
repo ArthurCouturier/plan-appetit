@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import useAuth from "../api/hooks/useAuth";
-import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import AdminService, { UserRecipesInfoResponse, BatchImageGenerationResponse } from "../api/services/AdminService";
+import useAuth from "../../api/hooks/useAuth";
+import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
+import AdminService, { UserRecipesInfoResponse, BatchImageGenerationResponse } from "../../api/services/AdminService";
 
 export default function AdminUserRecipes() {
     const { user } = useAuth();

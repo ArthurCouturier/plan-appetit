@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import useAuth from "../api/hooks/useAuth";
-import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import AdminService, { AudienceQueryDTO } from "../api/services/AdminService";
-import AudienceBuilder from "../components/admin/AudienceBuilder";
+import useAuth from "../../api/hooks/useAuth";
+import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
+import AdminService, { AudienceQueryDTO } from "../../api/services/AdminService";
+import AudienceBuilder from "../../components/admin/AudienceBuilder";
 
 const ICON_TYPES = ["INFO", "CREDIT", "RECIPE", "PROMO", "MILESTONE"] as const;
 const SEGMENTS = [

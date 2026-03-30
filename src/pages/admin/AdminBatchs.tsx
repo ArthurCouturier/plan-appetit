@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import useAuth from "../api/hooks/useAuth";
-import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import AdminService, { SchedulerStatusDTO } from "../api/services/AdminService";
+import useAuth from "../../api/hooks/useAuth";
+import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
+import AdminService, { SchedulerStatusDTO } from "../../api/services/AdminService";
 
 export default function AdminBatchs() {
     const { user } = useAuth();
@@ -95,14 +95,12 @@ function BatchCard({ scheduler, onToggle }: {
 
                 <button
                     onClick={onToggle}
-                    className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-300 ${
-                        scheduler.enabled ? "bg-green-500" : "bg-gray-400"
-                    }`}
+                    className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-300 ${scheduler.enabled ? "bg-green-500" : "bg-gray-400"
+                        }`}
                 >
                     <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${
-                            scheduler.enabled ? "translate-x-6" : "translate-x-1"
-                        }`}
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${scheduler.enabled ? "translate-x-6" : "translate-x-1"
+                            }`}
                     />
                 </button>
             </div>

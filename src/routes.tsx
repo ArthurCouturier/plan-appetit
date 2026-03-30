@@ -16,13 +16,14 @@ import Layout from "./components/global/Layout";
 import BecomePremium from "./pages/BecomePremium";
 import InstagramImport from "./pages/InstagramImport";
 import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } from "./pages/legal";
-import Admin from "./pages/Admin";
-import AdminBatchs from "./pages/AdminBatchs";
-import AdminUserRecipes from "./pages/AdminUserRecipes";
-import AdminTrackingTest from "./pages/AdminTrackingTest";
-import AdminNotifications from "./pages/AdminNotifications";
-import AdminNotificationsList from "./pages/AdminNotificationsList";
-import AdminSendNotification from "./pages/AdminSendNotification";
+import Admin from "./pages/admin/Admin";
+import AdminBatchs from "./pages/admin/AdminBatchs";
+import AdminUserRecipes from "./pages/admin/AdminUserRecipes";
+import AdminTrackingTest from "./pages/admin/AdminTrackingTest";
+import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminNotificationsList from "./pages/admin/AdminNotificationsList";
+import AdminSendNotification from "./pages/admin/AdminSendNotification";
+import AdminHaptics from "./pages/admin/AdminHaptics";
 import FridgeMode from "./pages/FridgeMode";
 import NotFound from "./pages/NotFound";
 import NewRecipePage from "./pages/NewRecipePage";
@@ -145,6 +146,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/notifications/send",
                                 element: <AdminSendNotification />
+                            },
+                            {
+                                path: "admin/haptics",
+                                element: <AdminHaptics />
                             }
                         ],
                     },

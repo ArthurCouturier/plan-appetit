@@ -1,4 +1,5 @@
 import InstagramGenerationLoader from "../instagram/InstagramGenerationLoader";
+import { modalTapHaptic } from "../../haptics/modalTap";
 
 interface RecipeGenerationLoadingModalProps {
   isOpen: boolean;
@@ -14,7 +15,10 @@ export default function RecipeGenerationLoadingModal({ isOpen, progress }: Recip
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-cout-purple/95 backdrop-blur-sm flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-cout-purple/95 backdrop-blur-sm flex items-center justify-center z-50"
+      onClick={modalTapHaptic}
+    >
       <div className="text-center w-full max-w-md px-6">
         <div className="relative w-32 h-32 mx-auto mb-6">
           {/* Spinning circles */}

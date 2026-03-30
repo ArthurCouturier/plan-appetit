@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import useAuth from "../api/hooks/useAuth";
-import { hasRoleLevel, UserRole } from "../api/interfaces/users/UserInterface";
-import AdminService, { SetRoleResponse } from "../api/services/AdminService";
-import { QueueListIcon, PhotoIcon, SignalIcon, BellAlertIcon, ClipboardDocumentListIcon, PaperAirplaneIcon, CameraIcon } from "@heroicons/react/24/solid";
+import useAuth from "../../api/hooks/useAuth";
+import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
+import AdminService, { SetRoleResponse } from "../../api/services/AdminService";
+import { QueueListIcon, PhotoIcon, SignalIcon, BellAlertIcon, ClipboardDocumentListIcon, PaperAirplaneIcon, CameraIcon, DevicePhoneMobileIcon } from "@heroicons/react/24/solid";
 
 export default function Admin() {
     const { user } = useAuth();
@@ -98,6 +98,20 @@ export default function Admin() {
                             <div className="text-left">
                                 <h3 className="font-semibold text-text-primary">Instagram Import Debug</h3>
                                 <p className="text-sm text-text-secondary">Tester l'import Instagram avec debug et choix d'approche</p>
+                            </div>
+                        </div>
+                        <span className="text-text-secondary">&rsaquo;</span>
+                    </button>
+
+                    <button
+                        onClick={() => navigate("/admin/haptics")}
+                        className="w-full flex items-center justify-between px-4 py-4 bg-secondary border border-border-color rounded-lg hover:bg-tertiary transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <DevicePhoneMobileIcon className="w-5 h-5 text-orange-500" />
+                            <div className="text-left">
+                                <h3 className="font-semibold text-text-primary">Haptics</h3>
+                                <p className="text-sm text-text-secondary">Tester les vibrations et retours haptiques</p>
                             </div>
                         </div>
                         <span className="text-text-secondary">&rsaquo;</span>

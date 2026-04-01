@@ -336,7 +336,7 @@ export default function InstagramImport() {
 
       {!user && <Footer />}
 
-      <RecipeGenerationLoadingModal isOpen={isGenerating} progress={progress} />
+      <RecipeGenerationLoadingModal isOpen={isGenerating} progress={isAdminMode ? progress : null} />
 
       {debugData && (
         <InstagramDebugModal debugData={debugData} onClose={() => setDebugData(null)} />

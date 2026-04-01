@@ -1,13 +1,15 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import HeaderMobile from "./HeaderMobile";
 import { Browser } from "@capacitor/browser";
 import PlatformService from "../../api/services/PlatformService";
+import AppVersionService, { VersionCheckResult } from "../../api/services/AppVersionService";
 import { TrackingService } from "../../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../../api/tracking/skadnetwork/SKAdNetworkService";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import DailyRecipeModal from "../popups/DailyRecipeModal";
+import UpdateAppModal from "../popups/UpdateAppModal";
 import { useDailyRecipeContext } from "../../contexts/DailyRecipeContext";
 
 export default function Layout() {
@@ -15,6 +17,8 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { showDailyRecipeModal, setShowDailyRecipeModal } = useDailyRecipeContext();
+  const [versionCheck, setVersionCheck] = useState<VersionCheckResult | null>(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   // Initialise la plateforme, le StatusBar pour Android, le tracking et le deep linking
   useEffect(() => {
@@ -23,6 +27,16 @@ export default function Layout() {
     PlatformService.onDeepLink(navigate);
     TrackingService.initialize();
     SKAdNetworkService.syncFromBackend();
+
+    if (!sessionStorage.getItem("version_check_done")) {
+      AppVersionService.checkVersion().then((result) => {
+        sessionStorage.setItem("version_check_done", "1");
+        if (result && result.status !== "up_to_date") {
+          setVersionCheck(result);
+          setShowUpdateModal(true);
+        }
+      });
+    }
 
     // Listener pour les taps sur notifications (native uniquement)
     if (Capacitor.isNativePlatform()) {
@@ -73,6 +87,16 @@ export default function Layout() {
         isOpen={showDailyRecipeModal}
         onClose={() => setShowDailyRecipeModal(false)}
       />
+
+      {versionCheck && (
+        <UpdateAppModal
+          isOpen={showUpdateModal}
+          onClose={() => setShowUpdateModal(false)}
+          status={versionCheck.status}
+          latestVersion={versionCheck.latestVersion}
+          storeUrl={versionCheck.storeUrl}
+        />
+      )}
     </div>
   );
 }

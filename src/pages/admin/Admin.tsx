@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import useAuth from "../../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
 import AdminService, { SetRoleResponse } from "../../api/services/AdminService";
-import { QueueListIcon, PhotoIcon, SignalIcon, BellAlertIcon, ClipboardDocumentListIcon, PaperAirplaneIcon, CameraIcon, DevicePhoneMobileIcon } from "@heroicons/react/24/solid";
+import { QueueListIcon, PhotoIcon, SignalIcon, BellAlertIcon, ClipboardDocumentListIcon, PaperAirplaneIcon, CameraIcon, DevicePhoneMobileIcon, WindowIcon } from "@heroicons/react/24/solid";
 
 export default function Admin() {
     const { user } = useAuth();
@@ -126,6 +126,20 @@ export default function Admin() {
                             <div className="text-left">
                                 <h3 className="font-semibold text-text-primary">Envoyer une notification</h3>
                                 <p className="text-sm text-text-secondary">Envoyer une notification predefinies a un utilisateur</p>
+                            </div>
+                        </div>
+                        <span className="text-text-secondary">&rsaquo;</span>
+                    </button>
+
+                    <button
+                        onClick={() => navigate("/admin/modals")}
+                        className="w-full flex items-center justify-between px-4 py-4 bg-secondary border border-border-color rounded-lg hover:bg-tertiary transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <WindowIcon className="w-5 h-5 text-orange-500" />
+                            <div className="text-left">
+                                <h3 className="font-semibold text-text-primary">Modales</h3>
+                                <p className="text-sm text-text-secondary">Previsualiser toutes les modales de l'application</p>
                             </div>
                         </div>
                         <span className="text-text-secondary">&rsaquo;</span>

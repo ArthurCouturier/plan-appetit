@@ -24,6 +24,7 @@ import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminNotificationsList from "./pages/admin/AdminNotificationsList";
 import AdminSendNotification from "./pages/admin/AdminSendNotification";
 import AdminHaptics from "./pages/admin/AdminHaptics";
+import AdminModals from "./pages/admin/AdminModals";
 import FridgeMode from "./pages/FridgeMode";
 import NotFound from "./pages/NotFound";
 import NewRecipePage from "./pages/NewRecipePage";
@@ -150,6 +151,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/haptics",
                                 element: <AdminHaptics />
+                            },
+                            {
+                                path: "admin/modals",
+                                element: <AdminModals />
                             }
                         ],
                     },

@@ -5,10 +5,13 @@ import { queryKeys } from '../queryConfig';
 
 const BATCH_DELAY = 80;
 const BATCH_MAX_SIZE = 20;
+const RETRY_DELAY = 3000;
+const MAX_RETRIES = 20;
 
 let pendingUuids: Set<string> = new Set();
 let batchTimer: ReturnType<typeof setTimeout> | null = null;
 let queryClientRef: ReturnType<typeof useQueryClient> | null = null;
+let retryCount: Map<string, number> = new Map();
 
 function flushBatch() {
     batchTimer = null;
@@ -23,12 +26,36 @@ function flushBatch() {
 
     if (uncached.length === 0) return;
 
-    BackendService.getRecipeImagesBatch(uncached).then(({ images }) => {
+    BackendService.getRecipeImagesBatch(uncached).then(({ images, pending }) => {
         for (const uuid of uncached) {
-            queryClientRef!.setQueryData(
-                queryKeys.recipes.image(uuid),
-                images[uuid] || null
-            );
+            if (images[uuid]) {
+                queryClientRef!.setQueryData(queryKeys.recipes.image(uuid), images[uuid]);
+                retryCount.delete(uuid);
+            } else if (!pending?.includes(uuid)) {
+                queryClientRef!.setQueryData(queryKeys.recipes.image(uuid), null);
+                retryCount.delete(uuid);
+            }
+        }
+
+        // Re-poll for images still being generated
+        if (pending && pending.length > 0) {
+            const toRetry = pending.filter(uuid => {
+                const count = retryCount.get(uuid) ?? 0;
+                if (count >= MAX_RETRIES) {
+                    queryClientRef!.setQueryData(queryKeys.recipes.image(uuid), null);
+                    retryCount.delete(uuid);
+                    return false;
+                }
+                retryCount.set(uuid, count + 1);
+                return true;
+            });
+
+            if (toRetry.length > 0) {
+                setTimeout(() => {
+                    toRetry.forEach(uuid => pendingUuids.add(uuid));
+                    flushBatch();
+                }, RETRY_DELAY);
+            }
         }
     }).catch(() => { });
 }

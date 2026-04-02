@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAuth from "../api/hooks/useAuth";
 import BatchCookingService from "../api/services/BatchCookingService";
 import BatchStep4Results from "../components/batchcooking/BatchStep4Results";
+import { queryKeys } from "../api/queryConfig";
 
 export default function BatchCookingDetail() {
     const { uuid } = useParams<{ uuid: string }>();
@@ -23,6 +24,7 @@ export default function BatchCookingDetail() {
         if (!uuid) return;
         await BatchCookingService.delete(uuid, email, token);
         queryClient.invalidateQueries({ queryKey: ["batch-cookings-all"] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.collections.all() });
         navigate("/recettes");
     };
 

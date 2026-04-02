@@ -236,7 +236,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     }, [handleStart, handleMove, handleEnd]);
 
     return (
-        <div ref={visibilityRef} className="w-full" style={{ perspective: '800px' }}>
+        <div ref={visibilityRef} className="w-full" data-recipe-card style={{ perspective: '800px' }}>
             <div
                 onClick={handleClick}
                 onTouchStart={onTouchStart}

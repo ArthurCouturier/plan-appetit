@@ -1,12 +1,18 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { TrashIcon } from "@heroicons/react/24/solid";
+import { errorHaptic } from "../../haptics/error";
+import { lightHaptic } from "../../haptics/light";
+import TabSlider, { type TabSliderHandle } from "../common/TabSlider";
 import type {
     BatchCookingResponse,
     BatchCookingShoppingItem,
     BatchCookingExecutionStep,
 } from "../../api/interfaces/batchcooking/BatchCookingInterfaces";
 import RecipeCard from "../cards/RecipeCard";
+import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
+import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
 
 interface BatchStep4ResultsProps {
     batchCooking: BatchCookingResponse;
@@ -55,15 +61,84 @@ function formatMinutes(minutes: number): string {
 }
 
 export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4ResultsProps) {
-    const [activeTab, setActiveTab] = useState<Tab>("recipes");
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialTab = (searchParams.get("tab") as Tab) || "recipes";
+    const [activeTab, setActiveTab] = useState<Tab>(initialTab);
     const peopleCount = batchCooking.config.defaultPeopleCount ?? 2;
     const perPerson = peopleCount > 0 ? batchCooking.estimatedCost.total / peopleCount : 0;
 
-    const tabs: { id: Tab; label: string; emoji: string }[] = [
-        { id: "recipes", label: "Recettes", emoji: "📋" },
-        { id: "shopping", label: "Courses", emoji: "🛒" },
-        { id: "planning", label: "Planning", emoji: "📅" },
+    const TABS: Tab[] = ["recipes", "shopping", "planning"];
+    const TAB_ITEMS = [
+        { id: "recipes", label: "📋 Recettes" },
+        { id: "shopping", label: "🛒 Courses" },
+        { id: "planning", label: "📅 Planning" },
     ];
+
+    const tabSliderRef = useRef<TabSliderHandle>(null);
+
+    // Called by TabSlider (click/drag) - no extra animation needed
+    const changeTab = useCallback((tab: Tab) => {
+        setActiveTab(tab);
+        setSearchParams({ tab }, { replace: true });
+    }, [setSearchParams]);
+
+    // Called by content swipe - triggers bubble animation in the slider
+    const swipeToTab = useCallback((tab: Tab) => {
+        setActiveTab(tab);
+        setSearchParams({ tab }, { replace: true });
+        lightHaptic();
+        requestAnimationFrame(() => tabSliderRef.current?.animateTransition());
+    }, [setSearchParams]);
+
+    // Swipe handling
+    const contentRef = useRef<HTMLDivElement>(null);
+    const touchStartRef = useRef<{ x: number; y: number; locked: boolean } | null>(null);
+    const [bounceX, setBounceX] = useState(0);
+
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        const target = e.target as HTMLElement;
+        if (target.closest("[data-recipe-card]")) {
+            touchStartRef.current = null;
+            return;
+        }
+        touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, locked: false };
+    }, []);
+
+    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+        const start = touchStartRef.current;
+        if (!start) return;
+        touchStartRef.current = null;
+
+        const deltaX = e.changedTouches[0].clientX - start.x;
+        const deltaY = e.changedTouches[0].clientY - start.y;
+        const threshold = window.innerWidth * 0.1;
+
+        if (Math.abs(deltaX) < threshold || Math.abs(deltaY) > Math.abs(deltaX)) return;
+
+        const currentIndex = TABS.indexOf(activeTab);
+
+        if (deltaX < 0) {
+            // Swipe left -> next tab
+            if (currentIndex < TABS.length - 1) {
+                swipeToTab(TABS[currentIndex + 1]);
+            } else {
+                // Bounce opposite direction (left)
+                errorHaptic();
+                setBounceX(-10);
+                setTimeout(() => setBounceX(0), 100);
+            }
+        } else {
+            // Swipe right -> previous tab
+            if (currentIndex > 0) {
+                swipeToTab(TABS[currentIndex - 1]);
+            } else {
+                // Bounce opposite direction (right)
+                errorHaptic();
+                setBounceX(10);
+                setTimeout(() => setBounceX(0), 100);
+            }
+        }
+    }, [activeTab, changeTab]);
 
     return (
         <motion.div
@@ -85,59 +160,59 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
             <div className="flex justify-center gap-4 mb-6">
                 <div className="bg-secondary rounded-xl px-4 py-3 text-center">
                     <div className="text-lg font-bold text-cout-yellow">
-                        {batchCooking.estimatedCost.total.toFixed(2)}EUR
+                        {batchCooking.estimatedCost.total.toFixed(2)}€
                     </div>
                     <div className="text-xs text-text-secondary">Total</div>
                 </div>
                 <div className="bg-secondary rounded-xl px-4 py-3 text-center">
                     <div className="text-lg font-bold text-cout-yellow">
-                        {batchCooking.estimatedCost.perMeal.toFixed(2)}EUR
+                        {batchCooking.estimatedCost.perMeal.toFixed(2)}€
                     </div>
                     <div className="text-xs text-text-secondary">/ repas</div>
                 </div>
                 <div className="bg-secondary rounded-xl px-4 py-3 text-center">
                     <div className="text-lg font-bold text-cout-yellow">
-                        {perPerson.toFixed(2)}EUR
+                        {perPerson.toFixed(2)}€
                     </div>
                     <div className="text-xs text-text-secondary">/ personne</div>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex bg-secondary rounded-xl p-1 mb-6 max-w-md mx-auto">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                            activeTab === tab.id
-                                ? "bg-cout-yellow text-cout-purple shadow-sm"
-                                : "text-text-secondary"
-                        }`}
-                    >
-                        {tab.emoji} {tab.label}
-                    </button>
-                ))}
-            </div>
+            <TabSlider ref={tabSliderRef} tabs={TAB_ITEMS} activeTab={activeTab} onChange={(id) => changeTab(id as Tab)} />
 
-            {/* Tab content */}
-            <div className="max-w-md mx-auto">
-                {activeTab === "recipes" && (
-                    <div className="grid grid-cols-2 gap-3">
-                        {batchCooking.recipes.map((recipe) => (
-                            <RecipeCard
-                                key={String(recipe.uuid)}
-                                recipe={recipe}
-                            />
-                        ))}
-                    </div>
-                )}
-                {activeTab === "shopping" && (
-                    <ShoppingTab items={batchCooking.shoppingList} />
-                )}
-                {activeTab === "planning" && (
-                    <PlanningTab steps={batchCooking.executionPlan} />
-                )}
+            {/* Tab content with swipe */}
+            <div
+                ref={contentRef}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                className="max-w-md mx-auto transition-transform duration-100"
+                style={{ transform: bounceX !== 0 ? `translateX(${bounceX}px)` : undefined }}
+            >
+                <AnimatePresence mode="wait">
+                    {activeTab === "recipes" && (
+                        <motion.div key="recipes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                            <div className="grid grid-cols-2 gap-3">
+                                {batchCooking.recipes.map((recipe) => (
+                                    <RecipeCard
+                                        key={String(recipe.uuid)}
+                                        recipe={recipe}
+                                    />
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                    {activeTab === "shopping" && (
+                        <motion.div key="shopping" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                            <ShoppingTab items={batchCooking.shoppingList} recipes={batchCooking.recipes} />
+                        </motion.div>
+                    )}
+                    {activeTab === "planning" && (
+                        <motion.div key="planning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                            <PlanningTab steps={batchCooking.executionPlan} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Delete button */}
@@ -160,9 +235,29 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
     );
 }
 
-function ShoppingTab({ items }: { items: BatchCookingShoppingItem[] }) {
+function ShoppingRecipeThumb({ recipeUuid, onClick }: { recipeUuid: string; onClick: () => void }) {
+    const { data: imageData } = useRecipeImageVisible(recipeUuid);
+    return (
+        <button
+            onClick={onClick} className="rounded shrink-0 overflow-hidden hover:opacity-80 transition-opacity"
+            style={{ width: "min(16vw, 8vh)", height: "min(16vw, 8vh)" }}
+        >
+            {imageData ? (
+                <img src={`data:image/png;base64,${imageData}`} alt="" className="w-full h-full object-cover" draggable={false} />
+            ) : (
+                <div className="w-full h-full bg-border-color" />
+            )}
+        </button>
+    );
+}
+
+function ShoppingTab({ items, recipes }: { items: BatchCookingShoppingItem[]; recipes: RecipeInterface[] }) {
+    const navigate = useNavigate();
     const grouped = groupByCategory(items);
     const totalPrice = items.reduce((sum, item) => sum + item.estimatedPrice, 0);
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+
+    const recipeMap = new Map(recipes.map((r) => [String(r.uuid), r.name]));
 
     return (
         <div className="space-y-6">
@@ -172,25 +267,54 @@ function ShoppingTab({ items }: { items: BatchCookingShoppingItem[] }) {
                         {CATEGORY_LABELS[category] || category}
                     </h4>
                     <div className="space-y-2">
-                        {catItems.map((item) => (
-                            <div key={item.uuid} className="flex items-center justify-between bg-secondary rounded-lg px-4 py-3">
-                                <div>
-                                    <span className="text-text-primary text-sm font-medium">{item.name}</span>
-                                    <span className="text-text-secondary text-xs ml-2">
-                                        {item.totalQuantity} {UNIT_LABELS[item.unit || ""] || item.unit}
-                                    </span>
+                        {catItems.map((item) => {
+                            const isExpanded = expandedId === item.uuid;
+                            const linkedRecipes = item.recipeUuids
+                                .map((uuid) => ({ uuid, name: recipeMap.get(uuid) }))
+                                .filter((r) => r.name);
+
+                            return (
+                                <div key={item.uuid}>
+                                    <button
+                                        onClick={() => setExpandedId(isExpanded ? null : item.uuid)}
+                                        className="w-full flex items-center justify-between bg-secondary rounded-lg px-4 py-3 transition-colors hover:bg-secondary/80"
+                                    >
+                                        <div className="text-left">
+                                            <span className="text-text-primary text-sm font-medium">{item.name}</span>
+                                            <span className="text-text-secondary text-xs ml-2">
+                                                {item.totalQuantity} {UNIT_LABELS[item.unit || ""] || item.unit}
+                                            </span>
+                                        </div>
+                                        <span className="text-cout-yellow text-sm font-semibold shrink-0">
+                                            {item.estimatedPrice.toFixed(2)}€
+                                        </span>
+                                    </button>
+                                    <AnimatePresence>
+                                        {isExpanded && linkedRecipes.length > 0 && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: "auto", opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="overflow-hidden"
+                                            >
+                                                <div className="py-2 flex flex-wrap gap-2 justify-center">
+                                                    {linkedRecipes.map((r) => (
+                                                        <ShoppingRecipeThumb key={r.uuid} recipeUuid={r.uuid} onClick={() => navigate(`/recettes/${r.uuid}`)} />
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
-                                <span className="text-cout-yellow text-sm font-semibold">
-                                    {item.estimatedPrice.toFixed(2)}EUR
-                                </span>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             ))}
             <div className="border-t border-border-color pt-3 flex justify-between">
-                <span className="font-bold text-text-primary">Total estime</span>
-                <span className="font-bold text-cout-yellow">{totalPrice.toFixed(2)}EUR</span>
+                <span className="font-bold text-text-primary">Total estimé</span>
+                <span className="font-bold text-cout-yellow">{totalPrice.toFixed(2)}€</span>
             </div>
         </div>
     );
@@ -224,55 +348,54 @@ function PlanningTab({ steps }: { steps: BatchCookingExecutionStep[] }) {
             {steps
                 .sort((a, b) => a.executionOrder - b.executionOrder)
                 .map((step, index) => (
-                <div
-                    key={step.uuid || index}
-                    className="bg-secondary rounded-xl p-4"
-                >
-                    {/* Step number + type badge */}
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="w-7 h-7 bg-cout-yellow/20 rounded-full flex items-center justify-center shrink-0">
-                            <span className="text-xs font-bold text-cout-yellow">{index + 1}</span>
-                        </div>
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                            step.stepType === "PASSIVE"
+                    <div
+                        key={step.uuid || index}
+                        className="bg-secondary rounded-xl p-4"
+                    >
+                        {/* Step number + type badge */}
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="w-7 h-7 bg-cout-yellow/20 rounded-full flex items-center justify-center shrink-0">
+                                <span className="text-xs font-bold text-cout-yellow">{index + 1}</span>
+                            </div>
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${step.stepType === "PASSIVE"
                                 ? "bg-blue-500/10 text-blue-500"
                                 : "bg-cout-yellow/10 text-cout-yellow"
-                        }`}>
-                            {step.stepType === "PASSIVE" ? "Passif" : "Actif"}
-                        </span>
-                        {step.durationMinutes && (
-                            <span className="text-xs text-text-secondary ml-auto">
-                                {formatMinutes(step.durationMinutes)}
+                                }`}>
+                                {step.stepType === "PASSIVE" ? "Passif" : "Actif"}
                             </span>
+                            {step.durationMinutes && (
+                                <span className="text-xs text-text-secondary ml-auto">
+                                    {formatMinutes(step.durationMinutes)}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-sm text-text-primary leading-relaxed mb-2">
+                            {step.description}
+                        </p>
+
+                        {/* Recipe tags */}
+                        <div className="flex flex-wrap gap-1.5 mb-1">
+                            {step.recipeNames.map((name) => (
+                                <span
+                                    key={name}
+                                    className="text-xs bg-primary border border-border-color text-text-secondary rounded-full px-2.5 py-0.5"
+                                >
+                                    {name}
+                                </span>
+                            ))}
+                        </div>
+
+                        {/* Tip */}
+                        {step.tip && (
+                            <div className="mt-2 flex items-start gap-1.5 text-xs text-cout-yellow">
+                                <span className="shrink-0">💡</span>
+                                <span>{step.tip}</span>
+                            </div>
                         )}
                     </div>
-
-                    {/* Description */}
-                    <p className="text-sm text-text-primary leading-relaxed mb-2">
-                        {step.description}
-                    </p>
-
-                    {/* Recipe tags */}
-                    <div className="flex flex-wrap gap-1.5 mb-1">
-                        {step.recipeNames.map((name) => (
-                            <span
-                                key={name}
-                                className="text-xs bg-primary border border-border-color text-text-secondary rounded-full px-2.5 py-0.5"
-                            >
-                                {name}
-                            </span>
-                        ))}
-                    </div>
-
-                    {/* Tip */}
-                    {step.tip && (
-                        <div className="mt-2 flex items-start gap-1.5 text-xs text-cout-yellow">
-                            <span className="shrink-0">💡</span>
-                            <span>{step.tip}</span>
-                        </div>
-                    )}
-                </div>
-            ))}
+                ))}
         </div>
     );
 }

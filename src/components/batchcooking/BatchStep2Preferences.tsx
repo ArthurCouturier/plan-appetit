@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { lightHaptic } from "../../haptics/light";
+import { errorHaptic } from "../../haptics/error";
 import type { BudgetTarget } from "../../api/interfaces/batchcooking/BatchCookingInterfaces";
 import EquipmentCard from "./EquipmentCard";
 import ChipToPickList from "../common/ChipToPickList";
@@ -24,8 +25,8 @@ interface BatchStep2PreferencesProps {
 }
 
 const BUDGET_OPTIONS: { value: BudgetTarget; icon: string; label: string }[] = [
-    { value: "ECONOMICAL", icon: "/icons/IconEuro.svg", label: "Economique" },
-    { value: "BALANCED", icon: "/icons/IconBalance.svg", label: "Equilibre" },
+    { value: "ECONOMICAL", icon: "/icons/IconEuro.svg", label: "Économique" },
+    { value: "BALANCED", icon: "/icons/IconBalance.svg", label: "Équilibre" },
     { value: "COMFORT", icon: "/icons/IconStars.svg", label: "Confort" },
 ];
 
@@ -66,6 +67,7 @@ export default function BatchStep2Preferences({
     const handleNext = () => {
         if (pendingValues.length > 0 && !showWarning) {
             setShowWarning(true);
+            errorHaptic();
             return;
         }
         setShowWarning(false);
@@ -79,12 +81,9 @@ export default function BatchStep2Preferences({
             exit={{ opacity: 0, x: -50 }}
             className="flex flex-col items-center px-4 pb-8"
         >
-            <h2 className="text-2xl font-bold text-text-primary text-center mb-2">
-                Tes preferences
+            <h2 className="text-2xl font-bold text-text-primary text-center mb-8">
+                Tes préférences
             </h2>
-            <p className="text-text-secondary text-center mb-8 text-sm">
-                Affine le style de ton batch
-            </p>
 
             <div className="w-full max-w-md md:max-w-lg lg:max-w-2xl space-y-8">
                 {/* Style culinaire */}
@@ -154,7 +153,7 @@ export default function BatchStep2Preferences({
                 {/* Ingredients exclus */}
                 <div>
                     <h3 className="text-sm font-semibold text-text-secondary mb-3">
-                        Ingredients exclus
+                        Ingrédients exclus
                     </h3>
                     <ChipToPickList
                         items={[]}
@@ -176,18 +175,17 @@ export default function BatchStep2Preferences({
                     </button>
                     <button
                         onClick={handleNext}
-                        className={`px-10 py-4 font-bold rounded-xl text-lg transition-all duration-300 shadow-lg ${
-                            showWarning
-                                ? "bg-red-500 text-white hover:bg-red-600"
-                                : "bg-cout-yellow text-cout-purple hover:brightness-110 transform hover:scale-105"
-                        }`}
+                        className={`px-10 py-4 font-bold rounded-xl text-lg transition-all duration-300 shadow-lg ${showWarning
+                            ? "bg-red-500 text-white hover:bg-red-600"
+                            : "bg-cout-yellow text-cout-purple hover:brightness-110 transform hover:scale-105"
+                            }`}
                     >
-                        Generer
+                        {showWarning ? "Continuer" : "Générer"}
                     </button>
                 </div>
                 {showWarning && (
                     <p className="text-red-500 text-xs text-center font-medium">
-                        "{pendingValues.join('", "')}" non applique{pendingValues.length > 1 ? "s" : ""}, continuer quand meme ?
+                        "{pendingValues.join('", "')}" non appliqué{pendingValues.length > 1 ? "s" : ""}, continuer quand même ?
                     </p>
                 )}
             </div>
@@ -234,7 +232,7 @@ function EquipmentSection({
     return (
         <div>
             <h3 className="text-sm font-semibold text-text-secondary mb-3">
-                Equipement disponible
+                Équipement disponible
             </h3>
             <div
                 className="grid gap-2"

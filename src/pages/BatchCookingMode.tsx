@@ -27,7 +27,7 @@ function getDefaultName(): string {
         "janvier", "fevrier", "mars", "avril", "mai", "juin",
         "juillet", "aout", "septembre", "octobre", "novembre", "decembre",
     ];
-    return `Meal prep du ${day} ${months[now.getMonth()]}`;
+    return `Batch cooking du ${day} ${months[now.getMonth()]}`;
 }
 
 function loadDraft(): BatchCookingDraft | null {
@@ -182,9 +182,8 @@ export default function BatchCookingMode() {
                     {[1, 2, 3].map((s) => (
                         <div
                             key={s}
-                            className={`h-1.5 rounded-full transition-all duration-300 ${
-                                s === step ? "w-8 bg-cout-base" : s < step ? "w-8 bg-cout-yellow" : "w-8 bg-secondary"
-                            }`}
+                            className={`h-1.5 rounded-full transition-all duration-300 ${s === step ? "w-8 bg-cout-base" : s < step ? "w-8 bg-cout-yellow" : "w-8 bg-secondary"
+                                }`}
                         />
                     ))}
                 </div>

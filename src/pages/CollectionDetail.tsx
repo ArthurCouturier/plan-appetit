@@ -12,12 +12,16 @@ import { useCollection } from "../api/hooks/useCollectionQueries";
 import DroppableCollectionCard from "../components/dnd/DroppableCollectionCard";
 import ParentDropZone from "../components/dnd/ParentDropZone";
 import CollectionCard from "../components/cards/CollectionCard";
+import BatchCookingCard from "../components/cards/BatchCookingCard";
 import QuickActions from "../components/actions/QuickActions";
 import EmptyCollectionCTA from "../components/collections/EmptyCollectionCTA";
 import EditableCollectionTitle from "../components/collections/EditableCollectionTitle";
 import RecipeSection from "../components/collections/RecipeSection";
 import useIsMobile from "../hooks/useIsMobile";
 import useCollectionDnD from "../hooks/useCollectionDnD";
+import { useQuery } from "@tanstack/react-query";
+import useAuth from "../api/hooks/useAuth";
+import BatchCookingService from "../api/services/BatchCookingService";
 
 export default function CollectionDetail() {
     const { uuid } = useParams<{ uuid: string }>();
@@ -102,8 +106,18 @@ function CollectionDetailContent({
     collection, isMobile, isDragging, onRefresh, onNameChange,
     sortOption, onSortChange, isReordering, onStartReorder, onValidateReorder, onCancelReorder, onCollectionCreated,
 }: CollectionDetailContentProps) {
+    const { user } = useAuth();
     const [showCreateCollection, setShowCreateCollection] = useState(false);
     const collUuid = String(collection.uuid);
+
+    const email = user?.email ?? localStorage.getItem("email") ?? "";
+    const token = user?.token ?? localStorage.getItem("firebaseIdToken") ?? "";
+
+    const { data: batchCookings } = useQuery({
+        queryKey: ["batch-cookings-all"],
+        queryFn: () => BatchCookingService.getAll(email, token),
+        enabled: !!collection.isDefault && !!user,
+    });
     const [subCollectionsCollapsed, setSubCollectionsCollapsed] = useState(
         () => localStorage.getItem(`subcollections-collapsed-${collUuid}`) !== '0'
     );
@@ -220,6 +234,22 @@ function CollectionDetailContent({
                                     </div>
                                 </SortableContext>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Batch Cookings (default collection only) */}
+                {collection.isDefault && batchCookings && batchCookings.length > 0 && (
+                    <div className="mb-6 md:mb-8">
+                        <div className="flex items-center gap-2 mb-3 md:mb-4">
+                            <span className="text-lg">🍲</span>
+                            <h2 className="text-lg md:text-xl font-bold text-text-primary">Batch Cookings</h2>
+                            <span className="text-text-secondary text-sm">({batchCookings.length})</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] md:gap-4">
+                            {batchCookings.map((batch) => (
+                                <BatchCookingCard key={batch.uuid} batch={batch} />
+                            ))}
                         </div>
                     </div>
                 )}

@@ -1,0 +1,9 @@
+[
+  {"name": "Vegetarien", "emoji": "🥬"},
+  {"name": "Vegan", "emoji": "🌱"},
+  {"name": "Sans gluten", "emoji": "🌾"},
+  {"name": "Sans lactose", "emoji": "🥛"},
+  {"name": "Halal", "emoji": "☪️"},
+  {"name": "Casher", "emoji": "✡️"},
+  {"name": "Sans porc", "emoji": "🐷"}
+]

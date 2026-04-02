@@ -26,6 +26,8 @@ import AdminSendNotification from "./pages/admin/AdminSendNotification";
 import AdminHaptics from "./pages/admin/AdminHaptics";
 import AdminModals from "./pages/admin/AdminModals";
 import FridgeMode from "./pages/FridgeMode";
+import BatchCookingMode from "./pages/BatchCookingMode";
+import BatchCookingDetail from "./pages/BatchCookingDetail";
 import NotFound from "./pages/NotFound";
 import NewRecipePage from "./pages/NewRecipePage";
 
@@ -111,6 +113,14 @@ const router = createBrowserRouter([
                             {
                                 path: "frigo",
                                 element: <FridgeMode />,
+                            },
+                            {
+                                path: "batch-cooking",
+                                element: <BatchCookingMode />,
+                            },
+                            {
+                                path: "batch-cooking/:uuid",
+                                element: <BatchCookingDetail />,
                             },
                             {
                                 path: "recettes/nouvelle",

@@ -63,6 +63,8 @@ function formatMinutes(minutes: number): string {
     return `${h}h${m.toString().padStart(2, "0")}`;
 }
 
+const TABS: Tab[] = ["recipes", "shopping", "planning"];
+
 export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4ResultsProps) {
     const [searchParams, setSearchParams] = useSearchParams();
     const initialTab = (searchParams.get("tab") as Tab) || "recipes";
@@ -71,7 +73,6 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
     const peopleCount = batchCooking.config.defaultPeopleCount ?? 2;
     const perPerson = peopleCount > 0 ? batchCooking.estimatedCost.total / peopleCount : 0;
 
-    const TABS: Tab[] = ["recipes", "shopping", "planning"];
     const TAB_ITEMS = [
         { id: "recipes", label: "📋 Recettes" },
         { id: "shopping", label: "🛒 Courses" },
@@ -93,57 +94,35 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
     }, [batchCooking.recipes, queryClient]);
 
     const tabSliderRef = useRef<TabSliderHandle>(null);
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const [panelsHeight, setPanelsHeight] = useState<number>(400);
+    const stickyRef = useRef<HTMLDivElement>(null);
 
-    const scrollToTab = useCallback((tab: Tab) => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
-        const index = TABS.indexOf(tab);
-        container.scrollTo({ left: index * container.offsetWidth, behavior: "smooth" });
-    }, []);
-
-    // Called by TabSlider (click/drag) - no extra animation needed
+    // Called by TabSlider (click/drag)
     const changeTab = useCallback((tab: Tab) => {
         setActiveTab(tab);
         setSearchParams({ tab }, { replace: true });
-        scrollToTab(tab);
-    }, [setSearchParams, scrollToTab]);
+        // Scroll to top of sticky tabs
+        const sticky = stickyRef.current;
+        if (sticky) {
+            const top = sticky.getBoundingClientRect().top + window.scrollY - 1;
+            window.scrollTo({ top, behavior: "smooth" });
+        }
+    }, [setSearchParams]);
 
-    // Called by content swipe - triggers bubble animation in the slider
+    // Called by content swipe
     const swipeToTab = useCallback((tab: Tab) => {
         setActiveTab(tab);
         setSearchParams({ tab }, { replace: true });
-        scrollToTab(tab);
         lightHaptic();
         requestAnimationFrame(() => tabSliderRef.current?.animateTransition());
-    }, [setSearchParams, scrollToTab]);
-
-    // Initial scroll to active tab
-    useEffect(() => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
-        const index = TABS.indexOf(activeTab);
-        container.scrollTo({ left: index * container.offsetWidth, behavior: "instant" });
-    }, []);
-
-    // Calculate remaining viewport height for panels
-    useEffect(() => {
-        const updateHeight = () => {
-            const wrapper = contentRef.current;
-            if (!wrapper) return;
-            const top = wrapper.getBoundingClientRect().top;
-            const available = window.innerHeight - top;
-            setPanelsHeight(Math.max(200, available));
-        };
-        updateHeight();
-        window.addEventListener("resize", updateHeight);
-        return () => window.removeEventListener("resize", updateHeight);
-    }, []);
+        const sticky = stickyRef.current;
+        if (sticky) {
+            const top = sticky.getBoundingClientRect().top + window.scrollY - 1;
+            window.scrollTo({ top, behavior: "smooth" });
+        }
+    }, [setSearchParams]);
 
     // Swipe handling
-    const contentRef = useRef<HTMLDivElement>(null);
-    const touchStartRef = useRef<{ x: number; y: number; locked: boolean } | null>(null);
+    const touchStartRef = useRef<{ x: number; y: number } | null>(null);
     const [bounceX, setBounceX] = useState(0);
 
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -152,7 +131,7 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
             touchStartRef.current = null;
             return;
         }
-        touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, locked: false };
+        touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     }, []);
 
     const handleTouchEnd = useCallback((e: React.TouchEvent) => {
@@ -169,27 +148,23 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
         const currentIndex = TABS.indexOf(activeTab);
 
         if (deltaX < 0) {
-            // Swipe left -> next tab
             if (currentIndex < TABS.length - 1) {
                 swipeToTab(TABS[currentIndex + 1]);
             } else {
-                // Bounce opposite direction (left)
                 errorHaptic();
                 setBounceX(-10);
                 setTimeout(() => setBounceX(0), 100);
             }
         } else {
-            // Swipe right -> previous tab
             if (currentIndex > 0) {
                 swipeToTab(TABS[currentIndex - 1]);
             } else {
-                // Bounce opposite direction (right)
                 errorHaptic();
                 setBounceX(10);
                 setTimeout(() => setBounceX(0), 100);
             }
         }
-    }, [activeTab, changeTab]);
+    }, [activeTab, swipeToTab]);
 
     const deleteButton = onDelete ? (
         <div className="flex justify-center py-8">
@@ -211,7 +186,7 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
         <motion.div
             initial={isNew ? { opacity: 0, y: 20 } : false}
             animate={{ opacity: 1, y: 0 }}
-            className="px-4"
+            className="px-4 pb-8"
         >
             {/* Header */}
             <div className="text-center mb-6">
@@ -221,7 +196,7 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
             </div>
 
             {/* Cost summary */}
-            <div className="flex justify-center gap-4 mb-6">
+            <div className="flex justify-center gap-4 mb-4">
                 <div className="bg-secondary rounded-xl px-4 py-3 text-center">
                     <div className="text-lg font-bold text-cout-yellow">
                         {batchCooking.estimatedCost.total.toFixed(2)}€
@@ -242,46 +217,38 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
                 </div>
             </div>
 
-            {/* Tabs */}
-            <TabSlider ref={tabSliderRef} tabs={TAB_ITEMS} activeTab={activeTab} onChange={(id) => changeTab(id as Tab)} />
+            {/* Sticky Tabs */}
+            <div ref={stickyRef} className="sticky z-40 bg-transparent py-2 top-[calc(env(safe-area-inset-top,0px))] md:!top-0">
+                <TabSlider ref={tabSliderRef} tabs={TAB_ITEMS} activeTab={activeTab} onChange={(id) => changeTab(id as Tab)} />
+            </div>
 
-            {/* Tab content - horizontal scroll container, all panels mounted */}
+            {/* Tab content - all panels mounted, inactive hidden via display:none */}
             <div
-                ref={contentRef}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                className="max-w-md mx-auto overflow-hidden"
+                className="max-w-md mx-auto"
                 style={{
-                    height: `${panelsHeight}px`,
                     transform: bounceX !== 0 ? `translateX(${bounceX}px)` : undefined,
                     transition: bounceX !== 0 ? "transform 100ms" : undefined,
                 }}
             >
-                <div
-                    ref={scrollContainerRef}
-                    className="flex h-full overflow-x-hidden"
-                    style={{ scrollBehavior: "smooth" }}
-                >
-                    <div className="w-full h-full shrink-0 px-1 overflow-y-auto">
-                        <div className="grid grid-cols-2 gap-3 pb-4">
-                            {batchCooking.recipes.map((recipe) => (
-                                <RecipeCard
-                                    key={String(recipe.uuid)}
-                                    recipe={recipe}
-                                />
-                            ))}
-                        </div>
-                        {deleteButton}
-                    </div>
-                    <div className="w-full h-full shrink-0 px-1 overflow-y-auto">
-                        <ShoppingTab items={batchCooking.shoppingList} recipes={batchCooking.recipes} />
-                        {deleteButton}
-                    </div>
-                    <div className="w-full h-full shrink-0 px-1 overflow-y-auto">
-                        <PlanningTab steps={batchCooking.executionPlan} />
-                        {deleteButton}
+                <div style={{ display: activeTab === "recipes" ? undefined : "none" }}>
+                    <div className="grid grid-cols-2 gap-3">
+                        {batchCooking.recipes.map((recipe) => (
+                            <RecipeCard
+                                key={String(recipe.uuid)}
+                                recipe={recipe}
+                            />
+                        ))}
                     </div>
                 </div>
+                <div style={{ display: activeTab === "shopping" ? undefined : "none" }}>
+                    <ShoppingTab items={batchCooking.shoppingList} recipes={batchCooking.recipes} />
+                </div>
+                <div style={{ display: activeTab === "planning" ? undefined : "none" }}>
+                    <PlanningTab steps={batchCooking.executionPlan} />
+                </div>
+                {deleteButton}
             </div>
         </motion.div>
     );
@@ -365,7 +332,7 @@ function ShoppingTab({ items, recipes }: { items: BatchCookingShoppingItem[]; re
                 </div>
             ))}
             <div className="border-t border-border-color pt-3 flex justify-between">
-                <span className="font-bold text-text-primary">Total estimé</span>
+                <span className="font-bold text-text-primary">Total estime</span>
                 <span className="font-bold text-cout-yellow">{totalPrice.toFixed(2)}€</span>
             </div>
         </div>

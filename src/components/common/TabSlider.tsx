@@ -146,7 +146,7 @@ const TabSlider = forwardRef<TabSliderHandle, TabSliderProps>(({ tabs, activeTab
     return (
         <div
             ref={containerRef}
-            className="relative flex bg-secondary rounded-xl p-1 mb-6 max-w-md mx-auto select-none overflow-hidden"
+            className="relative flex bg-secondary rounded-xl p-1 mb-2 max-w-md mx-auto select-none overflow-hidden"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}

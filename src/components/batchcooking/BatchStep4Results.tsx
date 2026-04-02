@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { TrashIcon } from "@heroicons/react/24/solid";
@@ -13,6 +13,9 @@ import type {
 import RecipeCard from "../cards/RecipeCard";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
+import BackendService from "../../api/services/BackendService";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../api/queryConfig";
 
 interface BatchStep4ResultsProps {
     batchCooking: BatchCookingResponse;
@@ -63,6 +66,7 @@ function formatMinutes(minutes: number): string {
 export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4ResultsProps) {
     const [searchParams, setSearchParams] = useSearchParams();
     const initialTab = (searchParams.get("tab") as Tab) || "recipes";
+    const isNew = searchParams.get("new") === "1";
     const [activeTab, setActiveTab] = useState<Tab>(initialTab);
     const peopleCount = batchCooking.config.defaultPeopleCount ?? 2;
     const perPerson = peopleCount > 0 ? batchCooking.estimatedCost.total / peopleCount : 0;
@@ -74,21 +78,68 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
         { id: "planning", label: "📅 Planning" },
     ];
 
+    // Pre-fetch all recipe images on mount
+    const queryClient = useQueryClient();
+    useEffect(() => {
+        const uuids = batchCooking.recipes.map((r) => String(r.uuid));
+        const uncached = uuids.filter((uuid) => queryClient.getQueryData(queryKeys.recipes.image(uuid)) === undefined);
+        if (uncached.length === 0) return;
+
+        BackendService.getRecipeImagesBatch(uncached).then(({ images }) => {
+            for (const uuid of uncached) {
+                queryClient.setQueryData(queryKeys.recipes.image(uuid), images[uuid] || null);
+            }
+        }).catch(() => { });
+    }, [batchCooking.recipes, queryClient]);
+
     const tabSliderRef = useRef<TabSliderHandle>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [panelsHeight, setPanelsHeight] = useState<number>(400);
+
+    const scrollToTab = useCallback((tab: Tab) => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+        const index = TABS.indexOf(tab);
+        container.scrollTo({ left: index * container.offsetWidth, behavior: "smooth" });
+    }, []);
 
     // Called by TabSlider (click/drag) - no extra animation needed
     const changeTab = useCallback((tab: Tab) => {
         setActiveTab(tab);
         setSearchParams({ tab }, { replace: true });
-    }, [setSearchParams]);
+        scrollToTab(tab);
+    }, [setSearchParams, scrollToTab]);
 
     // Called by content swipe - triggers bubble animation in the slider
     const swipeToTab = useCallback((tab: Tab) => {
         setActiveTab(tab);
         setSearchParams({ tab }, { replace: true });
+        scrollToTab(tab);
         lightHaptic();
         requestAnimationFrame(() => tabSliderRef.current?.animateTransition());
-    }, [setSearchParams]);
+    }, [setSearchParams, scrollToTab]);
+
+    // Initial scroll to active tab
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+        const index = TABS.indexOf(activeTab);
+        container.scrollTo({ left: index * container.offsetWidth, behavior: "instant" });
+    }, []);
+
+    // Calculate remaining viewport height for panels
+    useEffect(() => {
+        const updateHeight = () => {
+            const wrapper = contentRef.current;
+            if (!wrapper) return;
+            const top = wrapper.getBoundingClientRect().top;
+            const available = window.innerHeight - top;
+            setPanelsHeight(Math.max(200, available));
+        };
+        updateHeight();
+        window.addEventListener("resize", updateHeight);
+        return () => window.removeEventListener("resize", updateHeight);
+    }, []);
 
     // Swipe handling
     const contentRef = useRef<HTMLDivElement>(null);
@@ -140,20 +191,33 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
         }
     }, [activeTab, changeTab]);
 
+    const deleteButton = onDelete ? (
+        <div className="flex justify-center py-8">
+            <button
+                onClick={() => {
+                    if (confirm(`Supprimer "${batchCooking.name}" et toutes ses recettes ?`)) {
+                        onDelete();
+                    }
+                }}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-red-500/50 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all duration-200"
+            >
+                <TrashIcon className="w-5 h-5" />
+                Supprimer le batch cooking
+            </button>
+        </div>
+    ) : null;
+
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={isNew ? { opacity: 0, y: 20 } : false}
             animate={{ opacity: 1, y: 0 }}
-            className="px-4 pb-8"
+            className="px-4"
         >
             {/* Header */}
             <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-text-primary mb-1">
                     {batchCooking.name}
                 </h2>
-                <p className="text-text-secondary text-sm">
-                    {batchCooking.recipes.length} recettes generees
-                </p>
             </div>
 
             {/* Cost summary */}
@@ -181,56 +245,44 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
             {/* Tabs */}
             <TabSlider ref={tabSliderRef} tabs={TAB_ITEMS} activeTab={activeTab} onChange={(id) => changeTab(id as Tab)} />
 
-            {/* Tab content with swipe */}
+            {/* Tab content - horizontal scroll container, all panels mounted */}
             <div
                 ref={contentRef}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                className="max-w-md mx-auto transition-transform duration-100"
-                style={{ transform: bounceX !== 0 ? `translateX(${bounceX}px)` : undefined }}
+                className="max-w-md mx-auto overflow-hidden"
+                style={{
+                    height: `${panelsHeight}px`,
+                    transform: bounceX !== 0 ? `translateX(${bounceX}px)` : undefined,
+                    transition: bounceX !== 0 ? "transform 100ms" : undefined,
+                }}
             >
-                <AnimatePresence mode="wait">
-                    {activeTab === "recipes" && (
-                        <motion.div key="recipes" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-                            <div className="grid grid-cols-2 gap-3">
-                                {batchCooking.recipes.map((recipe) => (
-                                    <RecipeCard
-                                        key={String(recipe.uuid)}
-                                        recipe={recipe}
-                                    />
-                                ))}
-                            </div>
-                        </motion.div>
-                    )}
-                    {activeTab === "shopping" && (
-                        <motion.div key="shopping" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-                            <ShoppingTab items={batchCooking.shoppingList} recipes={batchCooking.recipes} />
-                        </motion.div>
-                    )}
-                    {activeTab === "planning" && (
-                        <motion.div key="planning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-                            <PlanningTab steps={batchCooking.executionPlan} />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-
-            {/* Delete button */}
-            {onDelete && (
-                <div className="flex justify-center mt-8 max-w-md mx-auto">
-                    <button
-                        onClick={() => {
-                            if (confirm(`Supprimer "${batchCooking.name}" et toutes ses recettes ?`)) {
-                                onDelete();
-                            }
-                        }}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-red-500/50 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all duration-200"
-                    >
-                        <TrashIcon className="w-5 h-5" />
-                        Supprimer le batch cooking
-                    </button>
+                <div
+                    ref={scrollContainerRef}
+                    className="flex h-full overflow-x-hidden"
+                    style={{ scrollBehavior: "smooth" }}
+                >
+                    <div className="w-full h-full shrink-0 px-1 overflow-y-auto">
+                        <div className="grid grid-cols-2 gap-3 pb-4">
+                            {batchCooking.recipes.map((recipe) => (
+                                <RecipeCard
+                                    key={String(recipe.uuid)}
+                                    recipe={recipe}
+                                />
+                            ))}
+                        </div>
+                        {deleteButton}
+                    </div>
+                    <div className="w-full h-full shrink-0 px-1 overflow-y-auto">
+                        <ShoppingTab items={batchCooking.shoppingList} recipes={batchCooking.recipes} />
+                        {deleteButton}
+                    </div>
+                    <div className="w-full h-full shrink-0 px-1 overflow-y-auto">
+                        <PlanningTab steps={batchCooking.executionPlan} />
+                        {deleteButton}
+                    </div>
                 </div>
-            )}
+            </div>
         </motion.div>
     );
 }

@@ -148,7 +148,7 @@ export default function BatchCookingMode() {
             TrackingService.logRecipeGenerated("batch");
             SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
 
-            navigate(`/batch-cooking/${result.uuid}`);
+            navigate(`/batch-cooking/${result.uuid}?new=1`);
         } catch (err: unknown) {
             if (err && typeof err === "object" && "type" in err && (err as { type: string }).type === "INSUFFICIENT_CREDITS") {
                 SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);

@@ -45,7 +45,7 @@ export default function BatchCookingDetail() {
     }
 
     return (
-        <div className="min-h-screen bg-bg-color pb-20" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4rem)" }}>
+        <div className="min-h-screen bg-bg-color" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4rem)" }}>
             <BatchStep4Results batchCooking={batchCooking} onDelete={handleDelete} />
         </div>
     );

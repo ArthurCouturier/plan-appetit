@@ -60,7 +60,7 @@ function flushBatch() {
     }).catch(() => { });
 }
 
-function scheduleBatch(uuid: string) {
+export function scheduleBatch(uuid: string) {
     pendingUuids.add(uuid);
 
     if (pendingUuids.size >= BATCH_MAX_SIZE) {

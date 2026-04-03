@@ -12,8 +12,7 @@ import type {
 } from "../../api/interfaces/batchcooking/BatchCookingInterfaces";
 import RecipeCard from "../cards/RecipeCard";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
-import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
-import BackendService from "../../api/services/BackendService";
+import { useRecipeImageVisible, scheduleBatch } from "../../api/hooks/useRecipeImageBatch";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "../../api/queryConfig";
 
@@ -79,18 +78,12 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
         { id: "planning", label: "📅 Planning" },
     ];
 
-    // Pre-fetch all recipe images on mount
+    // Pre-fetch all recipe images on mount using the shared batch mechanism
     const queryClient = useQueryClient();
     useEffect(() => {
         const uuids = batchCooking.recipes.map((r) => String(r.uuid));
         const uncached = uuids.filter((uuid) => queryClient.getQueryData(queryKeys.recipes.image(uuid)) === undefined);
-        if (uncached.length === 0) return;
-
-        BackendService.getRecipeImagesBatch(uncached).then(({ images }) => {
-            for (const uuid of uncached) {
-                queryClient.setQueryData(queryKeys.recipes.image(uuid), images[uuid] || null);
-            }
-        }).catch(() => { });
+        uncached.forEach((uuid) => scheduleBatch(uuid));
     }, [batchCooking.recipes, queryClient]);
 
     const tabSliderRef = useRef<TabSliderHandle>(null);

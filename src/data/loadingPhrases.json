@@ -13,5 +13,20 @@
   { "type": "generation", "phrase": "Attends on a mis le feu au grille-pain..." },
   { "type": "generation", "phrase": "On marche sur des oeufs là..." },
   { "type": "generation", "phrase": "On le fait à ta sauce hein..." },
-  { "type": "generation", "phrase": "Patience, ça mijote..." }
+  { "type": "generation", "phrase": "Patience, ça mijote..." },
+  { "type": "batch", "phrase": "On planifie ta semaine..." },
+  { "type": "batch", "phrase": "On optimise le planning de cuisson..." },
+  { "type": "batch", "phrase": "On vérifie ce qui est de saison..." },
+  { "type": "batch", "phrase": "On équilibre les protéines..." },
+  { "type": "batch", "phrase": "On consolide la liste de courses..." },
+  { "type": "batch", "phrase": "On fusionne les étapes communes..." },
+  { "type": "batch", "phrase": "On calcule les meilleurs prix..." },
+  { "type": "batch", "phrase": "On organise tout pour dimanche..." },
+  { "type": "batch", "phrase": "Plusieurs recettes d'un coup..." },
+  { "type": "batch", "phrase": "On pense à tes restes..." },
+  { "type": "batch", "phrase": "On répartit les cuissons au four..." },
+  { "type": "batch", "phrase": "Batch cooking en préparation..." },
+  { "type": "batch", "phrase": "Zéro gaspillage, maximum saveur..." },
+  { "type": "batch", "phrase": "Tes boîtes vont être remplies..." },
+  { "type": "batch", "phrase": "On ordonne les étapes pour toi..." }
 ]

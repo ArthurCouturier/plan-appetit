@@ -96,16 +96,25 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
     const tabSliderRef = useRef<TabSliderHandle>(null);
     const stickyRef = useRef<HTMLDivElement>(null);
 
+    // Track header visibility to adjust sticky top (mirrors HeaderMobile logic)
+    const [headerVisible, setHeaderVisible] = useState(true);
+    const lastScrollYRef = useRef(0);
+    useEffect(() => {
+        const onScroll = () => {
+            const y = window.scrollY;
+            if (y < 50) setHeaderVisible(true);
+            else if (y > lastScrollYRef.current) setHeaderVisible(false);
+            else setHeaderVisible(true);
+            lastScrollYRef.current = y;
+        };
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
+
     // Called by TabSlider (click/drag)
     const changeTab = useCallback((tab: Tab) => {
         setActiveTab(tab);
         setSearchParams({ tab }, { replace: true });
-        // Scroll to top of sticky tabs
-        const sticky = stickyRef.current;
-        if (sticky) {
-            const top = sticky.getBoundingClientRect().top + window.scrollY - 1;
-            window.scrollTo({ top, behavior: "smooth" });
-        }
     }, [setSearchParams]);
 
     // Called by content swipe
@@ -114,11 +123,6 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
         setSearchParams({ tab }, { replace: true });
         lightHaptic();
         requestAnimationFrame(() => tabSliderRef.current?.animateTransition());
-        const sticky = stickyRef.current;
-        if (sticky) {
-            const top = sticky.getBoundingClientRect().top + window.scrollY - 1;
-            window.scrollTo({ top, behavior: "smooth" });
-        }
     }, [setSearchParams]);
 
     // Swipe handling
@@ -218,7 +222,11 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
             </div>
 
             {/* Sticky Tabs */}
-            <div ref={stickyRef} className="sticky z-40 bg-transparent py-2 top-[calc(env(safe-area-inset-top,0px))] md:!top-0">
+            <div
+                ref={stickyRef}
+                className="sticky z-40 bg-transparent py-2 transition-[top] duration-300 md:!top-0"
+                style={{ top: headerVisible ? "calc(env(safe-area-inset-top, 0px) + 3.5rem)" : "0px" }}
+            >
                 <TabSlider ref={tabSliderRef} tabs={TAB_ITEMS} activeTab={activeTab} onChange={(id) => changeTab(id as Tab)} />
             </div>
 

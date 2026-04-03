@@ -11,7 +11,7 @@ export interface TabSliderHandle {
     animateTransition: () => void;
 }
 
-type Mode = "rest" | "dragging" | "contracting" | "expanding";
+type Mode = "rest" | "shrinking" | "dragging" | "contracting" | "expanding";
 
 const TabSlider = forwardRef<TabSliderHandle, TabSliderProps>(({ tabs, activeTab, onChange }, ref) => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -45,6 +45,35 @@ const TabSlider = forwardRef<TabSliderHandle, TabSliderProps>(({ tabs, activeTab
         const containerW = rect?.width ?? 300;
         const circleSize = containerH - PADDING * 2;
         const tabW = (containerW - PADDING * 2) / tabs.length;
+
+        if (mode === "shrinking") {
+            const tabLeft = PADDING + activeIndex * tabW;
+            const tabRight = tabLeft + tabW;
+            let targetX: number;
+
+            if (dragX >= tabLeft && dragX <= tabRight) {
+                // Finger is on the active tab: shrink toward finger position
+                targetX = dragX - circleSize / 2;
+            } else if (dragX < tabLeft) {
+                // Finger is to the left: shrink to left edge of active tab
+                targetX = tabLeft;
+            } else {
+                // Finger is to the right: shrink to right edge of active tab
+                targetX = tabRight - circleSize;
+            }
+
+            targetX = Math.max(PADDING, Math.min(containerW - circleSize - PADDING, targetX));
+
+            return {
+                position: "absolute",
+                top: PADDING,
+                left: targetX,
+                width: circleSize,
+                height: circleSize,
+                borderRadius: "50%",
+                transition: "width 120ms ease-in, border-radius 120ms ease-in, left 120ms ease-in",
+            };
+        }
 
         if (mode === "dragging") {
             const minX = PADDING;
@@ -113,23 +142,32 @@ const TabSlider = forwardRef<TabSliderHandle, TabSliderProps>(({ tabs, activeTab
         }, 130);
     };
 
+    const shrinkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
         const rect = getContainerRect();
         if (!rect) return;
         const x = e.touches[0].clientX - rect.left;
         setDragX(x);
-        setMode("dragging");
+        setMode("shrinking");
+        shrinkTimerRef.current = setTimeout(() => {
+            setMode("dragging");
+        }, 130);
     }, []);
 
     const handleTouchMove = useCallback((e: React.TouchEvent) => {
-        if (mode !== "dragging") return;
+        if (mode !== "dragging" && mode !== "shrinking") return;
         const rect = getContainerRect();
         if (!rect) return;
         setDragX(e.touches[0].clientX - rect.left);
     }, [mode]);
 
     const handleTouchEnd = useCallback(() => {
-        if (mode !== "dragging") return;
+        if (shrinkTimerRef.current) {
+            clearTimeout(shrinkTimerRef.current);
+            shrinkTimerRef.current = null;
+        }
+        if (mode !== "dragging" && mode !== "shrinking") return;
         const rect = getContainerRect();
         if (!rect) return;
 
@@ -146,7 +184,7 @@ const TabSlider = forwardRef<TabSliderHandle, TabSliderProps>(({ tabs, activeTab
     return (
         <div
             ref={containerRef}
-            className="relative flex bg-secondary rounded-xl p-1 mb-2 max-w-md mx-auto select-none overflow-hidden"
+            className="relative flex bg-white/40 backdrop-blur-xl rounded-xl p-1 mb-2 max-w-md mx-auto select-none overflow-hidden border border-white/20 shadow-sm"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -160,9 +198,8 @@ const TabSlider = forwardRef<TabSliderHandle, TabSliderProps>(({ tabs, activeTab
                 <button
                     key={tab.id}
                     onClick={() => handleTabClick(tab.id)}
-                    className={`relative z-10 flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 ${
-                        tab.id === activeTab ? "text-cout-purple" : "text-text-secondary"
-                    }`}
+                    className={`relative z-10 flex-1 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150 ${tab.id === activeTab ? "text-cout-purple" : "text-text-secondary"
+                        }`}
                 >
                     {tab.label}
                 </button>

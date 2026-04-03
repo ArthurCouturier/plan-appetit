@@ -5,7 +5,7 @@ import { queryKeys } from '../queryConfig';
 
 const BATCH_DELAY = 80;
 const BATCH_MAX_SIZE = 20;
-const RETRY_DELAY = 3000;
+const RETRY_DELAY = 1000;
 const MAX_RETRIES = 20;
 
 let pendingUuids: Set<string> = new Set();

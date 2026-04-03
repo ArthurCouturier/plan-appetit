@@ -8,7 +8,7 @@ import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkServi
 import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import BatchStep1Framing from "../components/batchcooking/BatchStep1Framing";
 import BatchStep2Preferences from "../components/batchcooking/BatchStep2Preferences";
-import BatchStep3Loading from "../components/batchcooking/BatchStep3Loading";
+import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import type {
     BatchCookingSlot,
@@ -68,7 +68,7 @@ export default function BatchCookingMode() {
     const [excludedIngredients, setExcludedIngredients] = useState<string[]>(draft?.excludedIngredients ?? []);
     const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>(draft?.dietaryRestrictions ?? []);
 
-    // Step 3 state
+    // Generation state
     const [isGenerating, setIsGenerating] = useState(false);
     const [showPaywall, setShowPaywall] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -115,7 +115,6 @@ export default function BatchCookingMode() {
     const handleGenerate = async () => {
         setError(null);
         setIsGenerating(true);
-        goToStep(3);
 
         TrackingService.logRecipeGenerationInitiated("batch");
 
@@ -154,14 +153,10 @@ export default function BatchCookingMode() {
                 SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
                 setShowPaywall(true);
                 setIsGenerating(false);
-                setStep(2);
-                stepRef.current = 2;
                 return;
             }
             setError("Impossible de generer le batch cooking. Reessaie.");
             setIsGenerating(false);
-            setStep(2);
-            stepRef.current = 2;
         }
     };
 
@@ -179,7 +174,7 @@ export default function BatchCookingMode() {
 
                 {/* Step indicator */}
                 <div className="flex justify-center gap-2 mb-6 px-4">
-                    {[1, 2, 3].map((s) => (
+                    {[1, 2].map((s) => (
                         <div
                             key={s}
                             className={`h-1.5 rounded-full transition-all duration-300 ${s === step ? "w-8 bg-cout-base" : s < step ? "w-8 bg-cout-yellow" : "w-8 bg-secondary"
@@ -223,13 +218,10 @@ export default function BatchCookingMode() {
                             onBack={() => goToStep(1)}
                         />
                     )}
-
-                    {step === 3 && (
-                        <BatchStep3Loading key="step3" isLoading={isGenerating} />
-                    )}
                 </AnimatePresence>
             </div>
 
+            <RecipeGenerationLoadingModal isOpen={isGenerating} type="batch" />
             {showPaywall && <CreditPaywallModal onClose={() => setShowPaywall(false)} />}
         </>
     );

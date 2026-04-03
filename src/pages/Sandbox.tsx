@@ -7,7 +7,6 @@ import LockedRecipeCard from "../components/sandbox/LockedRecipeCard";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import MultipleRecipeConfirmationModal from "../components/popups/MultipleRecipeConfirmationModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
-import Header from "../components/global/Header";
 import Footer from "../components/global/Footer";
 import LogoButton from "../components/buttons/LogoButton";
 import { useTypingPlaceholder } from "../hooks/useTypingPlaceholder";
@@ -17,6 +16,8 @@ import { QuotaInfo } from "../api/interfaces/sandbox/QuotaInfo";
 import useAuth from "../api/hooks/useAuth";
 import { usePostHog } from "../contexts/PostHogContext";
 import { TrackingService } from "../api/tracking/TrackingService";
+import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
+import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 
 export default function Sandbox() {
@@ -34,7 +35,6 @@ export default function Sandbox() {
   const [placeholders, setPlaceholders] = useState<string[]>([]);
   const [, setAnonymousRecipeUuid] = useState<string | null>(null);
   const [recipeCount, setRecipeCount] = useState(1);
-  const [isMobile, setIsMobile] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -113,17 +113,6 @@ export default function Sandbox() {
       setPrompt(searchParams.get("q") || "");
     }
   }, [searchParams]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const handleGenerateClick = () => {
     if (!prompt.trim() || prompt.trim().length < 3) {
@@ -205,6 +194,7 @@ export default function Sandbox() {
         recipeUuids: response.recipes.map(r => r.uuid).filter(Boolean),
       });
       TrackingService.logRecipeGenerated('sandbox');
+      SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
       TrackingService.promptATTIfNeeded();
       invalidateCollections();
 
@@ -229,6 +219,7 @@ export default function Sandbox() {
         });
         TrackingService.logQuotaLimitReached('sandbox');
         TrackingService.logLead('sandbox');
+        SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
 
         setShowPaywall(true);
       } else if (err.type === "VALIDATION_ERROR") {
@@ -269,18 +260,6 @@ export default function Sandbox() {
   return (
     <div className="min-h-screen bg-bg-color flex flex-col">
       <div className="flex-grow">
-        {/* Header - Only for logged in users on tablet/desktop */}
-        {user && !isMobile && (
-          <div className="p-6 pb-0">
-            <Header
-              back={true}
-              home={true}
-              title={true}
-              profile={true}
-              pageName="Sandbox - Création libre"
-            />
-          </div>
-        )}
 
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple pb-32 px-4" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}>
@@ -381,7 +360,7 @@ export default function Sandbox() {
                   key={index}
                   onClick={() => {
                     setPrompt(example);
-                    inputRef.current?.focus();
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm rounded-lg transition-all duration-200 border border-white/20 hover:border-white/40"
                 >
@@ -576,7 +555,6 @@ export default function Sandbox() {
                     key={index}
                     onClick={() => {
                       setPrompt(example);
-                      inputRef.current?.focus();
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     className="px-4 py-2 bg-secondary hover:bg-cout-base/10 text-text-primary text-sm rounded-lg transition-all duration-200 border border-border-color hover:border-cout-base"

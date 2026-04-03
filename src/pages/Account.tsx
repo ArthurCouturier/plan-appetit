@@ -4,15 +4,14 @@ import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
-import Header from '../components/global/Header';
 import Footer from '../components/global/Footer';
 import BackendService from '../api/services/BackendService';
 import CreditPaywallModal from '../components/popups/CreditPaywallModal';
 import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/solid";
 import { isPremiumUser, hasRoleLevel, UserRole } from '../api/interfaces/users/UserInterface';
 import CreditIcon from '../components/icons/CreditIcon';
-import OnboardingChecklist from '../components/onboarding/OnboardingChecklist';
 import UserAvatar from '../components/global/UserAvatar';
+import useIsMobile from '../hooks/useIsMobile';
 
 export default function Account() {
     const { user, logout, login } = useAuth();
@@ -20,7 +19,7 @@ export default function Account() {
 
     const isUserPremium = user && user.role ? isPremiumUser(user.role) : false;
 
-    const [isMobile, setIsMobile] = useState(false);
+    const isMobile = useIsMobile();
     const [enabled, setEnabled] = useState(false);
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
     const [credits, setCredits] = useState<number | null>(null);
@@ -57,16 +56,6 @@ export default function Account() {
         localStorage.setItem('theme', theme);
     }, [theme]);
 
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     if (user === undefined) {
         return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;
@@ -110,8 +99,6 @@ export default function Account() {
     return (
         <div className='min-h-screen bg-bg-color flex flex-col'>
             <div className={`flex-grow ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-                {isMobile ? null : <AccountHeader />}
-
                 <div className="max-w-2xl mx-auto mt-4 space-y-4">
                     {/* User Info Card */}
                     <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">
@@ -156,30 +143,26 @@ export default function Account() {
                         <CreditPaywallModal onClose={() => setShowCreditModal(false)} />
                     )}
 
-                    <OnboardingChecklist onCreditsUpdated={fetchAccountInfo} />
-
-                    {/* Theme Switcher (Mobile only) */}
-                    {isMobile && (
-                        <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">
-                            <div className="flex items-center justify-between">
-                                <span className="text-base font-bold text-text-primary">Apparence</span>
-                                <div className="flex items-center gap-3">
-                                    <MoonIcon className="w-5 h-5 text-cout-purple" />
-                                    <button
-                                        onClick={changeTheme}
-                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ${theme === "theme1" ? "bg-cout-yellow" : "bg-cout-purple"
+                    {/* Theme Switcher */}
+                    <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">
+                        <div className="flex items-center justify-between">
+                            <span className="text-base font-bold text-text-primary">Apparence</span>
+                            <div className="flex items-center gap-3">
+                                <MoonIcon className="w-5 h-5 text-cout-purple" />
+                                <button
+                                    onClick={changeTheme}
+                                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 ${theme === "theme1" ? "bg-cout-yellow" : "bg-cout-purple"
+                                        }`}
+                                >
+                                    <span
+                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${theme === "theme1" ? "translate-x-6" : "translate-x-1"
                                             }`}
-                                    >
-                                        <span
-                                            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${theme === "theme1" ? "translate-x-6" : "translate-x-1"
-                                                }`}
-                                        />
-                                    </button>
-                                    <SunIcon className="w-5 h-5 text-cout-yellow" />
-                                </div>
+                                    />
+                                </button>
+                                <SunIcon className="w-5 h-5 text-cout-yellow" />
                             </div>
                         </div>
-                    )}
+                    </div>
 
                     {/* Actions */}
                     <div className="space-y-3">
@@ -228,14 +211,3 @@ export default function Account() {
     );
 }
 
-function AccountHeader() {
-    return (
-        <Header
-            back={true}
-            home={true}
-            title={true}
-            profile={false}
-            pageName={"Mon compte"}
-        />
-    )
-}

@@ -25,37 +25,41 @@ async function getNewToken(): Promise<string | null> {
 
 export async function fetchWithTokenRefresh(
     url: string,
-    options: RequestInit
+    options: RequestInit,
+    maxRetries: number = 2
 ): Promise<Response> {
     let response = await fetch(url, options);
 
-    if (response.status === 401) {
+    for (let attempt = 0; attempt < maxRetries && response.status === 401; attempt++) {
         try {
             const errorData = await response.json();
 
-            if (errorData.error === 'TOKEN_EXPIRED') {
-                console.log('Token expiré, rafraîchissement automatique...');
+            if (errorData.error !== 'TOKEN_EXPIRED') break;
 
-                const newToken = await getNewToken();
+            console.log(`Token expiré, tentative de refresh ${attempt + 1}/${maxRetries}...`);
 
-                if (newToken) {
-                    localStorage.setItem('firebaseIdToken', newToken);
+            const newToken = await getNewToken();
 
-                    const newHeaders = new Headers(options.headers);
-                    newHeaders.set('Authorization', `Bearer ${newToken}`);
+            if (!newToken) {
+                throw new Error('Utilisateur non authentifié');
+            }
 
-                    response = await fetch(url, {
-                        ...options,
-                        headers: newHeaders,
-                    });
+            localStorage.setItem('firebaseIdToken', newToken);
 
-                    console.log('Token rafraîchi et requête réessayée avec succès');
-                } else {
-                    throw new Error('Utilisateur non authentifié');
-                }
+            const newHeaders = new Headers(options.headers);
+            newHeaders.set('Authorization', `Bearer ${newToken}`);
+
+            response = await fetch(url, {
+                ...options,
+                headers: newHeaders,
+            });
+
+            if (response.status !== 401) {
+                console.log('Token rafraîchi et requête réessayée avec succès');
             }
         } catch (error) {
             console.error('Erreur lors du refresh du token:', error);
+            break;
         }
     }
 

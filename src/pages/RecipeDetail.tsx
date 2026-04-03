@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import IngredientsList from "../components/lists/IngredientsList";
 import RecipeStepsList from "../components/lists/RecipeStepsList";
-import Header from "../components/global/Header";
 import { TrashIcon, CheckIcon, UserGroupIcon, SparklesIcon, ArrowUpOnSquareIcon, BookmarkIcon } from "@heroicons/react/24/solid";
 import RecipeModificationModal from "../components/popups/RecipeModificationModal";
 import PurchaseModificationCreditsModal from "../components/popups/PurchaseModificationCreditsModal";
@@ -18,6 +17,7 @@ import { Capacitor } from "@capacitor/core";
 import { Clipboard } from "@capacitor/clipboard";
 import { Share } from "@capacitor/share";
 import { useDelayedNotificationPrompt } from "../api/hooks/useDelayedNotificationPrompt";
+import useIsMobile from "../hooks/useIsMobile";
 
 export default function RecipeDetail() {
 
@@ -30,7 +30,7 @@ export default function RecipeDetail() {
     const [loading, setLoading] = useState<boolean>(true);
     const [notFound, setNotFound] = useState<boolean>(false);
 
-    const [isMobile, setIsMobile] = useState(false);
+    const isMobile = useIsMobile();
 
     const [showModificationModal, setShowModificationModal] = useState(false);
     const [showPurchaseCreditsModal, setShowPurchaseCreditsModal] = useState(false);
@@ -101,17 +101,6 @@ export default function RecipeDetail() {
 
         fetchRecipe();
     }, [uuid]);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     useEffect(() => {
         const fetchUserCredits = async () => {
@@ -217,8 +206,7 @@ export default function RecipeDetail() {
     if (loading) {
         return (
             <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-                {!isMobile && <RecipeHeader />}
-                <div className="bg-primary rounded-xl shadow-lg border border-border-color p-12 mt-4 text-center">
+                                <div className="bg-primary rounded-xl shadow-lg border border-border-color p-12 mt-4 text-center">
                     <div className="animate-spin w-12 h-12 border-4 border-cout-base border-t-transparent rounded-full mx-auto mb-4"></div>
                     <p className="text-text-secondary">Chargement de la recette...</p>
                 </div>
@@ -229,16 +217,14 @@ export default function RecipeDetail() {
     if (notFound || !recipe) {
         return (
             <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-                {!isMobile && <RecipeHeader />}
-                <RecipeNotFound />
+                                <RecipeNotFound />
             </div>
         );
     }
 
     return (
         <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-            {!isMobile && <RecipeHeader />}
-
+            
             {/* Recipe Title Card */}
             <div className="bg-primary rounded-xl shadow-lg border border-border-color p-6 mt-4">
                 <div className="flex items-center mb-4">
@@ -448,16 +434,6 @@ export default function RecipeDetail() {
     );
 }
 
-function RecipeHeader() {
-    return (
-        <Header
-            back={true}
-            home={true}
-            title={true}
-            profile={true}
-        />
-    )
-}
 
 function RecipeContent({ recipe, isMobile }: { recipe: RecipeInterface, isMobile: boolean }) {
     return (

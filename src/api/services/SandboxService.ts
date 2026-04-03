@@ -3,6 +3,7 @@ import { SandboxGenerateResponse } from "../interfaces/sandbox/SandboxGenerateRe
 import { QuotaInfo } from "../interfaces/sandbox/QuotaInfo";
 import { auth } from "../authentication/firebase";
 import { Capacitor } from "@capacitor/core";
+import sandboxPlaceholdersRaw from "../../data/sandbox_placeholders.txt?raw";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 
 export default class SandboxService {
@@ -93,20 +94,11 @@ export default class SandboxService {
 
     public static async getPlaceholders(): Promise<string[]> {
         try {
-            const response = await fetch('/sandbox_placeholders.txt');
-
-            if (!response.ok) {
-                console.warn('Erreur lors du chargement des placeholders depuis le fichier');
-                return this.getDefaultPlaceholders();
-            }
-
-            const text = await response.text();
-            const placeholders = text
+            const placeholders = sandboxPlaceholdersRaw
                 .split('\n')
                 .map(line => line.trim())
                 .filter(line => line.length > 0);
 
-            // Randomiser l'ordre des placeholders
             return this.shuffleArray(placeholders);
         } catch (error) {
             console.warn('Erreur lors du chargement des placeholders:', error);

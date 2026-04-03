@@ -2,8 +2,11 @@ import { createPortal } from "react-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import usePaywallProducts from "../../api/hooks/usePaywallProducts";
 import { TrackingService } from "../../api/tracking/TrackingService";
-import { useEffect, useState } from "react";
+import { SKAdNetworkService } from "../../api/tracking/skadnetwork/SKAdNetworkService";
+import { SKAdNetworkConversionValue } from "../../api/tracking/skadnetwork/SKAdNetworkConversionValue";
+import { useEffect } from "react";
 import PaywallContent from "../paywall/PaywallContent";
+import useIsMobile from "../../hooks/useIsMobile";
 
 interface CreditPaywallModalProps {
     onClose: () => void;
@@ -11,14 +14,7 @@ interface CreditPaywallModalProps {
 
 export default function CreditPaywallModal({ onClose }: CreditPaywallModalProps) {
     const products = usePaywallProducts();
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth <= 768);
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -30,6 +26,7 @@ export default function CreditPaywallModal({ onClose }: CreditPaywallModalProps)
             sessionStorage.setItem(COOLDOWN_KEY, String(Date.now()));
             TrackingService.logCreditPackViewed('paywall');
             TrackingService.logViewContent('paywall');
+            SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
         }
 
         return () => { document.body.style.overflow = 'unset'; };

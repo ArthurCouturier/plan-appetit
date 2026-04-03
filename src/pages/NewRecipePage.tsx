@@ -5,8 +5,8 @@ const GENERATION_TYPES: RecipeGenerationType[] = [
     "sandbox",
     "fridge",
     "location",
-    "ingredient",
     "batch",
+    "ingredient",
     "budget",
 ];
 

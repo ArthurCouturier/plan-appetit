@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, useMotionValue, useTransform, type PanInfo } from "framer-motion";
 import type { FridgeQuestion } from "../../api/interfaces/fridge/FridgeInterfaces";
+import { lightHaptic } from "../../haptics/light";
 
 interface QuestionCardProps {
     question: FridgeQuestion;
@@ -13,6 +14,11 @@ interface QuestionCardProps {
 const SWIPE_THRESHOLD = 80;
 
 export default function QuestionCard({ question, value, onChange, index, total }: QuestionCardProps) {
+    const onChangeWithHaptic = useCallback((v: unknown) => {
+        lightHaptic();
+        onChange(v);
+    }, [onChange]);
+
     const x = useMotionValue(0);
     const rotate = useTransform(x, [-200, 0, 200], [-8, 0, 8]);
     const leftOpacity = useTransform(x, [-SWIPE_THRESHOLD, 0], [1, 0]);
@@ -31,14 +37,14 @@ export default function QuestionCard({ question, value, onChange, index, total }
     const applyMinValue = () => {
         switch (question.type) {
             case "slider":
-                onChange(question.min ?? 0);
+                onChangeWithHaptic(question.min ?? 0);
                 break;
             case "level":
             case "choice":
-                onChange(question.options?.[0] ?? "Non");
+                onChangeWithHaptic(question.options?.[0] ?? "Non");
                 break;
             case "boolean":
-                onChange(false);
+                onChangeWithHaptic(false);
                 break;
         }
     };
@@ -46,16 +52,16 @@ export default function QuestionCard({ question, value, onChange, index, total }
     const applyMaxValue = () => {
         switch (question.type) {
             case "slider":
-                onChange(question.max ?? 6);
+                onChangeWithHaptic(question.max ?? 6);
                 break;
             case "level":
             case "choice": {
                 const opts = question.options ?? [];
-                onChange(opts[opts.length - 1] ?? "Beaucoup");
+                onChangeWithHaptic(opts[opts.length - 1] ?? "Beaucoup");
                 break;
             }
             case "boolean":
-                onChange(true);
+                onChangeWithHaptic(true);
                 break;
         }
     };
@@ -108,16 +114,16 @@ export default function QuestionCard({ question, value, onChange, index, total }
                     }}
                 >
                     {question.type === "slider" && (
-                        <SliderControl question={question} value={value as number} onChange={onChange} />
+                        <SliderControl question={question} value={value as number} onChange={onChangeWithHaptic} />
                     )}
                     {question.type === "level" && (
-                        <LevelControl options={question.options!} value={value as string} onChange={onChange} />
+                        <LevelControl options={question.options!} value={value as string} onChange={onChangeWithHaptic} />
                     )}
                     {question.type === "boolean" && (
-                        <BooleanControl value={value as boolean} onChange={onChange} />
+                        <BooleanControl value={value as boolean} onChange={onChangeWithHaptic} />
                     )}
                     {question.type === "choice" && (
-                        <ChoiceControl options={question.options!} value={value as string} onChange={onChange} />
+                        <ChoiceControl options={question.options!} value={value as string} onChange={onChangeWithHaptic} />
                     )}
                 </div>
             </motion.div>

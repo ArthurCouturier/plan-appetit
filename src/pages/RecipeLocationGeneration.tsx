@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import useIsMobile from "../hooks/useIsMobile";
 import TextualField from "../components/fields/TextualField";
 import { SeasonEnum } from "../api/enums/SeasonEnum";
 import LabeledSeasonSelectorField from "../components/fields/SeasonSelectorField";
@@ -6,12 +7,13 @@ import SwitchField from "../components/fields/SwitchField";
 import { generateRecipe } from "../api/recipes/OpenAIRecipeGenerator";
 import RecipeGenerationParametersInterface from "../api/interfaces/recipes/RecipeGenerationParametersInterface";
 import LinearNumberField from "../components/fields/LinearNumberField";
-import Header from "../components/global/Header";
 import { useNavigate } from "react-router-dom";
 import CreditPaywallModal from "../components/popups/CreditPaywallModal";
 import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
 import { usePostHog } from "../contexts/PostHogContext";
 import { TrackingService } from "../api/tracking/TrackingService";
+import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
+import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 
 const DRAFT_STORAGE_KEY = "recipeGenerationDraft";
@@ -109,6 +111,7 @@ export default function RecipeLocationGeneration() {
                     vegan,
                 });
                 TrackingService.logRecipeGenerated('localisation');
+                SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
                 TrackingService.promptATTIfNeeded();
 
                 invalidateCollections();
@@ -124,6 +127,7 @@ export default function RecipeLocationGeneration() {
                 });
                 TrackingService.logQuotaLimitReached('localisation');
                 TrackingService.logLead('localisation');
+                SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
                 showModalRechargerCredits();
                 return;
             }
@@ -142,24 +146,11 @@ export default function RecipeLocationGeneration() {
         }
     };
 
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    const isMobile = useIsMobile();
 
     return (
         <div className={`relative bg-bg-color min-h-screen ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
             <RecipeGenerationLoadingModal isOpen={isLoading} />
-
-            {isMobile ? null : <RecipeGenerationHeader />}
 
             {/* Modal crédits épuisés */}
             {showCreditModal && (
@@ -221,11 +212,3 @@ export default function RecipeLocationGeneration() {
     );
 }
 
-function RecipeGenerationHeader() {
-    return (
-        <Header
-            back={true}
-            pageName={"Génération par localité/saisonnalité"}
-        />
-    )
-}

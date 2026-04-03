@@ -3,6 +3,7 @@ import { ArrowLeftIcon, HomeIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
 import UserAvatar from "./UserAvatar";
 import useAuth from "../../api/hooks/useAuth";
+import NotificationBell from "../notifications/NotificationBell";
 
 export default function HeaderMobile() {
   const navigate = useNavigate();
@@ -70,12 +71,17 @@ export default function HeaderMobile() {
         </button>
       </div>
 
-      <button
-        onClick={handleProfileClick}
-        className="p-1 rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md"
-      >
-        <UserAvatar size="md" />
-      </button>
+      <div className="flex items-center gap-2">
+        <NotificationBell
+          className="w-10 h-10 rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md"
+        />
+        <button
+          onClick={handleProfileClick}
+          className="p-1 rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md"
+        >
+          <UserAvatar size="md" />
+        </button>
+      </div>
     </header>
   );
 }

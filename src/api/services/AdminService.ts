@@ -130,4 +130,113 @@ export default class AdminService {
             body: JSON.stringify({ provider, testEventCode: testEventCode || "" }),
         });
     }
+
+    static async getAudienceCount(query: AudienceQueryDTO): Promise<{ count: number; query: string }> {
+        return this.request("/api/v1/admin/notifications/audience-count", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify(query),
+        });
+    }
+
+    static async createBroadcastNotification(data: {
+        title: string;
+        body: string;
+        segment?: string | null;
+        actionUrl?: string;
+        iconType: string;
+        expiresAt?: string | null;
+        sendPush?: boolean;
+        linkToStores?: boolean;
+        audience?: AudienceQueryDTO | null;
+    }): Promise<{ status: string; id: string }> {
+        return this.request("/api/v1/admin/notifications", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify(data),
+        });
+    }
+
+    static async getAllBroadcastNotifications(): Promise<BroadcastNotificationDTO[]> {
+        return this.request("/api/v1/admin/notifications", {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async cancelBroadcastNotification(id: string): Promise<{ status: string; id: string }> {
+        return this.request(`/api/v1/admin/notifications/${id}/cancel`, {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async getNotificationTemplates(): Promise<NotificationTemplateDTO[]> {
+        return this.request("/api/v1/admin/notifications/templates", {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async sendTemplateToUser(email: string, templateKey: string): Promise<{ status: string; pushSent: boolean; inAppSent: boolean }> {
+        return this.request("/api/v1/admin/notifications/send-template", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ email, templateKey }),
+        });
+    }
+
+    static async getInstagramAnalysisConfig(): Promise<InstagramAnalysisConfig> {
+        return this.request("/api/v1/admin/instagram/analysis-config", {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async setInstagramAnalysisApproach(approach: string): Promise<InstagramAnalysisConfig> {
+        return this.request("/api/v1/admin/instagram/analysis-config", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ approach }),
+        });
+    }
+}
+
+export interface InstagramAnalysisConfig {
+    currentApproach: string;
+    effectiveApproach: string;
+    approaches?: string[];
+}
+
+export interface NotificationTemplateDTO {
+    key: string;
+    title: string;
+    body: string;
+    iconType: string;
+    actionUrl: string | null;
+    push: boolean;
+    inApp: boolean;
+}
+
+export interface AudienceConditionDTO {
+    field: string;
+    operator: string;
+    value: string;
+}
+
+export interface AudienceQueryDTO {
+    combinator: "AND" | "OR";
+    conditions: AudienceConditionDTO[];
+}
+
+export interface BroadcastNotificationDTO {
+    id: string;
+    type: string;
+    title: string;
+    body: string;
+    segment: string | null;
+    iconType: string;
+    actionUrl: string | null;
+    createdAt: string;
+    expiresAt: string | null;
 }

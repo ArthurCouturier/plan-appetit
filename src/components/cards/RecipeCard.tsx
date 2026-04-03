@@ -2,8 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { useCallback, useRef, useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeSummaryInterface from "../../api/interfaces/recipes/RecipeSummaryInterface";
-import { useRecipeImage } from "../../api/hooks/useRecipeImage";
+import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
 import { UserGroupIcon, CurrencyEuroIcon, ListBulletIcon } from "@heroicons/react/24/solid";
+import { heavyHaptic } from "../../haptics/heavy";
 
 type RecipeCardProps = {
     recipe: RecipeInterface | RecipeSummaryInterface;
@@ -18,12 +19,14 @@ const ZONE_THRESHOLD = 0.3;
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
     const navigate = useNavigate();
-    const { data: imageData, isLoading } = useRecipeImage(String(recipe.uuid));
+    const { ref: visibilityRef, data: imageData } = useRecipeImageVisible(String(recipe.uuid));
+    const isLoading = imageData === undefined;
 
     const [rotation, setRotation] = useState(0);
     const [transitioning, setTransitioning] = useState(false);
 
     const rotationRef = useRef(0);
+    const lastFaceRef = useRef<'front' | 'back'>('front');
     const didSwipeRef = useRef(false);
     const isDraggingRef = useRef(false);
     const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -41,6 +44,15 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     const updateRotation = useCallback((value: number) => {
         rotationRef.current = value;
         setRotation(value);
+    }, []);
+
+    const hapticIfFaceChanged = useCallback((targetRotation: number) => {
+        const normalized = ((targetRotation % 360) + 360) % 360;
+        const newFace = (normalized < 90 || normalized > 270) ? 'front' : 'back';
+        if (newFace !== lastFaceRef.current) {
+            lastFaceRef.current = newFace;
+            heavyHaptic();
+        }
     }, []);
 
     const normalizeRotation = useCallback(() => {
@@ -66,6 +78,8 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     }, []);
 
     const handleStart = useCallback((clientX: number, clientY: number, currentTarget: Element) => {
+        didSwipeRef.current = false;
+
         if (transitioning) return;
 
         const rect = currentTarget.getBoundingClientRect();
@@ -89,7 +103,6 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
             directionLocked: false,
         };
         isDraggingRef.current = false;
-        didSwipeRef.current = false;
     }, [transitioning, isCurrentlyFlipped]);
 
     const handleMove = useCallback((clientX: number, clientY: number) => {
@@ -143,6 +156,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
 
         startRef.current = null;
         isDraggingRef.current = false;
+        hapticIfFaceChanged(targetRotation);
 
         if (Math.abs(targetRotation - currentRotation) < 0.5) {
             updateRotation(targetRotation);
@@ -167,6 +181,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
 
     const flipBack = useCallback((direction: 1 | -1) => {
         const targetRotation = rotationRef.current + direction * 180;
+        hapticIfFaceChanged(targetRotation);
         setTransitioning(true);
         updateRotation(targetRotation);
         clearTransitionTimeout();
@@ -221,7 +236,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     }, [handleStart, handleMove, handleEnd]);
 
     return (
-        <div className="w-full" style={{ perspective: '800px' }}>
+        <div ref={visibilityRef} className="w-full" data-recipe-card style={{ perspective: '800px' }}>
             <div
                 onClick={handleClick}
                 onTouchStart={onTouchStart}
@@ -257,6 +272,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                                     src={`data:image/png;base64,${imageData}`}
                                     alt={recipe.name}
                                     className="w-full h-full object-cover"
+                                    draggable={false}
                                 />
                             ) : (
                                 <div className="w-full h-full bg-border-color flex items-center justify-center">

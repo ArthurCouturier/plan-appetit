@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import type { TimeCategory } from "../../api/interfaces/fridge/FridgeInterfaces";
+import { lightHaptic } from "../../haptics/light";
 
 interface FridgeStep2ContextProps {
     servings: number;
@@ -41,7 +42,7 @@ export default function FridgeStep2Context({
                         {[1, 2, 3, 4, 5].map((n) => (
                             <button
                                 key={n}
-                                onClick={() => onServingsChange(n)}
+                                onClick={() => { onServingsChange(n); lightHaptic(); }}
                                 className={`w-14 h-14 rounded-full text-lg font-bold transition-all duration-200 ${
                                     servings === n
                                         ? "bg-cout-yellow text-cout-purple scale-110 shadow-lg"
@@ -63,7 +64,7 @@ export default function FridgeStep2Context({
                         {TIME_OPTIONS.map((option) => (
                             <button
                                 key={option.value}
-                                onClick={() => onTimeCategoryChange(option.value)}
+                                onClick={() => { onTimeCategoryChange(option.value); lightHaptic(); }}
                                 className={`w-full px-5 py-4 rounded-xl text-left transition-all duration-200 flex items-center gap-4 ${
                                     timeCategory === option.value
                                         ? "bg-cout-yellow/20 border-2 border-cout-yellow text-text-primary scale-[1.02]"

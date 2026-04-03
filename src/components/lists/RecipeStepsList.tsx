@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import StepInterface from "../../api/interfaces/recipes/StepInterface";
+import { mediumHaptic } from "../../haptics/medium";
 
 export default function RecipeStepsList({
     steps,
@@ -130,7 +131,7 @@ function DefaultMode({
                 background: highlighted ? "var(--color-secondary)" : undefined,
                 boxShadow: highlighted ? "0 4px 12px rgba(0,0,0,0.08)" : undefined,
             }}
-            onClick={onHighlight}
+            onClick={() => { onHighlight?.(); mediumHaptic(); }}
         >
             <h3 className="font-extrabold mb-1 text-left">Etape {step.key}:</h3>
             <pre className="break-word whitespace-normal w-full md:w-[33vw] text-left">{step.value}</pre>

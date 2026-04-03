@@ -62,7 +62,7 @@ const VARIANTS: Record<RecipeGenerationType, VariantConfig> = {
         icon: "/icons/IconMarmite.svg",
         gradientFrom: "#d69f7e",
         gradientTo: "#cd9777",
-        route: null,
+        route: "/batch-cooking",
     },
     budget: {
         title: "Voici mon budget!",

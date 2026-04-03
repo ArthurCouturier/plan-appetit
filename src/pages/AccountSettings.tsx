@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import useIsMobile from '../hooks/useIsMobile';
 import { updatePassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
-import Header from '../components/global/Header';
 import Footer from '../components/global/Footer';
 import SubscriptionService from '../api/services/SubscriptionService';
 import CancelSubscriptionModal from '../components/popups/CancelSubscriptionModal';
@@ -30,7 +30,7 @@ export default function AccountSettings() {
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
+    const isMobile = useIsMobile();
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
     const [showExportModal, setShowExportModal] = useState(false);
@@ -113,16 +113,6 @@ export default function AccountSettings() {
         }
     }, [user, navigate, isUserPremium]);
 
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     if (user === undefined) {
         return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;
@@ -146,8 +136,6 @@ export default function AccountSettings() {
     return (
         <div className='min-h-screen bg-bg-color flex flex-col'>
             <div className={`flex-grow ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-                {isMobile ? null : <SettingsHeader />}
-
                 <div className="max-w-2xl mx-auto mt-4 space-y-4">
                     {/* Modal d'annulation d'abonnement */}
                     <CancelSubscriptionModal
@@ -309,14 +297,3 @@ export default function AccountSettings() {
     );
 }
 
-function SettingsHeader() {
-    return (
-        <Header
-            back={true}
-            home={true}
-            title={true}
-            profile={false}
-            pageName={"Gérer mon compte"}
-        />
-    )
-}

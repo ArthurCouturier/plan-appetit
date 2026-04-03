@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import RecipeCollectionInterface from "../../api/interfaces/collections/RecipeCollectionInterface";
 import CollectionCard from "../../components/cards/CollectionCard";
-import Header from "../../components/global/Header";
 import QuickActions from "../../components/actions/QuickActions";
 import { SparklesIcon, FolderIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
@@ -89,8 +88,6 @@ export default function RecipeDesktop() {
 
   return (
     <div className="min-h-screen bg-bg-color p-6">
-      <RecipesHeader />
-
       <div className="mt-6">
         {/* Header section */}
         <div className="mb-8 flex items-center justify-between">
@@ -179,14 +176,3 @@ export default function RecipeDesktop() {
   )
 }
 
-function RecipesHeader() {
-  return (
-    <Header
-      back={true}
-      home={true}
-      title={true}
-      profile={true}
-      pageName="Livre des recettes"
-    />
-  )
-}

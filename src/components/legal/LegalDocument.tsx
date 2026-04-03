@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import { Card, CardBody, Button } from '@material-tailwind/react';
 import { ArrowDownTrayIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Header from '../global/Header';
+import useIsMobile from "../../hooks/useIsMobile";
 
 interface LegalDocumentProps {
     documentPath: string;
@@ -16,16 +17,7 @@ export default function LegalDocument({ documentPath, title }: LegalDocumentProp
     const [content, setContent] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         fetch(documentPath)

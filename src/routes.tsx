@@ -16,16 +16,25 @@ import Layout from "./components/global/Layout";
 import BecomePremium from "./pages/BecomePremium";
 import InstagramImport from "./pages/InstagramImport";
 import { CGUPage, PolitiqueConfidentialitePage, MentionsLegalesPage, CGVPage } from "./pages/legal";
-import Admin from "./pages/Admin";
-import AdminBatchs from "./pages/AdminBatchs";
-import AdminUserRecipes from "./pages/AdminUserRecipes";
-import AdminTrackingTest from "./pages/AdminTrackingTest";
+import Admin from "./pages/admin/Admin";
+import AdminBatchs from "./pages/admin/AdminBatchs";
+import AdminUserRecipes from "./pages/admin/AdminUserRecipes";
+import AdminTrackingTest from "./pages/admin/AdminTrackingTest";
+import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminNotificationsList from "./pages/admin/AdminNotificationsList";
+import AdminSendNotification from "./pages/admin/AdminSendNotification";
+import AdminHaptics from "./pages/admin/AdminHaptics";
+import AdminModals from "./pages/admin/AdminModals";
 import FridgeMode from "./pages/FridgeMode";
+import BatchCookingMode from "./pages/BatchCookingMode";
+import BatchCookingDetail from "./pages/BatchCookingDetail";
+import NotFound from "./pages/NotFound";
 import NewRecipePage from "./pages/NewRecipePage";
 
 const router = createBrowserRouter([
     {
         path: "/",
+        errorElement: <NotFound />,
         children: [
             {
                 index: true,
@@ -106,6 +115,14 @@ const router = createBrowserRouter([
                                 element: <FridgeMode />,
                             },
                             {
+                                path: "batch-cooking",
+                                element: <BatchCookingMode />,
+                            },
+                            {
+                                path: "batch-cooking/:uuid",
+                                element: <BatchCookingDetail />,
+                            },
+                            {
                                 path: "recettes/nouvelle",
                                 element: <NewRecipePage />,
                             },
@@ -128,6 +145,26 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/tracking-test",
                                 element: <AdminTrackingTest />
+                            },
+                            {
+                                path: "admin/notifications",
+                                element: <AdminNotifications />
+                            },
+                            {
+                                path: "admin/notifications/list",
+                                element: <AdminNotificationsList />
+                            },
+                            {
+                                path: "admin/notifications/send",
+                                element: <AdminSendNotification />
+                            },
+                            {
+                                path: "admin/haptics",
+                                element: <AdminHaptics />
+                            },
+                            {
+                                path: "admin/modals",
+                                element: <AdminModals />
                             }
                         ],
                     },

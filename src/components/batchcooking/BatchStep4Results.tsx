@@ -106,9 +106,13 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
 
     // Called by TabSlider (click/drag)
     const changeTab = useCallback((tab: Tab) => {
+        if (tab === activeTab) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            return;
+        }
         setActiveTab(tab);
         setSearchParams({ tab }, { replace: true });
-    }, [setSearchParams]);
+    }, [setSearchParams, activeTab]);
 
     // Called by content swipe
     const swipeToTab = useCallback((tab: Tab) => {

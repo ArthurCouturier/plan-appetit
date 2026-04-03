@@ -227,7 +227,7 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
             <div
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                className="max-w-md mx-auto"
+                className="max-w-lg mx-auto"
                 style={{
                     transform: bounceX !== 0 ? `translateX(${bounceX}px)` : undefined,
                     transition: bounceX !== 0 ? "transform 100ms" : undefined,
@@ -247,7 +247,7 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
                     <ShoppingTab items={batchCooking.shoppingList} recipes={batchCooking.recipes} />
                 </div>
                 <div style={{ display: activeTab === "planning" ? undefined : "none" }}>
-                    <PlanningTab steps={batchCooking.executionPlan} />
+                    <PlanningTab steps={batchCooking.executionPlan} recipes={batchCooking.recipes} />
                 </div>
                 {deleteButton}
             </div>
@@ -340,7 +340,10 @@ function ShoppingTab({ items, recipes }: { items: BatchCookingShoppingItem[]; re
     );
 }
 
-function PlanningTab({ steps }: { steps: BatchCookingExecutionStep[] }) {
+function PlanningTab({ steps, recipes }: { steps: BatchCookingExecutionStep[]; recipes: RecipeInterface[] }) {
+    const navigate = useNavigate();
+    const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
     if (steps.length === 0) {
         return <p className="text-text-secondary text-center text-sm">Aucun planning disponible</p>;
     }
@@ -352,8 +355,13 @@ function PlanningTab({ steps }: { steps: BatchCookingExecutionStep[] }) {
 
     const totalWithPassive = steps.reduce((sum, s) => sum + (s.durationMinutes ?? 0), 0);
 
+    const sorted = [...steps].sort((a, b) => a.executionOrder - b.executionOrder);
+
+    // Map recipe names to UUIDs for image thumbnails
+    const recipeNameToUuid = new Map(recipes.map((r) => [r.name, String(r.uuid)]));
+
     return (
-        <div className="space-y-3">
+        <div>
             <div className="flex justify-center gap-4 mb-4">
                 <div className="text-center">
                     <div className="text-sm font-bold text-cout-yellow">{formatMinutes(totalMinutes)}</div>
@@ -365,57 +373,92 @@ function PlanningTab({ steps }: { steps: BatchCookingExecutionStep[] }) {
                 </div>
             </div>
 
-            {steps
-                .sort((a, b) => a.executionOrder - b.executionOrder)
-                .map((step, index) => (
-                    <div
-                        key={step.uuid || index}
-                        className="bg-secondary rounded-xl p-4"
-                    >
-                        {/* Step number + type badge */}
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="w-7 h-7 bg-cout-yellow/20 rounded-full flex items-center justify-center shrink-0">
-                                <span className="text-xs font-bold text-cout-yellow">{index + 1}</span>
+            <div className="bg-primary rounded-xl shadow-lg border border-border-color p-4">
+                {sorted.map((step, index) => {
+                    const isExpanded = expandedIndex === index;
+                    const linkedRecipes = step.recipeNames
+                        .map((name) => ({ name, uuid: recipeNameToUuid.get(name) }))
+                        .filter((r) => r.uuid);
+
+                    return (
+                        <div
+                            key={step.uuid || index}
+                            className="flex items-start py-2 mb-1"
+                        >
+                            <div
+                                className="flex flex-col cursor-pointer rounded-xl px-3 py-2 -mx-1 w-full transition-all duration-300 ease-out"
+                                style={{
+                                    background: isExpanded ? "var(--color-secondary)" : undefined,
+                                    boxShadow: isExpanded ? "0 4px 12px rgba(0,0,0,0.08)" : undefined,
+                                }}
+                                onClick={() => {
+                                    setExpandedIndex(isExpanded ? null : index);
+                                    lightHaptic();
+                                }}
+                            >
+                                {/* Header */}
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-extrabold text-text-primary text-sm">
+                                        Etape {index + 1}
+                                    </span>
+                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${step.stepType === "PASSIVE"
+                                        ? "bg-blue-500/10 text-blue-500"
+                                        : "bg-cout-yellow/10 text-cout-yellow"
+                                        }`}>
+                                        {step.stepType === "PASSIVE" ? "Passif" : "Actif"}
+                                    </span>
+                                    {step.durationMinutes && (
+                                        <span className="text-xs text-text-secondary ml-auto">
+                                            {formatMinutes(step.durationMinutes)}
+                                        </span>
+                                    )}
+                                    {linkedRecipes.length > 0 && (
+                                        <span className={`text-xs text-text-secondary transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}>
+                                            ▼
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Description */}
+                                <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
+                                    {step.description}
+                                </p>
+
+                                {/* Tip - always visible */}
+                                {step.tip && (
+                                    <div className="mt-2 flex items-start gap-1.5 text-xs text-cout-purple">
+                                        <span className="shrink-0">💡</span>
+                                        <span>{step.tip}</span>
+                                    </div>
+                                )}
+
+                                {/* Expandable: recipe image thumbnails */}
+                                <AnimatePresence>
+                                    {isExpanded && linkedRecipes.length > 0 && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="py-2 flex flex-wrap gap-2 justify-center">
+                                                {linkedRecipes.map((r) => (
+                                                    <ShoppingRecipeThumb
+                                                        key={r.uuid}
+                                                        recipeUuid={r.uuid!}
+                                                        onClick={() => navigate(`/recettes/${r.uuid}`)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
-                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${step.stepType === "PASSIVE"
-                                ? "bg-blue-500/10 text-blue-500"
-                                : "bg-cout-yellow/10 text-cout-yellow"
-                                }`}>
-                                {step.stepType === "PASSIVE" ? "Passif" : "Actif"}
-                            </span>
-                            {step.durationMinutes && (
-                                <span className="text-xs text-text-secondary ml-auto">
-                                    {formatMinutes(step.durationMinutes)}
-                                </span>
-                            )}
                         </div>
-
-                        {/* Description */}
-                        <p className="text-sm text-text-primary leading-relaxed mb-2">
-                            {step.description}
-                        </p>
-
-                        {/* Recipe tags */}
-                        <div className="flex flex-wrap gap-1.5 mb-1">
-                            {step.recipeNames.map((name) => (
-                                <span
-                                    key={name}
-                                    className="text-xs bg-primary border border-border-color text-text-secondary rounded-full px-2.5 py-0.5"
-                                >
-                                    {name}
-                                </span>
-                            ))}
-                        </div>
-
-                        {/* Tip */}
-                        {step.tip && (
-                            <div className="mt-2 flex items-start gap-1.5 text-xs text-cout-yellow">
-                                <span className="shrink-0">💡</span>
-                                <span>{step.tip}</span>
-                            </div>
-                        )}
-                    </div>
-                ))}
+                    );
+                })}
+            </div>
         </div>
     );
 }

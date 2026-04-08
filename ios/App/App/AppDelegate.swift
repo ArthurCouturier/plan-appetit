@@ -23,10 +23,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
 
         // Initialize TikTok SDK
+        let appId = "6756276676"
         let tiktokAppId = "7619275274311548936"
-        let config = TikTokConfig(appId: tiktokAppId, tiktokAppId: tiktokAppId)
-        config?.setLogLevel(TikTokLogLevelDebug)
-        config?.enableDebugMode()
+        let config = TikTokConfig(appId: appId, tiktokAppId: tiktokAppId)
+        config?.disableSKAdNetworkSupport()
         TikTokBusiness.initializeSdk(config)
         print("[TikTokSDK] Initialized at app launch with appId: \(tiktokAppId)")
 

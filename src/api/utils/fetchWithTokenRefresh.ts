@@ -26,9 +26,24 @@ async function getNewToken(): Promise<string | null> {
 export async function fetchWithTokenRefresh(
     url: string,
     options: RequestInit,
-    maxRetries: number = 2
+    maxRetries: number = 2,
+    timeoutMs: number = 180_000,
 ): Promise<Response> {
-    let response = await fetch(url, options);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const fetchOptions = { ...options, signal: controller.signal };
+
+    let response: Response;
+    try {
+        response = await fetch(url, fetchOptions);
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            throw new Error('La requete a expire (timeout)');
+        }
+        throw error;
+    }
+    clearTimeout(timeoutId);
 
     for (let attempt = 0; attempt < maxRetries && response.status === 401; attempt++) {
         try {

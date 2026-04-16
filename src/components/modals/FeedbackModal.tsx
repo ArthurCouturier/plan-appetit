@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import Modal from "./Modal";
-import { FEEDBACK_COMPONENT_REGISTRY } from "./registry";
+import { FEEDBACK_COMPONENT_REGISTRY } from "../feedbacks/registry";
 import type {
   FeedbackAnswerValue,
   FeedbackAnswers,
   FeedbackComponentSchema,
   FeedbackPayload,
   RatingComponentSchema,
-} from "./types";
+} from "../feedbacks/types";
 
 interface FeedbackModalProps {
   payload: FeedbackPayload;
@@ -23,6 +23,7 @@ function getInitialValue(component: FeedbackComponentSchema): FeedbackAnswerValu
     case "rating":
       return 0;
     case "text_input":
+    case "choice":
       return "";
     default:
       return null;
@@ -37,6 +38,10 @@ function isComponentValid(component: FeedbackComponentSchema, value: FeedbackAns
   if (component.type === "text_input") {
     if (!component.props.required) return true;
     return typeof value === "string" && value.trim().length > 0;
+  }
+  if (component.type === "choice") {
+    if (!component.props.required) return true;
+    return typeof value === "string" && value.length > 0;
   }
   return true;
 }

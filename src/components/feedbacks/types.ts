@@ -2,7 +2,10 @@ export type FeedbackComponentType =
   | "title"
   | "text"
   | "rating"
-  | "text_input";
+  | "text_input"
+  | "choice"
+  | "link"
+  | "button";
 
 export interface BaseFeedbackComponent {
   type: FeedbackComponentType;
@@ -49,11 +52,51 @@ export interface TextInputComponentSchema extends BaseFeedbackComponent {
   };
 }
 
+export interface ChoiceOption {
+  value: string;
+  label: string;
+}
+
+export interface ChoiceComponentSchema extends BaseFeedbackComponent {
+  type: "choice";
+  props: {
+    label: string;
+    options: ChoiceOption[];
+    required?: boolean;
+  };
+}
+
+export interface LinkComponentSchema extends BaseFeedbackComponent {
+  type: "link";
+  props: {
+    label: string;
+    url: string;
+    external?: boolean;
+    trackEvent?: string;
+  };
+}
+
+export type ButtonVariant = "primary" | "secondary" | "ghost";
+
+export interface ButtonComponentSchema extends BaseFeedbackComponent {
+  type: "button";
+  props: {
+    label: string;
+    action: "submit" | "dismiss" | "open_url";
+    url?: string;
+    variant?: ButtonVariant;
+    trackEvent?: string;
+  };
+}
+
 export type FeedbackComponentSchema =
   | TitleComponentSchema
   | TextComponentSchema
   | RatingComponentSchema
-  | TextInputComponentSchema;
+  | TextInputComponentSchema
+  | ChoiceComponentSchema
+  | LinkComponentSchema
+  | ButtonComponentSchema;
 
 export interface FeedbackFormMeta {
   templateId?: string;

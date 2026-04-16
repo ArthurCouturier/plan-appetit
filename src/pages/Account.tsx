@@ -12,6 +12,7 @@ import { isPremiumUser, hasRoleLevel, UserRole } from '../api/interfaces/users/U
 import CreditIcon from '../components/icons/CreditIcon';
 import UserAvatar from '../components/global/UserAvatar';
 import useIsMobile from '../hooks/useIsMobile';
+import { dispatchFeedbackEvent } from '../components/feedbacks/feedbackEvents';
 
 export default function Account() {
     const { user, logout, login } = useAuth();
@@ -49,6 +50,12 @@ export default function Account() {
             fetchAccountInfo();
         }
     }, [user, navigate]);
+
+    useEffect(() => {
+        if (credits !== null && credits <= 1 && !isUserPremium) {
+            dispatchFeedbackEvent("credit_depleted");
+        }
+    }, [credits, isUserPremium]);
 
     useEffect(() => {
         document.documentElement.classList.remove('theme1', 'theme2');

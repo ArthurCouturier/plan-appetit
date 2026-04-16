@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import FeedbackService from "../api/services/FeedbackService";
-import FeedbackModal from "../components/feedbacks/FeedbackModal";
+import FeedbackModal from "../components/modals/FeedbackModal";
 import type {
     FeedbackAnswers,
     FeedbackComponentSchema,

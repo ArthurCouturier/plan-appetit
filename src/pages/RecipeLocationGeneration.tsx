@@ -15,6 +15,7 @@ import { TrackingService } from "../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
 import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
+import { dispatchFeedbackEvent } from "../components/feedbacks/feedbackEvents";
 
 const DRAFT_STORAGE_KEY = "recipeGenerationDraft";
 
@@ -116,6 +117,7 @@ export default function RecipeLocationGeneration() {
 
                 invalidateCollections();
                 navigate(`/recettes/${newRecipe.uuid}`);
+                dispatchFeedbackEvent("recipe_generated");
             }
         } catch (error: any) {
             if (error.type === "INSUFFICIENT_CREDITS") {

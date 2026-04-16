@@ -6,7 +6,7 @@ import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import Footer from '../components/global/Footer';
 import BackendService from '../api/services/BackendService';
-import CreditPaywallModal from '../components/popups/CreditPaywallModal';
+import CreditPaywallModal from '../components/modals/CreditPaywallModal';
 import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/solid";
 import { isPremiumUser, hasRoleLevel, UserRole } from '../api/interfaces/users/UserInterface';
 import CreditIcon from '../components/icons/CreditIcon';

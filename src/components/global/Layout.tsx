@@ -8,8 +8,8 @@ import { TrackingService } from "../../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../../api/tracking/skadnetwork/SKAdNetworkService";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
-import DailyRecipeModal from "../popups/DailyRecipeModal";
-import UpdateAppModal from "../popups/UpdateAppModal";
+import DailyRecipeModal from "../modals/DailyRecipeModal";
+import UpdateAppModal from "../modals/UpdateAppModal";
 import { useDailyRecipeContext } from "../../contexts/DailyRecipeContext";
 
 export default function Layout() {

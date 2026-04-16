@@ -3,17 +3,17 @@ import { Navigate } from "react-router-dom";
 import useAuth from "../../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
 
-import Modal from "../../components/popups/Modal";
-import ConfirmationPopUp from "../../components/popups/ConfirmationPopUp";
-import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
-import DailyRecipeModal from "../../components/popups/DailyRecipeModal";
-import RecipeGenerationLoadingModal from "../../components/popups/RecipeGenerationLoadingModal";
-import MultipleRecipeConfirmationModal from "../../components/popups/MultipleRecipeConfirmationModal";
-import CreateCollectionModal from "../../components/popups/CreateCollectionModal";
-import ExportDataModal from "../../components/popups/ExportDataModal";
-import DeleteAccountModal from "../../components/popups/DeleteAccountModal";
-import LinkCopiedPopup from "../../components/popups/LinkCopiedPopup";
-import UpdateAppModal from "../../components/popups/UpdateAppModal";
+import Modal from "../../components/modals/Modal";
+import ConfirmationPopUp from "../../components/modals/ConfirmationPopUp";
+import CreditPaywallModal from "../../components/modals/CreditPaywallModal";
+import DailyRecipeModal from "../../components/modals/DailyRecipeModal";
+import RecipeGenerationLoadingModal from "../../components/modals/RecipeGenerationLoadingModal";
+import MultipleRecipeConfirmationModal from "../../components/modals/MultipleRecipeConfirmationModal";
+import CreateCollectionModal from "../../components/modals/CreateCollectionModal";
+import ExportDataModal from "../../components/modals/ExportDataModal";
+import DeleteAccountModal from "../../components/modals/DeleteAccountModal";
+import LinkCopiedPopup from "../../components/modals/LinkCopiedPopup";
+import UpdateAppModal from "../../components/modals/UpdateAppModal";
 
 interface ModalEntry {
     id: string;

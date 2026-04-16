@@ -4,7 +4,7 @@ import { FolderIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { mediumHaptic } from "../haptics/medium";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import QuickActionButton from "../components/buttons/QuickActionButton";
-import CreateCollectionModal from "../components/popups/CreateCollectionModal";
+import CreateCollectionModal from "../components/modals/CreateCollectionModal";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import RecipeCollectionInterface from "../api/interfaces/collections/RecipeCollectionInterface";

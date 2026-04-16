@@ -5,13 +5,18 @@ import router from './routes';
 import { AuthProvider } from './components/authentication/AuthProvider';
 import CookieConsentBanner from './components/global/CookieConsentBanner';
 import { DailyRecipeProvider } from './contexts/DailyRecipeContext';
+import { FeedbackProvider } from './contexts/FeedbackContext';
+import FeedbackEventBridge from './components/feedbacks/FeedbackEventBridge';
 
 function App() {
   return (
     <AuthProvider>
       <DailyRecipeProvider>
-        <RouterProvider router={router} />
-        <CookieConsentBanner />
+        <FeedbackProvider>
+          <FeedbackEventBridge />
+          <RouterProvider router={router} />
+          <CookieConsentBanner />
+        </FeedbackProvider>
       </DailyRecipeProvider>
     </AuthProvider>
   );

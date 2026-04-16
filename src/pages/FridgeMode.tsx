@@ -11,8 +11,8 @@ import FridgeStep2Context from "../components/fridge/FridgeStep2Context";
 import FridgeStep3Questions from "../components/fridge/FridgeStep3Questions";
 import FridgeStep4Shopping from "../components/fridge/FridgeStep4Shopping";
 import FridgeStep5RecipeChoice from "../components/fridge/FridgeStep5RecipeChoice";
-import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
-import CreditPaywallModal from "../components/popups/CreditPaywallModal";
+import RecipeGenerationLoadingModal from "../components/modals/RecipeGenerationLoadingModal";
+import CreditPaywallModal from "../components/modals/CreditPaywallModal";
 import type {
     TimeCategory,
     FridgeQuestion,

@@ -90,6 +90,7 @@ export default function FeedbackModal({
       title={payload.form.meta.title}
       size="md"
       showCloseButton={payload.dismissable}
+      closeOnBackdrop={false}
     >
       <div className="flex flex-col gap-4">
         {payload.form.components.map((component) => {
@@ -112,7 +113,7 @@ export default function FeedbackModal({
           type="button"
           disabled={!canSubmit}
           onClick={() => onSubmit(answers)}
-          className="mt-2 w-full rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="mt-2 w-full rounded-lg bg-cout-purple px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Envoyer
         </button>

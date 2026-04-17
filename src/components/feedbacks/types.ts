@@ -36,6 +36,7 @@ export interface RatingComponentSchema extends BaseFeedbackComponent {
     label: string;
     min: number;
     max: number;
+    step?: number;
     required?: boolean;
     redirectOnValue?: RatingRedirect;
   };

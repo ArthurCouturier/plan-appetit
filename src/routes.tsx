@@ -23,6 +23,7 @@ import AdminTrackingTest from "./pages/admin/AdminTrackingTest";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminNotificationsList from "./pages/admin/AdminNotificationsList";
 import AdminSendNotification from "./pages/admin/AdminSendNotification";
+import AdminFeedback from "./pages/admin/AdminFeedback";
 import AdminHaptics from "./pages/admin/AdminHaptics";
 import AdminModals from "./pages/admin/AdminModals";
 import FridgeMode from "./pages/FridgeMode";
@@ -157,6 +158,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/notifications/send",
                                 element: <AdminSendNotification />
+                            },
+                            {
+                                path: "admin/feedback",
+                                element: <AdminFeedback />
                             },
                             {
                                 path: "admin/haptics",

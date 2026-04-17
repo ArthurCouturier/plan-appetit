@@ -1,3 +1,4 @@
+import { mediumHaptic } from "../../haptics/medium";
 import type { ChoiceComponentSchema, FeedbackComponentProps } from "./types";
 
 export default function ChoiceComponent({
@@ -10,6 +11,7 @@ export default function ChoiceComponent({
   const current = typeof value === "string" ? value : null;
 
   const handleSelect = (v: string) => {
+    if (v !== current) mediumHaptic();
     onChange(v);
     onInteract?.(v);
   };
@@ -30,16 +32,18 @@ export default function ChoiceComponent({
               onClick={() => handleSelect(opt.value)}
               className={`text-left rounded-lg border px-3 py-2.5 text-sm transition-colors ${
                 selected
-                  ? "border-accent bg-accent/10 text-text-primary"
-                  : "border-border-color text-text-primary hover:bg-secondary"
+                  ? "border-cout-purple bg-white/90 font-semibold"
+                  : "border-border-color bg-white/70 text-text-primary hover:bg-white/80"
               }`}
             >
               <span className="inline-flex items-center gap-2">
                 <span
-                  className={`inline-block w-3 h-3 rounded-full border ${
-                    selected ? "bg-accent border-accent" : "border-border-color"
+                  className={`inline-flex items-center justify-center w-4 h-4 rounded-full border-2 ${
+                    selected ? "border-cout-purple" : "border-border-color"
                   }`}
-                />
+                >
+                  {selected && <span className="w-2 h-2 rounded-full bg-cout-purple" />}
+                </span>
                 {opt.label}
               </span>
             </button>

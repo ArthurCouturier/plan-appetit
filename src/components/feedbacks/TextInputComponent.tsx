@@ -1,9 +1,11 @@
 import { useCallback, useId, useRef, useState } from "react";
 import useIsMobile from "../../hooks/useIsMobile";
+import { errorHaptic } from "../../haptics/error";
 import type { FeedbackComponentProps, TextInputComponentSchema } from "./types";
 
 const KEYBOARD_SPACER_HEIGHT = 320;
 const SCROLL_DELAY_MS = 300;
+const MAX_FLASH_MS = 2000;
 
 export default function TextInputComponent({
   schema,
@@ -11,16 +13,26 @@ export default function TextInputComponent({
   onChange,
   onInteract,
 }: FeedbackComponentProps<TextInputComponentSchema>) {
-  const { label, placeholder, multiline, maxLength, required } = schema.props;
+  const { label, placeholder, multiline, maxLength: propsMaxLength, required } = schema.props;
+  const maxLength = Math.min(propsMaxLength ?? 1000, 1000);
   const stringValue = typeof value === "string" ? value : "";
   const inputId = useId();
   const isMobile = useIsMobile();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [focused, setFocused] = useState(false);
+  const [atMax, setAtMax] = useState(false);
+  const maxTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleChange = (newValue: string) => {
     onChange(newValue);
     onInteract?.(newValue);
+
+    if (maxLength && newValue.length >= maxLength && !atMax) {
+      errorHaptic();
+      setAtMax(true);
+      if (maxTimerRef.current) clearTimeout(maxTimerRef.current);
+      maxTimerRef.current = setTimeout(() => setAtMax(false), MAX_FLASH_MS);
+    }
   };
 
   const handleFocus = useCallback(() => {
@@ -34,6 +46,10 @@ export default function TextInputComponent({
   const handleBlur = useCallback(() => {
     setFocused(false);
   }, []);
+
+  const borderClass = atMax
+    ? "border-red-500 focus:ring-red-500"
+    : "border-border-color focus:ring-accent";
 
   return (
     <>
@@ -52,7 +68,7 @@ export default function TextInputComponent({
             placeholder={placeholder}
             maxLength={maxLength}
             rows={3}
-            className="w-full rounded-lg border border-border-color bg-secondary px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+            className={`w-full rounded-lg border bg-secondary px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 resize-none transition-colors ${borderClass}`}
           />
         ) : (
           <input
@@ -64,11 +80,11 @@ export default function TextInputComponent({
             onBlur={handleBlur}
             placeholder={placeholder}
             maxLength={maxLength}
-            className="w-full rounded-lg border border-border-color bg-secondary px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+            className={`w-full rounded-lg border bg-secondary px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 transition-colors ${borderClass}`}
           />
         )}
         {maxLength && (
-          <span className="text-xs text-text-secondary self-end">
+          <span className={`text-xs self-end transition-colors ${atMax ? "text-red-500 font-semibold" : "text-text-secondary"}`}>
             {stringValue.length} / {maxLength}
           </span>
         )}

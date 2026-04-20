@@ -111,14 +111,14 @@ export default function RatingComponent({
   };
 
   return (
-    <div className="flex flex-col gap-2 mx-auto">
+    <div className="flex flex-col gap-2">
       <label className="text-sm font-medium text-text-primary">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
       <div
         ref={containerRef}
-        className="flex gap-1 select-none touch-none"
+        className="flex gap-1 select-none touch-none mx-auto"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

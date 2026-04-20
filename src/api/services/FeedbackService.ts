@@ -1,4 +1,4 @@
-import type { FeedbackAnswers, FeedbackPayload } from "../../components/feedbacks/types";
+import type { FeedbackAnswers, FeedbackForm, FeedbackPayload } from "../../components/feedbacks/types";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
 
 export default class FeedbackService {
@@ -50,6 +50,30 @@ export default class FeedbackService {
             {
                 method: "POST",
                 headers: this.getHeaders(),
+            }
+        );
+    }
+
+    static async requestByTemplate(templateId: string): Promise<{ templateId: string; form: FeedbackForm; dismissable: boolean } | null> {
+        const response = await fetchWithTokenRefresh(
+            `${this.getApiUrl()}/api/v1/feedback/request`,
+            {
+                method: "POST",
+                headers: this.getHeaders(),
+                body: JSON.stringify({ templateId }),
+            }
+        );
+        if (!response.ok) return null;
+        return response.json();
+    }
+
+    static async submitNew(templateId: string, answers: FeedbackAnswers): Promise<void> {
+        await fetchWithTokenRefresh(
+            `${this.getApiUrl()}/api/v1/feedback/submit`,
+            {
+                method: "POST",
+                headers: this.getHeaders(),
+                body: JSON.stringify({ templateId, answers }),
             }
         );
     }

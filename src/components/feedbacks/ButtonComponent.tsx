@@ -14,7 +14,7 @@ export default function ButtonComponent({
   const variantClass = VARIANT_CLASSES[variant ?? "primary"] ?? VARIANT_CLASSES.primary;
 
   const handleClick = () => {
-    onInteract?.(url ?? action);
+    onInteract?.(action);
     if (action === "open_url" && url) {
       window.open(url, "_blank", "noopener,noreferrer");
     }

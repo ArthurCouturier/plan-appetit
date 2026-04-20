@@ -13,6 +13,8 @@ import CreditIcon from '../components/icons/CreditIcon';
 import UserAvatar from '../components/global/UserAvatar';
 import useIsMobile from '../hooks/useIsMobile';
 import { dispatchFeedbackEvent } from '../components/feedbacks/feedbackEvents';
+import useFeedback from '../api/hooks/useFeedback';
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 
 export default function Account() {
     const { user, logout, login } = useAuth();
@@ -21,6 +23,7 @@ export default function Account() {
     const isUserPremium = user && user.role ? isPremiumUser(user.role) : false;
 
     const isMobile = useIsMobile();
+    const { requestFeedback } = useFeedback();
     const [enabled, setEnabled] = useState(false);
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
     const [credits, setCredits] = useState<number | null>(null);
@@ -169,6 +172,17 @@ export default function Account() {
                                 <SunIcon className="w-5 h-5 text-cout-yellow" />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Feedback utilisateur */}
+                    <div className="mt-2">
+                        <button
+                            onClick={() => requestFeedback("user-feedback-v1")}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-border-color text-text-primary bg-primary hover:bg-secondary transition-colors text-sm font-medium"
+                        >
+                            <ChatBubbleLeftRightIcon className="w-5 h-5 text-text-secondary" />
+                            Une idée ? Un problème ?
+                        </button>
                     </div>
 
                     {/* Actions */}

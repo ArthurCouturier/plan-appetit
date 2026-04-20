@@ -5,7 +5,8 @@ export type FeedbackComponentType =
   | "text_input"
   | "choice"
   | "link"
-  | "button";
+  | "button"
+  | "contact_opt_in";
 
 export interface BaseFeedbackComponent {
   type: FeedbackComponentType;
@@ -83,10 +84,19 @@ export interface ButtonComponentSchema extends BaseFeedbackComponent {
   type: "button";
   props: {
     label: string;
-    action: "submit" | "dismiss" | "open_url";
+    action: "submit" | "dismiss" | "open_url" | "open_paywall";
     url?: string;
     variant?: ButtonVariant;
     trackEvent?: string;
+  };
+}
+
+export interface ContactOptInComponentSchema extends BaseFeedbackComponent {
+  type: "contact_opt_in";
+  props: {
+    checkboxLabel: string;
+    inputLabel: string;
+    inputPlaceholder?: string;
   };
 }
 
@@ -97,7 +107,8 @@ export type FeedbackComponentSchema =
   | TextInputComponentSchema
   | ChoiceComponentSchema
   | LinkComponentSchema
-  | ButtonComponentSchema;
+  | ButtonComponentSchema
+  | ContactOptInComponentSchema;
 
 export interface FeedbackFormMeta {
   templateId?: string;

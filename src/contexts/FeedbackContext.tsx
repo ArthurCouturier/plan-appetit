@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import FeedbackService from "../api/services/FeedbackService";
 import FeedbackModal from "../components/modals/FeedbackModal";
+import CreditPaywallModal from "../components/modals/CreditPaywallModal";
 import type {
     FeedbackAnswers,
     FeedbackComponentSchema,
@@ -11,6 +12,7 @@ import { usePostHog } from "./PostHogContext";
 
 interface FeedbackContextValue {
     triggerFeedbackCheck: (event?: string) => void;
+    requestFeedback: (templateId: string) => Promise<void>;
 }
 
 const FeedbackContext = createContext<FeedbackContextValue | undefined>(undefined);
@@ -20,6 +22,7 @@ export const FeedbackProvider = ({ children }: { children: React.ReactNode }) =>
     const { trackEvent } = usePostHog();
     const [current, setCurrent] = useState<FeedbackPayload | null>(null);
     const [isOpen, setIsOpen] = useState(false);
+    const [showPaywall, setShowPaywall] = useState(false);
     const shownAtRef = useRef<number | null>(null);
     const checkingRef = useRef(false);
     const delayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -72,6 +75,29 @@ export const FeedbackProvider = ({ children }: { children: React.ReactNode }) =>
         }
     }, [user, isOpen, current, trackEvent, showFeedback]);
 
+    const requestFeedback = useCallback(async (templateId: string) => {
+        if (!user) return;
+        if (isOpen || current) return;
+        try {
+            const result = await FeedbackService.requestByTemplate(templateId);
+            if (result) {
+                const payload: FeedbackPayload = {
+                    id: "",
+                    templateId: result.templateId,
+                    form: result.form,
+                    triggerEvent: null,
+                    priority: 0,
+                    showAfterSeconds: 0,
+                    dismissable: result.dismissable,
+                    createdAt: new Date().toISOString(),
+                };
+                showFeedback(payload);
+            }
+        } catch {
+            // silently fail
+        }
+    }, [user, isOpen, current, showFeedback]);
+
     useEffect(() => {
         if (!user) {
             closeFeedback();
@@ -86,37 +112,45 @@ export const FeedbackProvider = ({ children }: { children: React.ReactNode }) =>
         };
     }, []);
 
+    const isRequestMode = current?.id === "";
+
     const handleSubmit = useCallback(async (answers: FeedbackAnswers) => {
         if (!current) return;
         const durationMs = shownAtRef.current ? Date.now() - shownAtRef.current : 0;
         const answerCount = Object.values(answers).filter((v) => v !== null && v !== "" && v !== 0).length;
         trackEvent("feedback_submitted", {
-            feedbackUuid: current.id,
+            feedbackUuid: current.id || current.templateId,
             templateId: current.templateId,
             answerCount,
             durationMs,
         });
         try {
-            await FeedbackService.answer(current.id, answers);
+            if (isRequestMode) {
+                await FeedbackService.submitNew(current.templateId, answers);
+            } else {
+                await FeedbackService.answer(current.id, answers);
+            }
         } catch {
             // silently fail, still close to avoid blocking user
         }
         closeFeedback();
-    }, [current, trackEvent, closeFeedback]);
+    }, [current, isRequestMode, trackEvent, closeFeedback]);
 
     const handleDismiss = useCallback(async () => {
         if (!current) return;
         trackEvent("feedback_dismissed", {
-            feedbackUuid: current.id,
+            feedbackUuid: current.id || current.templateId,
             templateId: current.templateId,
         });
-        try {
-            await FeedbackService.dismiss(current.id);
-        } catch {
-            // silently fail
+        if (!isRequestMode && current.id) {
+            try {
+                await FeedbackService.dismiss(current.id);
+            } catch {
+                // silently fail
+            }
         }
         closeFeedback();
-    }, [current, trackEvent, closeFeedback]);
+    }, [current, isRequestMode, trackEvent, closeFeedback]);
 
     const handleComponentInteract = useCallback((component: FeedbackComponentSchema, value: unknown) => {
         if (!current) return;
@@ -127,6 +161,9 @@ export const FeedbackProvider = ({ children }: { children: React.ReactNode }) =>
             componentType: component.type,
             value,
         });
+        if (component.type === "button" && value === "open_paywall") {
+            setShowPaywall(true);
+        }
     }, [current, trackEvent]);
 
     const handleRedirect = useCallback((url: string, component: FeedbackComponentSchema, value: number) => {
@@ -143,7 +180,8 @@ export const FeedbackProvider = ({ children }: { children: React.ReactNode }) =>
 
     const value = useMemo<FeedbackContextValue>(() => ({
         triggerFeedbackCheck,
-    }), [triggerFeedbackCheck]);
+        requestFeedback,
+    }), [triggerFeedbackCheck, requestFeedback]);
 
     return (
         <FeedbackContext.Provider value={value}>
@@ -157,6 +195,9 @@ export const FeedbackProvider = ({ children }: { children: React.ReactNode }) =>
                     onComponentInteract={handleComponentInteract}
                     onRedirect={handleRedirect}
                 />
+            )}
+            {showPaywall && (
+                <CreditPaywallModal onClose={() => setShowPaywall(false)} />
             )}
         </FeedbackContext.Provider>
     );

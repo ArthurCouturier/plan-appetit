@@ -3,13 +3,16 @@ import { Navigate } from "react-router-dom";
 import useAuth from "../../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
 import AdminFeedbackService, {
+    CatalogTemplate,
+    FeedbackAnswerDetail,
     FeedbackCampaignSummary,
     SendCampaignRequest,
 } from "../../api/services/AdminFeedbackService";
 import type { AudienceQueryDTO } from "../../api/services/AdminService";
 import AudienceBuilder from "../../components/admin/AudienceBuilder";
 import FeedbackModal from "../../components/modals/FeedbackModal";
-import type { FeedbackForm, FeedbackPayload } from "../../components/feedbacks/types";
+import CreditPaywallModal from "../../components/modals/CreditPaywallModal";
+import type { FeedbackComponentSchema, FeedbackForm, FeedbackPayload } from "../../components/feedbacks/types";
 
 const DRAFT_KEY = "adminFeedbackDraft";
 
@@ -76,7 +79,7 @@ const EXAMPLE_FORM: FeedbackForm = {
             id: "link1",
             props: {
                 label: "Consulter notre politique de confidentialité",
-                url: "/politique-de-confidentialite",
+                url: "/legal/politique-de-confidentialite",
                 external: false,
             },
         },
@@ -84,10 +87,19 @@ const EXAMPLE_FORM: FeedbackForm = {
             type: "button",
             id: "btn1",
             props: {
-                label: "Voir nos offres Premium",
+                label: "Faire une recette",
                 action: "open_url",
-                url: "/devenir-premium",
+                url: "/frigo",
                 variant: "secondary",
+            },
+        },
+        {
+            type: "button",
+            id: "btn_paywall",
+            props: {
+                label: "Voir nos offres Premium",
+                action: "open_paywall",
+                variant: "ghost",
             },
         },
     ],
@@ -132,9 +144,22 @@ export default function AdminFeedback() {
     const [result, setResult] = useState<{ templateId: string; count: number } | null>(null);
 
     const [previewOpen, setPreviewOpen] = useState(false);
+    const [showPaywall, setShowPaywall] = useState(false);
 
     const [campaigns, setCampaigns] = useState<FeedbackCampaignSummary[] | null>(null);
     const [campaignsError, setCampaignsError] = useState<string | null>(null);
+
+    const [catalog, setCatalog] = useState<CatalogTemplate[]>([]);
+    const [catalogPreview, setCatalogPreview] = useState<CatalogTemplate | null>(null);
+    const [catalogEmails, setCatalogEmails] = useState<Record<string, string>>({});
+    const [catalogSending, setCatalogSending] = useState<Record<string, boolean>>({});
+    const [catalogResults, setCatalogResults] = useState<Record<string, string>>({});
+
+    const [latestAnswers, setLatestAnswers] = useState<FeedbackAnswerDetail[]>([]);
+    const [selectedAnswer, setSelectedAnswer] = useState<FeedbackAnswerDetail | null>(null);
+    const [searchId, setSearchId] = useState("");
+    const [searchError, setSearchError] = useState<string | null>(null);
+    const [searchLoading, setSearchLoading] = useState(false);
 
     useEffect(() => {
         const raw = sessionStorage.getItem(DRAFT_KEY);
@@ -176,15 +201,15 @@ export default function AdminFeedback() {
 
     const previewPayload: FeedbackPayload | null = form
         ? {
-              id: "preview",
-              templateId: templateId || "preview",
-              form,
-              triggerEvent: triggerEvent || null,
-              priority,
-              showAfterSeconds: 0,
-              dismissable: true,
-              createdAt: new Date().toISOString(),
-          }
+            id: "preview",
+            templateId: templateId || "preview",
+            form,
+            triggerEvent: triggerEvent || null,
+            priority,
+            showAfterSeconds: 0,
+            dismissable: true,
+            createdAt: new Date().toISOString(),
+        }
         : null;
 
     const loadCampaigns = async () => {
@@ -197,9 +222,60 @@ export default function AdminFeedback() {
         }
     };
 
+    const loadCatalog = async () => {
+        try {
+            const data = await AdminFeedbackService.listCatalog();
+            setCatalog(data);
+        } catch {
+            // silently fail
+        }
+    };
+
+    const loadAnswers = async () => {
+        try {
+            const data = await AdminFeedbackService.listLatestAnswers();
+            setLatestAnswers(data);
+        } catch {
+            // silently fail
+        }
+    };
+
+    const searchById = async () => {
+        const id = searchId.trim();
+        if (!id) return;
+        setSearchLoading(true);
+        setSearchError(null);
+        try {
+            const data = await AdminFeedbackService.getAnswerById(id);
+            setSelectedAnswer(data);
+        } catch (e) {
+            setSearchError(e instanceof Error ? e.message : "Non trouvé");
+            setSelectedAnswer(null);
+        } finally {
+            setSearchLoading(false);
+        }
+    };
+
+    const sendTemplateToUser = async (tplId: string) => {
+        const email = catalogEmails[tplId]?.trim();
+        if (!email) return;
+        setCatalogSending((s) => ({ ...s, [tplId]: true }));
+        setCatalogResults((r) => ({ ...r, [tplId]: "" }));
+        try {
+            const res = await AdminFeedbackService.sendTemplate(tplId, email);
+            setCatalogResults((r) => ({ ...r, [tplId]: `Envoyé à ${res.email}` }));
+        } catch (e) {
+            setCatalogResults((r) => ({ ...r, [tplId]: e instanceof Error ? e.message : "Erreur" }));
+        } finally {
+            setCatalogSending((s) => ({ ...s, [tplId]: false }));
+        }
+    };
+
     useEffect(() => {
         if (user && hasRoleLevel(user.role, UserRole.ADMIN)) {
             loadCampaigns();
+            loadCatalog();
+            loadAnswers();
         }
     }, [user]);
 
@@ -255,6 +331,60 @@ export default function AdminFeedback() {
                         Envoyer une modale de feedback ciblée et consulter l'historique.
                     </p>
                 </header>
+
+                {catalog.length > 0 && (
+                    <section className="space-y-4 bg-primary rounded-xl p-5 border border-border-color">
+                        <h2 className="text-lg font-semibold">Templates prédéfinis ({catalog.length})</h2>
+                        <div className="space-y-3">
+                            {catalog.map((tpl) => (
+                                <div key={tpl.templateId} className="border border-border-color rounded-lg p-4 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <span className="font-mono text-sm font-semibold">{tpl.templateId}</span>
+                                            <div className="flex gap-3 mt-1 text-xs text-text-secondary">
+                                                <span>Trigger: <strong>{tpl.triggerEvent ?? "aucun"}</strong></span>
+                                                <span>Priorité: {tpl.priority}</span>
+                                                <span>Cooldown: {tpl.cooldownHours}h</span>
+                                                <span>Délai: {tpl.showAfterSeconds}s</span>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCatalogPreview(tpl)}
+                                            className="rounded-lg bg-secondary px-3 py-1.5 text-xs font-semibold hover:bg-secondary/80"
+                                        >
+                                            Aperçu
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                        <input
+                                            type="email"
+                                            value={catalogEmails[tpl.templateId] ?? ""}
+                                            onChange={(e) =>
+                                                setCatalogEmails((prev) => ({ ...prev, [tpl.templateId]: e.target.value }))
+                                            }
+                                            placeholder="email@exemple.com"
+                                            className="flex-1 rounded-lg border border-border-color bg-secondary px-3 py-1.5 text-sm"
+                                        />
+                                        <button
+                                            type="button"
+                                            disabled={!catalogEmails[tpl.templateId]?.trim() || catalogSending[tpl.templateId]}
+                                            onClick={() => sendTemplateToUser(tpl.templateId)}
+                                            className="rounded-lg bg-accent text-white px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+                                        >
+                                            {catalogSending[tpl.templateId] ? "..." : "Envoyer"}
+                                        </button>
+                                    </div>
+                                    {catalogResults[tpl.templateId] && (
+                                        <div className={`text-xs ${catalogResults[tpl.templateId].startsWith("Envoyé") ? "text-green-600" : "text-red-500"}`}>
+                                            {catalogResults[tpl.templateId]}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
                 <section className="space-y-4 bg-primary rounded-xl p-5 border border-border-color">
                     <h2 className="text-lg font-semibold">Nouvelle campagne</h2>
@@ -431,6 +561,100 @@ export default function AdminFeedback() {
                         </div>
                     )}
                 </section>
+
+                <section className="space-y-4 bg-primary rounded-xl p-5 border border-border-color">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold">Dernières réponses</h2>
+                        <button type="button" onClick={loadAnswers} className="text-sm underline text-text-secondary">
+                            Rafraîchir
+                        </button>
+                    </div>
+
+                    {latestAnswers.length === 0 && (
+                        <div className="text-sm text-text-secondary">Aucune réponse pour le moment.</div>
+                    )}
+
+                    {latestAnswers.length > 0 && (
+                        <div className="space-y-1">
+                            {latestAnswers.map((a) => (
+                                <button
+                                    key={a.id}
+                                    type="button"
+                                    onClick={() => setSelectedAnswer(a)}
+                                    className={`w-full text-left rounded-lg border px-3 py-2.5 text-sm transition-colors hover:bg-secondary ${
+                                        selectedAnswer?.id === a.id ? "border-accent bg-accent/10" : "border-border-color"
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-mono text-xs">{a.templateId}</span>
+                                        <span className="text-xs text-text-secondary">{formatDate(a.answeredAt ?? a.createdAt)}</span>
+                                    </div>
+                                    <span className="text-xs text-text-secondary">{a.userEmail}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="flex gap-2 items-center pt-2 border-t border-border-color">
+                        <input
+                            type="text"
+                            value={searchId}
+                            onChange={(e) => setSearchId(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && searchById()}
+                            placeholder="Rechercher par ID (UUID)"
+                            className="flex-1 rounded-lg border border-border-color bg-secondary px-3 py-1.5 text-sm font-mono"
+                        />
+                        <button
+                            type="button"
+                            disabled={!searchId.trim() || searchLoading}
+                            onClick={searchById}
+                            className="rounded-lg bg-accent text-white px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+                        >
+                            {searchLoading ? "..." : "Chercher"}
+                        </button>
+                    </div>
+                    {searchError && <div className="text-xs text-red-500">{searchError}</div>}
+
+                    {selectedAnswer && (
+                        <div className="mt-3 border border-border-color rounded-lg p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-semibold">
+                                    Réponse de <span className="text-accent">{selectedAnswer.userEmail}</span>
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedAnswer(null)}
+                                    className="text-xs text-text-secondary underline"
+                                >
+                                    Fermer
+                                </button>
+                            </div>
+                            <div className="text-xs text-text-secondary">
+                                Template: <span className="font-mono">{selectedAnswer.templateId}</span> | ID: <span className="font-mono">{selectedAnswer.id}</span>
+                            </div>
+
+                            <div className="space-y-2">
+                                {selectedAnswer.form.components
+                                    .filter((c: { type: string }) => ["rating", "text_input", "choice", "contact_opt_in"].includes(c.type))
+                                    .map((c: { id: string; type: string; props: Record<string, unknown> }) => {
+                                        const answerValue = selectedAnswer.answer?.answers?.[c.id];
+                                        const label = (c.props.label ?? c.props.checkboxLabel ?? c.id) as string;
+                                        return (
+                                            <div key={c.id} className="rounded-lg bg-secondary px-3 py-2">
+                                                <div className="text-xs font-medium text-text-secondary">{label}</div>
+                                                <div className="text-sm text-text-primary mt-0.5">
+                                                    {answerValue !== undefined && answerValue !== null && answerValue !== ""
+                                                        ? String(answerValue)
+                                                        : <span className="text-text-secondary italic">Pas de réponse</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+                        </div>
+                    )}
+                </section>
             </div>
 
             {previewPayload && (
@@ -439,7 +663,37 @@ export default function AdminFeedback() {
                     isOpen={previewOpen}
                     onSubmit={() => setPreviewOpen(false)}
                     onDismiss={() => setPreviewOpen(false)}
+                    onComponentInteract={(component: FeedbackComponentSchema, value: unknown) => {
+                        if (component.type === "button" && value === "open_paywall") {
+                            setShowPaywall(true);
+                        }
+                    }}
                 />
+            )}
+            {catalogPreview && (
+                <FeedbackModal
+                    payload={{
+                        id: "catalog-preview",
+                        templateId: catalogPreview.templateId,
+                        form: catalogPreview.form,
+                        triggerEvent: catalogPreview.triggerEvent,
+                        priority: catalogPreview.priority,
+                        showAfterSeconds: 0,
+                        dismissable: true,
+                        createdAt: new Date().toISOString(),
+                    }}
+                    isOpen={true}
+                    onSubmit={() => setCatalogPreview(null)}
+                    onDismiss={() => setCatalogPreview(null)}
+                    onComponentInteract={(component: FeedbackComponentSchema, value: unknown) => {
+                        if (component.type === "button" && value === "open_paywall") {
+                            setShowPaywall(true);
+                        }
+                    }}
+                />
+            )}
+            {showPaywall && (
+                <CreditPaywallModal onClose={() => setShowPaywall(false)} />
             )}
         </div>
     );

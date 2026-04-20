@@ -6,6 +6,7 @@ import TextInputComponent from "./TextInputComponent";
 import ChoiceComponent from "./ChoiceComponent";
 import LinkComponent from "./LinkComponent";
 import ButtonComponent from "./ButtonComponent";
+import ContactOptInComponent from "./ContactOptInComponent";
 import type { FeedbackComponentProps, FeedbackComponentType } from "./types";
 
 export const FEEDBACK_COMPONENT_REGISTRY: Record<
@@ -19,6 +20,7 @@ export const FEEDBACK_COMPONENT_REGISTRY: Record<
   choice: ChoiceComponent,
   link: LinkComponent,
   button: ButtonComponent,
+  contact_opt_in: ContactOptInComponent,
 };
 
 export const INTERACTIVE_COMPONENT_TYPES: FeedbackComponentType[] = [

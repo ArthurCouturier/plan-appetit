@@ -35,6 +35,27 @@ export interface SendCampaignResponse {
     count: number;
 }
 
+export interface FeedbackAnswerDetail {
+    id: string;
+    templateId: string;
+    userEmail: string;
+    form: FeedbackForm;
+    answer: { answers: Record<string, unknown>; dismissed: boolean; submittedAt: string } | null;
+    answeredAt: string | null;
+    createdAt: string;
+}
+
+export interface CatalogTemplate {
+    templateId: string;
+    triggerEvent: string | null;
+    cooldownHours: number;
+    priority: number;
+    showAfterSeconds: number;
+    dismissable: boolean;
+    form: FeedbackForm;
+    targeting: AudienceQueryDTO | null;
+}
+
 export default class AdminFeedbackService {
     private static getAuthHeaders() {
         const email = localStorage.getItem("email");
@@ -80,6 +101,35 @@ export default class AdminFeedbackService {
         return this.request("/api/v1/admin/feedback/campaigns", {
             method: "GET",
             headers: this.getAuthHeaders(),
+        });
+    }
+
+    static listCatalog(): Promise<CatalogTemplate[]> {
+        return this.request("/api/v1/admin/feedback/catalog", {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static listLatestAnswers(): Promise<FeedbackAnswerDetail[]> {
+        return this.request("/api/v1/admin/feedback/answers", {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static getAnswerById(id: string): Promise<FeedbackAnswerDetail> {
+        return this.request(`/api/v1/admin/feedback/answers/${id}`, {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static sendTemplate(templateId: string, email: string): Promise<{ id: string; templateId: string; email: string }> {
+        return this.request("/api/v1/admin/feedback/send-template", {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ templateId, email }),
         });
     }
 }

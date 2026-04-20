@@ -1,4 +1,5 @@
 export const STALE_TIME = 30 * 60 * 1000; // 30 minutes
+export const GC_TIME = 30 * 60 * 1000; // 30 minutes
 
 export const queryKeys = {
     user: {

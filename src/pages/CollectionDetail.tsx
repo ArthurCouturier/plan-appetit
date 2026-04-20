@@ -23,8 +23,14 @@ import { useQuery } from "@tanstack/react-query";
 import useAuth from "../api/hooks/useAuth";
 import BatchCookingService from "../api/services/BatchCookingService";
 
-export default function CollectionDetail() {
-    const { uuid } = useParams<{ uuid: string }>();
+
+interface CollectionDetailProps {
+    persistentUuid?: string;
+}
+
+export default function CollectionDetail({ persistentUuid }: CollectionDetailProps = {}) {
+    const { uuid: paramUuid } = useParams<{ uuid: string }>();
+    const uuid = persistentUuid ?? paramUuid;
     const { data: collection, isLoading, isError, refetch } = useCollection(uuid);
     const isMobile = useIsMobile();
 
@@ -121,9 +127,13 @@ function CollectionDetailContent({
     const [subCollectionsCollapsed, setSubCollectionsCollapsed] = useState(
         () => localStorage.getItem(`subcollections-collapsed-${collUuid}`) !== '0'
     );
+    const [batchCookingsCollapsed, setBatchCookingsCollapsed] = useState(
+        () => localStorage.getItem(`batchcookings-collapsed-${collUuid}`) === '1'
+    );
 
     useEffect(() => {
         setSubCollectionsCollapsed(localStorage.getItem(`subcollections-collapsed-${collUuid}`) !== '0');
+        setBatchCookingsCollapsed(localStorage.getItem(`batchcookings-collapsed-${collUuid}`) === '1');
     }, [collUuid]);
 
     const subCollections = collection.subCollections || [];
@@ -241,15 +251,37 @@ function CollectionDetailContent({
                 {/* Batch Cookings (default collection only) */}
                 {collection.isDefault && batchCookings && batchCookings.length > 0 && (
                     <div className="mb-6 md:mb-8">
-                        <div className="flex items-center gap-2 mb-3 md:mb-4">
+                        <button
+                            onClick={() => {
+                                const key = `batchcookings-collapsed-${collUuid}`;
+                                const next = !batchCookingsCollapsed;
+                                setBatchCookingsCollapsed(next);
+                                localStorage.setItem(key, next ? '1' : '0');
+                                mediumHaptic();
+                            }}
+                            className="flex items-center gap-2 mb-3 md:mb-4 group"
+                        >
                             <span className="text-lg">🍲</span>
                             <h2 className="text-lg md:text-xl font-bold text-text-primary">Batch Cookings</h2>
                             <span className="text-text-secondary text-sm">({batchCookings.length})</span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] md:gap-4">
-                            {batchCookings.map((batch) => (
-                                <BatchCookingCard key={batch.uuid} batch={batch} />
-                            ))}
+                            <svg
+                                className={`w-4 h-4 text-text-secondary transition-transform duration-200 ${batchCookingsCollapsed ? '-rotate-90' : ''}`}
+                                viewBox="0 0 20 20" fill="currentColor"
+                            >
+                                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                        <div
+                            className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+                            style={{ gridTemplateRows: batchCookingsCollapsed ? '0fr' : '1fr' }}
+                        >
+                            <div className="overflow-hidden">
+                                <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] md:gap-4">
+                                    {batchCookings.map((batch) => (
+                                        <BatchCookingCard key={batch.uuid} batch={batch} />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

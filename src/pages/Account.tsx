@@ -79,7 +79,9 @@ export default function Account() {
         localStorage.removeItem('email');
         localStorage.removeItem('recipeGenerationDraft');
         localStorage.removeItem('anonymousRecipeUuid');
+        localStorage.removeItem('defaultCollectionUuid');
         localStorage.setItem('recipes', JSON.stringify([]));
+        Object.keys(localStorage).filter(k => k.startsWith('collection_cache_')).forEach(k => localStorage.removeItem(k));
 
         logout();
 

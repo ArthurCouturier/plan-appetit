@@ -11,6 +11,7 @@ import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import DailyRecipeModal from "../modals/DailyRecipeModal";
 import UpdateAppModal from "../modals/UpdateAppModal";
 import { useDailyRecipeContext } from "../../contexts/DailyRecipeContext";
+import PersistentCollectionDetail from "../collections/PersistentCollectionDetail";
 
 export default function Layout() {
   const theme = localStorage.getItem('theme') || 'theme1';
@@ -72,16 +73,21 @@ export default function Layout() {
     document.body.classList.add(theme);
   }, [theme]);
 
-  // Scroll to top + PageView tracking on route change
+  const isCollectionRoute = /^\/collections\/[a-f0-9-]+$/i.test(location.pathname);
+
+  // Scroll to top + PageView tracking on route change (skip collection routes, handled by PersistentCollectionDetail)
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (!isCollectionRoute) {
+      window.scrollTo(0, 0);
+    }
     TrackingService.trackPageView();
-  }, [location.pathname]);
+  }, [location.pathname, isCollectionRoute]);
 
   return (
     <div className={`w-full min-h-screen min-h-dvh bg-bg-color ${theme}`}>
       <HeaderMobile />
-      <Outlet />
+      <PersistentCollectionDetail />
+      {!isCollectionRoute && <Outlet />}
 
       <DailyRecipeModal
         isOpen={showDailyRecipeModal}

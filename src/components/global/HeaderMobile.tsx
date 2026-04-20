@@ -64,7 +64,10 @@ export default function HeaderMobile() {
           <ArrowLeftIcon className="w-6 h-6 text-white" />
         </button>
         <button
-          onClick={() => navigate("/")}
+          onClick={() => {
+            const cachedUuid = localStorage.getItem("defaultCollectionUuid");
+            navigate(cachedUuid ? `/collections/${cachedUuid}` : "/recettes");
+          }}
           className="p-2 rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md hover:bg-cout-purple transition-colors"
         >
           <HomeIcon className="w-6 h-6 text-white" />

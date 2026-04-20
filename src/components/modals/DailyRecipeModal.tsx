@@ -6,6 +6,7 @@ import Modal from "./Modal";
 import DailyRecipeService, { DailyRecipeDTO } from "../../api/services/DailyRecipeService";
 import NotificationService from "../../api/services/NotificationService";
 import { TrackingService } from "../../api/tracking/TrackingService";
+import { dispatchFeedbackEvent } from "../feedbacks/feedbackEvents";
 
 interface DailyRecipeModalProps {
     isOpen: boolean;
@@ -70,12 +71,17 @@ export default function DailyRecipeModal({ isOpen, onClose }: DailyRecipeModalPr
     }, [isOpen]);
 
     const handleRecipeClick = (uuid: string) => {
-        onClose();
+        handleClose();
         navigate(`/recettes/${uuid}?share`);
     };
 
+    const handleClose = () => {
+        onClose();
+        setTimeout(() => dispatchFeedbackEvent("daily_recipe_closed"), 500);
+    };
+
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Recettes du jour" size="lg">
+        <Modal isOpen={isOpen} onClose={handleClose} title="Recettes du jour" size="lg">
             {loading && (
                 <div className="flex justify-center items-center py-12">
                     <div className="w-8 h-8 border-4 border-border-color border-t-cout-purple rounded-full animate-spin" />

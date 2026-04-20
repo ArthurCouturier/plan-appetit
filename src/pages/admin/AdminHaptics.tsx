@@ -4,7 +4,7 @@ import useAuth from "../../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
 import PlatformService from "../../api/services/PlatformService";
 import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
-import RecipeGenerationLoadingModal from "../../components/popups/RecipeGenerationLoadingModal";
+import RecipeGenerationLoadingModal from "../../components/modals/RecipeGenerationLoadingModal";
 import { fireworkHaptic } from "../../haptics/firework";
 import { lightHaptic } from "../../haptics/light";
 import { mediumHaptic } from "../../haptics/medium";

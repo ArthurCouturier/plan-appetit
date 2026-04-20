@@ -21,8 +21,6 @@ public class TikTokSDKPlugin: CAPPlugin, CAPBridgedPlugin {
 
         DispatchQueue.main.async {
             let config = TikTokConfig(appId: appId, tiktokAppId: appId)
-            config?.setLogLevel(TikTokLogLevelDebug)
-            config?.enableDebugMode()
             TikTokBusiness.initializeSdk(config)
             print("[TikTokSDK] SDK initialized successfully")
             call.resolve()

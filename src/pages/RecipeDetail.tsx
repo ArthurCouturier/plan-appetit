@@ -6,13 +6,13 @@ import RecipeInterface from "../api/interfaces/recipes/RecipeInterface";
 import IngredientsList from "../components/lists/IngredientsList";
 import RecipeStepsList from "../components/lists/RecipeStepsList";
 import { TrashIcon, CheckIcon, UserGroupIcon, SparklesIcon, ArrowUpOnSquareIcon, BookmarkIcon } from "@heroicons/react/24/solid";
-import RecipeModificationModal from "../components/popups/RecipeModificationModal";
-import PurchaseModificationCreditsModal from "../components/popups/PurchaseModificationCreditsModal";
-import CreditPaywallModal from "../components/popups/CreditPaywallModal";
-import SaveToCollectionModal from "../components/popups/SaveToCollectionModal";
+import RecipeModificationModal from "../components/modals/RecipeModificationModal";
+import PurchaseModificationCreditsModal from "../components/modals/PurchaseModificationCreditsModal";
+import CreditPaywallModal from "../components/modals/CreditPaywallModal";
+import SaveToCollectionModal from "../components/modals/SaveToCollectionModal";
 import RecipeImage from "../components/recipes/RecipeImage";
 import { TrackingService } from "../api/tracking/TrackingService";
-import LinkCopiedPopup from "../components/popups/LinkCopiedPopup";
+import LinkCopiedPopup from "../components/modals/LinkCopiedPopup";
 import { Capacitor } from "@capacitor/core";
 import { Clipboard } from "@capacitor/clipboard";
 import { Share } from "@capacitor/share";
@@ -206,7 +206,7 @@ export default function RecipeDetail() {
     if (loading) {
         return (
             <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-                                <div className="bg-primary rounded-xl shadow-lg border border-border-color p-12 mt-4 text-center">
+                <div className="bg-primary rounded-xl shadow-lg border border-border-color p-12 mt-4 text-center">
                     <div className="animate-spin w-12 h-12 border-4 border-cout-base border-t-transparent rounded-full mx-auto mb-4"></div>
                     <p className="text-text-secondary">Chargement de la recette...</p>
                 </div>
@@ -217,14 +217,14 @@ export default function RecipeDetail() {
     if (notFound || !recipe) {
         return (
             <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-                                <RecipeNotFound />
+                <RecipeNotFound />
             </div>
         );
     }
 
     return (
         <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-            
+
             {/* Recipe Title Card */}
             <div className="bg-primary rounded-xl shadow-lg border border-border-color p-6 mt-4">
                 <div className="flex items-center mb-4">
@@ -350,7 +350,7 @@ export default function RecipeDetail() {
                             {/* Image */}
                             <RecipeImage
                                 recipeUuid={recipe.uuid.toString()}
-        
+
                                 isOwner={recipe.isOwner}
                             />
 

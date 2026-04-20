@@ -84,6 +84,15 @@
 	<string>Cette autorisation nous permet de vous proposer des publicités personnalisées et d'améliorer votre expérience.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
+		<!-- TikTok / Pangle -->
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>mj797d8u6f.skadnetwork</string>
+		</dict>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>238da6jt44.skadnetwork</string>
+		</dict>
 		<!-- Meta/Facebook -->
 		<dict>
 			<key>SKAdNetworkIdentifier</key>

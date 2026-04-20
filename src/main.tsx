@@ -7,12 +7,13 @@ import { Analytics } from "@vercel/analytics/react"
 import { ThemeProvider } from '@material-tailwind/react'
 import { RecipeProvider } from './contexts/RecipeContext.tsx'
 import { PostHogProvider } from './contexts/PostHogContext.tsx'
-import { STALE_TIME } from './api/queryConfig.ts'
+import { STALE_TIME, GC_TIME } from './api/queryConfig.ts'
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: STALE_TIME,
+      gcTime: GC_TIME,
       refetchOnWindowFocus: false,
       retry: 1,
     },

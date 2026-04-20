@@ -8,8 +8,8 @@ import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkServi
 import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import BatchStep1Framing from "../components/batchcooking/BatchStep1Framing";
 import BatchStep2Preferences from "../components/batchcooking/BatchStep2Preferences";
-import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
-import CreditPaywallModal from "../components/popups/CreditPaywallModal";
+import RecipeGenerationLoadingModal from "../components/modals/RecipeGenerationLoadingModal";
+import CreditPaywallModal from "../components/modals/CreditPaywallModal";
 import type {
     BatchCookingSlot,
     BudgetTarget,

@@ -1,14 +1,14 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FolderIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
+import { FolderIcon } from "@heroicons/react/24/solid";
 import { mediumHaptic } from "../haptics/medium";
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import QuickActionButton from "../components/buttons/QuickActionButton";
-import CreateCollectionModal from "../components/popups/CreateCollectionModal";
+import CreateCollectionModal from "../components/modals/CreateCollectionModal";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import RecipeCollectionInterface from "../api/interfaces/collections/RecipeCollectionInterface";
-import { useCollection } from "../api/hooks/useCollectionQueries";
+import { useCollection, useDefaultCollection } from "../api/hooks/useCollectionQueries";
 import DroppableCollectionCard from "../components/dnd/DroppableCollectionCard";
 import ParentDropZone from "../components/dnd/ParentDropZone";
 import CollectionCard from "../components/cards/CollectionCard";
@@ -23,10 +23,36 @@ import { useQuery } from "@tanstack/react-query";
 import useAuth from "../api/hooks/useAuth";
 import BatchCookingService from "../api/services/BatchCookingService";
 
-export default function CollectionDetail() {
-    const { uuid } = useParams<{ uuid: string }>();
+
+interface CollectionDetailProps {
+    persistentUuid?: string;
+}
+
+export default function CollectionDetail({ persistentUuid }: CollectionDetailProps = {}) {
+    const { uuid: paramUuid } = useParams<{ uuid: string }>();
+    const navigate = useNavigate();
+    const uuid = persistentUuid ?? paramUuid;
     const { data: collection, isLoading, isError, refetch } = useCollection(uuid);
+    const { data: defaultCollection } = useDefaultCollection();
     const isMobile = useIsMobile();
+    const fallbackAttemptedRef = useRef(false);
+
+    useEffect(() => {
+        if ((isError || (!isLoading && !collection)) && !fallbackAttemptedRef.current) {
+            fallbackAttemptedRef.current = true;
+            localStorage.removeItem("defaultCollectionUuid");
+            if (defaultCollection?.uuid && defaultCollection.uuid !== uuid) {
+                localStorage.setItem("defaultCollectionUuid", defaultCollection.uuid);
+                navigate(`/collections/${defaultCollection.uuid}`, { replace: true });
+            } else {
+                navigate("/recettes", { replace: true });
+            }
+        }
+    }, [isError, isLoading, collection, defaultCollection, uuid, navigate]);
+
+    useEffect(() => {
+        fallbackAttemptedRef.current = false;
+    }, [uuid]);
 
     const dnd = useCollectionDnD({ collection, uuid, isMobile, refetch });
 
@@ -43,7 +69,7 @@ export default function CollectionDetail() {
     }
 
     if (isError || !collection) {
-        return <CollectionNotFound error={isError ? "Erreur lors du chargement de la collection" : null} isMobile={isMobile} />;
+        return <CollectionDetailSkeleton isMobile={isMobile} />;
     }
 
     const isDragging = dnd.activeItem !== null;
@@ -121,9 +147,13 @@ function CollectionDetailContent({
     const [subCollectionsCollapsed, setSubCollectionsCollapsed] = useState(
         () => localStorage.getItem(`subcollections-collapsed-${collUuid}`) !== '0'
     );
+    const [batchCookingsCollapsed, setBatchCookingsCollapsed] = useState(
+        () => localStorage.getItem(`batchcookings-collapsed-${collUuid}`) === '1'
+    );
 
     useEffect(() => {
         setSubCollectionsCollapsed(localStorage.getItem(`subcollections-collapsed-${collUuid}`) !== '0');
+        setBatchCookingsCollapsed(localStorage.getItem(`batchcookings-collapsed-${collUuid}`) === '1');
     }, [collUuid]);
 
     const subCollections = collection.subCollections || [];
@@ -241,15 +271,37 @@ function CollectionDetailContent({
                 {/* Batch Cookings (default collection only) */}
                 {collection.isDefault && batchCookings && batchCookings.length > 0 && (
                     <div className="mb-6 md:mb-8">
-                        <div className="flex items-center gap-2 mb-3 md:mb-4">
+                        <button
+                            onClick={() => {
+                                const key = `batchcookings-collapsed-${collUuid}`;
+                                const next = !batchCookingsCollapsed;
+                                setBatchCookingsCollapsed(next);
+                                localStorage.setItem(key, next ? '1' : '0');
+                                mediumHaptic();
+                            }}
+                            className="flex items-center gap-2 mb-3 md:mb-4 group"
+                        >
                             <span className="text-lg">🍲</span>
                             <h2 className="text-lg md:text-xl font-bold text-text-primary">Batch Cookings</h2>
                             <span className="text-text-secondary text-sm">({batchCookings.length})</span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] md:gap-4">
-                            {batchCookings.map((batch) => (
-                                <BatchCookingCard key={batch.uuid} batch={batch} />
-                            ))}
+                            <svg
+                                className={`w-4 h-4 text-text-secondary transition-transform duration-200 ${batchCookingsCollapsed ? '-rotate-90' : ''}`}
+                                viewBox="0 0 20 20" fill="currentColor"
+                            >
+                                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                        <div
+                            className="grid transition-[grid-template-rows] duration-200 ease-in-out"
+                            style={{ gridTemplateRows: batchCookingsCollapsed ? '0fr' : '1fr' }}
+                        >
+                            <div className="overflow-hidden">
+                                <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] md:gap-4">
+                                    {batchCookings.map((batch) => (
+                                        <BatchCookingCard key={batch.uuid} batch={batch} />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -283,31 +335,6 @@ function CollectionDetailSkeleton({ isMobile }: { isMobile: boolean }) {
     return (
         <div className={`min-h-screen bg-bg-color flex items-center justify-center ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
             <div className="animate-pulse text-text-secondary">Chargement en cours...</div>
-        </div>
-    );
-}
-
-function CollectionNotFound({ error, isMobile }: { error: string | null; isMobile: boolean }) {
-    const navigate = useNavigate();
-
-    return (
-        <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-            <div className="flex flex-col items-center justify-center py-16">
-                <FolderIcon className="w-24 h-24 text-text-secondary opacity-50 mb-4" />
-                <h2 className="text-2xl font-bold text-text-primary mb-2">
-                    {error || "Collection introuvable"}
-                </h2>
-                <p className="text-text-secondary mb-6">
-                    Cette collection n'existe pas ou vous n'avez pas les droits pour y accéder.
-                </p>
-                <button
-                    onClick={() => navigate('/recettes')}
-                    className="flex items-center gap-2 px-6 py-3 bg-cout-base text-white font-bold rounded-xl hover:bg-cout-purple transition-colors"
-                >
-                    <ArrowLeftIcon className="w-5 h-5" />
-                    Retour à mes recettes
-                </button>
-            </div>
         </div>
     );
 }

@@ -9,6 +9,7 @@ interface ModalProps {
   children: ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
   showCloseButton?: boolean;
+  closeOnBackdrop?: boolean;
 }
 
 export default function Modal({
@@ -18,6 +19,7 @@ export default function Modal({
   children,
   size = "md",
   showCloseButton = true,
+  closeOnBackdrop = true,
 }: ModalProps) {
   const isMobile = useIsMobile();
 
@@ -44,7 +46,7 @@ export default function Modal({
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
+    if (closeOnBackdrop && e.target === e.currentTarget) {
       onClose();
     }
   };

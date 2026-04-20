@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QuickActionButton from "../buttons/QuickActionButton";
-import DailyRecipeModal from "../popups/DailyRecipeModal";
+import DailyRecipeModal from "../modals/DailyRecipeModal";
 
 interface QuickActionsProps {
     isMobile?: boolean;

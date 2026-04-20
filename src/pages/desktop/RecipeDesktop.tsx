@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import CollectionService from "../../api/services/CollectionService";
 import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
-import CreditPaywallModal from "../../components/popups/CreditPaywallModal";
+import CreditPaywallModal from "../../components/modals/CreditPaywallModal";
 
 export default function RecipeDesktop() {
 

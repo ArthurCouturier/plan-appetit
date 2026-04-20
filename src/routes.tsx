@@ -5,7 +5,7 @@ import Onboarding from "./pages/Onboarding";
 import Sandbox from "./pages/Sandbox";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
-import CollectionDetail from "./pages/CollectionDetail";
+
 import RecipeLocationGeneration from "./pages/RecipeLocationGeneration";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
@@ -23,6 +23,7 @@ import AdminTrackingTest from "./pages/admin/AdminTrackingTest";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminNotificationsList from "./pages/admin/AdminNotificationsList";
 import AdminSendNotification from "./pages/admin/AdminSendNotification";
+import AdminFeedback from "./pages/admin/AdminFeedback";
 import AdminHaptics from "./pages/admin/AdminHaptics";
 import AdminModals from "./pages/admin/AdminModals";
 import FridgeMode from "./pages/FridgeMode";
@@ -108,7 +109,7 @@ const router = createBrowserRouter([
                             },
                             {
                                 path: "collections/:uuid",
-                                element: <CollectionDetail />,
+                                element: null,
                             },
                             {
                                 path: "frigo",
@@ -157,6 +158,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/notifications/send",
                                 element: <AdminSendNotification />
+                            },
+                            {
+                                path: "admin/feedback",
+                                element: <AdminFeedback />
                             },
                             {
                                 path: "admin/haptics",

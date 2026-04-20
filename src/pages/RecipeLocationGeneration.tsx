@@ -8,13 +8,14 @@ import { generateRecipe } from "../api/recipes/OpenAIRecipeGenerator";
 import RecipeGenerationParametersInterface from "../api/interfaces/recipes/RecipeGenerationParametersInterface";
 import LinearNumberField from "../components/fields/LinearNumberField";
 import { useNavigate } from "react-router-dom";
-import CreditPaywallModal from "../components/popups/CreditPaywallModal";
-import RecipeGenerationLoadingModal from "../components/popups/RecipeGenerationLoadingModal";
+import CreditPaywallModal from "../components/modals/CreditPaywallModal";
+import RecipeGenerationLoadingModal from "../components/modals/RecipeGenerationLoadingModal";
 import { usePostHog } from "../contexts/PostHogContext";
 import { TrackingService } from "../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkService";
 import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
+import { dispatchFeedbackEvent } from "../components/feedbacks/feedbackEvents";
 
 const DRAFT_STORAGE_KEY = "recipeGenerationDraft";
 
@@ -116,6 +117,7 @@ export default function RecipeLocationGeneration() {
 
                 invalidateCollections();
                 navigate(`/recettes/${newRecipe.uuid}`);
+                dispatchFeedbackEvent("recipe_generated");
             }
         } catch (error: any) {
             if (error.type === "INSUFFICIENT_CREDITS") {

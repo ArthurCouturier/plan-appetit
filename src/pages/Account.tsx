@@ -6,12 +6,15 @@ import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import Footer from '../components/global/Footer';
 import BackendService from '../api/services/BackendService';
-import CreditPaywallModal from '../components/popups/CreditPaywallModal';
+import CreditPaywallModal from '../components/modals/CreditPaywallModal';
 import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/solid";
 import { isPremiumUser, hasRoleLevel, UserRole } from '../api/interfaces/users/UserInterface';
 import CreditIcon from '../components/icons/CreditIcon';
 import UserAvatar from '../components/global/UserAvatar';
 import useIsMobile from '../hooks/useIsMobile';
+import { dispatchFeedbackEvent } from '../components/feedbacks/feedbackEvents';
+import useFeedback from '../api/hooks/useFeedback';
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 
 export default function Account() {
     const { user, logout, login } = useAuth();
@@ -20,6 +23,7 @@ export default function Account() {
     const isUserPremium = user && user.role ? isPremiumUser(user.role) : false;
 
     const isMobile = useIsMobile();
+    const { requestFeedback } = useFeedback();
     const [enabled, setEnabled] = useState(false);
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
     const [credits, setCredits] = useState<number | null>(null);
@@ -51,6 +55,12 @@ export default function Account() {
     }, [user, navigate]);
 
     useEffect(() => {
+        if (credits !== null && credits <= 1 && !isUserPremium) {
+            dispatchFeedbackEvent("credit_depleted");
+        }
+    }, [credits, isUserPremium]);
+
+    useEffect(() => {
         document.documentElement.classList.remove('theme1', 'theme2');
         document.documentElement.classList.add(theme);
         localStorage.setItem('theme', theme);
@@ -69,7 +79,9 @@ export default function Account() {
         localStorage.removeItem('email');
         localStorage.removeItem('recipeGenerationDraft');
         localStorage.removeItem('anonymousRecipeUuid');
+        localStorage.removeItem('defaultCollectionUuid');
         localStorage.setItem('recipes', JSON.stringify([]));
+        Object.keys(localStorage).filter(k => k.startsWith('collection_cache_')).forEach(k => localStorage.removeItem(k));
 
         logout();
 
@@ -162,6 +174,17 @@ export default function Account() {
                                 <SunIcon className="w-5 h-5 text-cout-yellow" />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Feedback utilisateur */}
+                    <div className="mt-2">
+                        <button
+                            onClick={() => requestFeedback("user-feedback-v1")}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-border-color text-text-primary bg-primary hover:bg-secondary transition-colors text-sm font-medium"
+                        >
+                            <ChatBubbleLeftRightIcon className="w-5 h-5 text-text-secondary" />
+                            Une idée ? Un problème ?
+                        </button>
                     </div>
 
                     {/* Actions */}

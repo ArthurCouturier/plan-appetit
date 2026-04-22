@@ -18,6 +18,7 @@ import { Clipboard } from "@capacitor/clipboard";
 import { Share } from "@capacitor/share";
 import { useDelayedNotificationPrompt } from "../api/hooks/useDelayedNotificationPrompt";
 import useIsMobile from "../hooks/useIsMobile";
+import { useWatchRecipeSync } from "../hooks/useWatchRecipeSync";
 
 export default function RecipeDetail() {
 
@@ -74,6 +75,8 @@ export default function RecipeDetail() {
     }, [clearLongPress]);
 
     useDelayedNotificationPrompt("recipe_detail", 5000);
+
+    useWatchRecipeSync(uuid, recipe?.name);
 
     useEffect(() => {
         const fetchRecipe = async () => {

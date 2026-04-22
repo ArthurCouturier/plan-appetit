@@ -11,10 +11,13 @@
 		1C32B92B2F71332100AA421A /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C32B92A2F71332100AA421A /* MainViewController.swift */; };
 		1C71D70E2F73DFAA000373DC /* SKAdNetworkPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C71D70D2F73DFAA000373DC /* SKAdNetworkPlugin.swift */; };
 		1C737B412EE89AF3003B5695 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 1C737B402EE89AF3003B5695 /* Products.storekit */; };
+		1C7EDBCD2F98CB9E00FE5ACF /* WatchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7EDBCB2F98CB9E00FE5ACF /* WatchBridge.swift */; };
+		1C7EDBCE2F98CB9E00FE5ACF /* WatchBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7EDBCC2F98CB9E00FE5ACF /* WatchBridgePlugin.swift */; };
 		1C80C3CD2F34F4F100675EBB /* FacebookAEM in Frameworks */ = {isa = PBXBuildFile; productRef = 1C80C3CC2F34F4F100675EBB /* FacebookAEM */; };
 		1C80C3CF2F34F4F100675EBB /* FacebookBasics in Frameworks */ = {isa = PBXBuildFile; productRef = 1C80C3CE2F34F4F100675EBB /* FacebookBasics */; };
 		1C80C3D12F34F4F100675EBB /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1C80C3D02F34F4F100675EBB /* FacebookCore */; };
 		1C80C3D32F34F4F100675EBB /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 1C80C3D22F34F4F100675EBB /* FacebookLogin */; };
+		1CE09BBE2F98D4260008909A /* PlanAppetitWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 1CE09BBD2F98D3E70008909A /* PlanAppetitWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1CE3A4DD2EE41733008D87DB /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CE3A4DC2EE41733008D87DB /* StoreKit.framework */; };
 		1CE3A4DF2EE4349F008D87DB /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1CE3A4DE2EE4349F008D87DB /* GoogleService-Info.plist */; };
 		1CF9AA952EEEAF7E00952CB2 /* App.debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 1CF9AA942EEEAF7E00952CB2 /* App.debug.xcconfig */; };
@@ -31,11 +34,52 @@
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		1CE09BBA2F98D3E70008909A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1CE09BAB2F98D3E60008909A /* PlanAppetitWatch.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1C97C7A02F97D3E800FC9888;
+			remoteInfo = PlanAppetitWatch;
+		};
+		1CE09BBC2F98D3E70008909A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1CE09BAB2F98D3E60008909A /* PlanAppetitWatch.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1C97C7A62F97D3E800FC9888;
+			remoteInfo = "PlanAppetitWatch Watch App";
+		};
+		1CE09BC02F98D5C20008909A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1CE09BAB2F98D3E60008909A /* PlanAppetitWatch.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 1C97C7A52F97D3E800FC9888;
+			remoteInfo = "PlanAppetitWatch Watch App";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1CE09BBF2F98D4260008909A /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				1CE09BBE2F98D4260008909A /* PlanAppetitWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TikTokSDKPlugin.swift; sourceTree = "<group>"; };
 		1C32B92A2F71332100AA421A /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		1C71D70D2F73DFAA000373DC /* SKAdNetworkPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAdNetworkPlugin.swift; sourceTree = "<group>"; };
 		1C737B402EE89AF3003B5695 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
+		1C7EDBCB2F98CB9E00FE5ACF /* WatchBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridge.swift; sourceTree = "<group>"; };
+		1C7EDBCC2F98CB9E00FE5ACF /* WatchBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridgePlugin.swift; sourceTree = "<group>"; };
+		1CE09BAB2F98D3E60008909A /* PlanAppetitWatch.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlanAppetitWatch.xcodeproj; path = /Users/arthurcouturier/Documents/GitHub/plan-appetit/PlanAppetitWatch/PlanAppetitWatch.xcodeproj; sourceTree = "<absolute>"; };
 		1CE3A4DC2EE41733008D87DB /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		1CE3A4DE2EE4349F008D87DB /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		1CE3A4E22EE46AB8008D87DB /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
@@ -74,6 +118,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1CE09BB62F98D3E60008909A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1CE09BBB2F98D3E70008909A /* PlanAppetitWatch.app */,
+				1CE09BBD2F98D3E70008909A /* PlanAppetitWatch Watch App.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		27E2DDA53C4D2A4D1A88CE4A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -86,6 +139,7 @@
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
+				1CE09BAB2F98D3E60008909A /* PlanAppetitWatch.xcodeproj */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
 				7F8756D8B27F46E3366F6CEA /* Pods */,
@@ -104,6 +158,8 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
+				1C7EDBCB2F98CB9E00FE5ACF /* WatchBridge.swift */,
+				1C7EDBCC2F98CB9E00FE5ACF /* WatchBridgePlugin.swift */,
 				1C32B92A2F71332100AA421A /* MainViewController.swift */,
 				1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */,
 				1CE3A4E22EE46AB8008D87DB /* App.entitlements */,
@@ -147,10 +203,12 @@
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
+				1CE09BBF2F98D4260008909A /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				1CE09BC12F98D5C20008909A /* PBXTargetDependency */,
 			);
 			name = App;
 			productName = App;
@@ -187,12 +245,35 @@
 			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 1CE09BB62F98D3E60008909A /* Products */;
+					ProjectRef = 1CE09BAB2F98D3E60008909A /* PlanAppetitWatch.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		1CE09BBB2F98D3E70008909A /* PlanAppetitWatch.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = PlanAppetitWatch.app;
+			remoteRef = 1CE09BBA2F98D3E70008909A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1CE09BBD2F98D3E70008909A /* PlanAppetitWatch Watch App.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = "PlanAppetitWatch Watch App.app";
+			remoteRef = 1CE09BBC2F98D3E70008909A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		504EC3021FED79650016851F /* Resources */ = {
@@ -258,6 +339,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				1C32B92B2F71332100AA421A /* MainViewController.swift in Sources */,
+				1C7EDBCD2F98CB9E00FE5ACF /* WatchBridge.swift in Sources */,
+				1C7EDBCE2F98CB9E00FE5ACF /* WatchBridgePlugin.swift in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				1C71D70E2F73DFAA000373DC /* SKAdNetworkPlugin.swift in Sources */,
 				1C0AA4552F6D75E90087E1E8 /* TikTokSDKPlugin.swift in Sources */,
@@ -265,6 +348,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1CE09BC12F98D5C20008909A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "PlanAppetitWatch Watch App";
+			targetProxy = 1CE09BC02F98D5C20008909A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {

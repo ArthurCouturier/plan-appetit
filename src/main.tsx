@@ -8,6 +8,16 @@ import { ThemeProvider } from '@material-tailwind/react'
 import { RecipeProvider } from './contexts/RecipeContext.tsx'
 import { PostHogProvider } from './contexts/PostHogContext.tsx'
 import { STALE_TIME, GC_TIME } from './api/queryConfig.ts'
+import { Capacitor } from '@capacitor/core'
+import { WatchBridge } from './api/plugins/WatchBridge'
+
+if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios') {
+  console.log('[WatchSync][boot] iOS detected, pinging WatchBridge plugin at startup');
+  ;(WatchBridge as unknown as { ping: () => Promise<unknown> })
+    .ping()
+    .then((res) => console.log('[WatchSync][boot] ping OK', res))
+    .catch((err) => console.warn('[WatchSync][boot] ping FAILED', err));
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {

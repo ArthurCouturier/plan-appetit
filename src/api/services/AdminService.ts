@@ -1,5 +1,19 @@
 import BackendService from "./BackendService";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
+import {
+    AdminIngredientAcceptResponse,
+    AdminIngredientMergeResponse,
+    AdminIngredientReviewListDTO,
+} from "../interfaces/admin/AdminIngredientReview";
+import {
+    AdminIngredientListItemDTO,
+    AdminIngredientListPageDTO,
+    AdminIngredientListParams,
+    AdminIngredientMergeWithDeltaResponse,
+    AdminIngredientNeighborsDTO,
+    AdminIngredientOkResponse,
+    UpdateIngredientRequestBody,
+} from "../interfaces/admin/AdminIngredientCleanup";
 
 export interface SetRoleResponse {
     status: string;
@@ -199,6 +213,131 @@ export default class AdminService {
             headers: this.getAuthHeaders(),
             body: JSON.stringify({ approach }),
         });
+    }
+
+    static async getIngredientsNeedingReview(): Promise<AdminIngredientReviewListDTO> {
+        return this.request("/api/v1/admin/ingredients/needs-review", {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async mergeIngredient(sourceUuid: string, targetUuid: string): Promise<AdminIngredientMergeResponse> {
+        return this.request(`/api/v1/admin/ingredients/${sourceUuid}/merge-into/${targetUuid}`, {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async acceptIngredient(sourceUuid: string): Promise<AdminIngredientAcceptResponse> {
+        return this.request(`/api/v1/admin/ingredients/${sourceUuid}/accept`, {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async listIngredients(params: AdminIngredientListParams = {}): Promise<AdminIngredientListPageDTO> {
+        const qs = new URLSearchParams();
+        if (typeof params.page === "number") qs.set("page", String(params.page));
+        if (typeof params.size === "number") qs.set("size", String(params.size));
+        if (params.category && params.category.length > 0) qs.set("category", params.category);
+        if (params.q && params.q.length > 0) qs.set("q", params.q);
+        if (params.needsReviewOnly) qs.set("needsReviewOnly", "true");
+        if (params.derivedFromOnly) qs.set("derivedFromOnly", "true");
+        const query = qs.toString();
+        const url = `/api/v1/admin/ingredients${query ? `?${query}` : ""}`;
+        return this.request(url, {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async getIngredientNeighbors(uuid: string, limit?: number): Promise<AdminIngredientNeighborsDTO> {
+        const qs = new URLSearchParams();
+        if (typeof limit === "number") qs.set("limit", String(limit));
+        const query = qs.toString();
+        const url = `/api/v1/admin/ingredients/${uuid}/neighbors${query ? `?${query}` : ""}`;
+        return this.request(url, {
+            method: "GET",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async mergeIngredientWithDelta(
+        sourceUuid: string,
+        targetUuid: string,
+        preparationNoteDelta?: string
+    ): Promise<AdminIngredientMergeWithDeltaResponse> {
+        const options: RequestInit = {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+        };
+        if (preparationNoteDelta !== undefined && preparationNoteDelta.length > 0) {
+            options.body = JSON.stringify({ preparationNoteDelta });
+        }
+        return this.request(
+            `/api/v1/admin/ingredients/${sourceUuid}/merge-into/${targetUuid}`,
+            options
+        );
+    }
+
+    static async deriveIngredientFrom(
+        uuid: string,
+        parentUuid: string,
+        partLabel: string
+    ): Promise<AdminIngredientOkResponse> {
+        return this.request(`/api/v1/admin/ingredients/${uuid}/derive-from/${parentUuid}`, {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ partLabel }),
+        });
+    }
+
+    static async clearIngredientDerivedFrom(uuid: string): Promise<AdminIngredientOkResponse> {
+        return this.request(`/api/v1/admin/ingredients/${uuid}/derived-from`, {
+            method: "DELETE",
+            headers: this.getAuthHeaders(),
+        });
+    }
+
+    static async dismissIngredientPair(a: string, b: string): Promise<AdminIngredientOkResponse> {
+        return this.request(`/api/v1/admin/ingredients/dismiss-pair`, {
+            method: "POST",
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ a, b }),
+        });
+    }
+
+    static async updateIngredient(
+        uuid: string,
+        body: UpdateIngredientRequestBody
+    ): Promise<AdminIngredientListItemDTO> {
+        const response = await fetchWithTokenRefresh(
+            `${BackendService.baseUrl}:${BackendService.port}/api/v1/admin/ingredients/${uuid}`,
+            {
+                method: "PATCH",
+                headers: this.getAuthHeaders(),
+                body: JSON.stringify(body),
+            }
+        );
+
+        if (response.status === 403) throw new Error("Forbidden");
+
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({}));
+            if (response.status === 409) {
+                throw new Error(
+                    "Le nom normalisé est déjà utilisé par un autre ingrédient"
+                );
+            }
+            const message =
+                errorBody.error ||
+                errorBody.message ||
+                `Error ${response.status}`;
+            throw new Error(message);
+        }
+
+        return response.json();
     }
 }
 

@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import useAuth from "../../api/hooks/useAuth";
 import { hasRoleLevel, UserRole } from "../../api/interfaces/users/UserInterface";
 import AdminService, { SetRoleResponse } from "../../api/services/AdminService";
-import { QueueListIcon, PhotoIcon, SignalIcon, BellAlertIcon, ClipboardDocumentListIcon, PaperAirplaneIcon, CameraIcon, DevicePhoneMobileIcon, WindowIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
+import { QueueListIcon, PhotoIcon, SignalIcon, BellAlertIcon, ClipboardDocumentListIcon, PaperAirplaneIcon, CameraIcon, DevicePhoneMobileIcon, WindowIcon, ChatBubbleLeftRightIcon, BeakerIcon } from "@heroicons/react/24/solid";
 
 export default function Admin() {
     const { user } = useAuth();
@@ -154,6 +154,34 @@ export default function Admin() {
                             <div className="text-left">
                                 <h3 className="font-semibold text-text-primary">Feedback</h3>
                                 <p className="text-sm text-text-secondary">Créer et envoyer des campagnes de feedback ciblées</p>
+                            </div>
+                        </div>
+                        <span className="text-text-secondary">&rsaquo;</span>
+                    </button>
+
+                    <button
+                        onClick={() => navigate("/admin/ingredients-review")}
+                        className="w-full flex items-center justify-between px-4 py-4 bg-secondary border border-border-color rounded-lg hover:bg-tertiary transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <BeakerIcon className="w-5 h-5 text-orange-500" />
+                            <div className="text-left">
+                                <h3 className="font-semibold text-text-primary">Ingrédients à reviewer</h3>
+                                <p className="text-sm text-text-secondary">Merger ou accepter les ingrédients issus du fallback de migration</p>
+                            </div>
+                        </div>
+                        <span className="text-text-secondary">&rsaquo;</span>
+                    </button>
+
+                    <button
+                        onClick={() => navigate("/admin/ingredients-cleanup")}
+                        className="w-full flex items-center justify-between px-4 py-4 bg-secondary border border-border-color rounded-lg hover:bg-tertiary transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <BeakerIcon className="w-5 h-5 text-orange-500" />
+                            <div className="text-left">
+                                <h3 className="font-semibold text-text-primary">Nettoyage des ingrédients</h3>
+                                <p className="text-sm text-text-secondary">Parcourir tous les ingrédients et merger, dériver ou séparer les voisins</p>
                             </div>
                         </div>
                         <span className="text-text-secondary">&rsaquo;</span>

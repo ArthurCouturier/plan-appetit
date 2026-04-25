@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import Home from "./pages/Home";
 import Onboarding from "./pages/Onboarding";
 import Sandbox from "./pages/Sandbox";
+import GuidedSandbox from "./pages/GuidedSandbox";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
 
@@ -33,6 +34,7 @@ import BatchCookingMode from "./pages/BatchCookingMode";
 import BatchCookingDetail from "./pages/BatchCookingDetail";
 import NotFound from "./pages/NotFound";
 import NewRecipePage from "./pages/NewRecipePage";
+import RecipeDetailV2 from "./pages/RecipeDetailV2";
 
 const router = createBrowserRouter([
     {
@@ -51,10 +53,6 @@ const router = createBrowserRouter([
                 element: <Layout />,
                 children: [
                     {
-                        path: "sandbox",
-                        element: <Sandbox />,
-                    },
-                    {
                         path: "instagram",
                         element: <InstagramImport />,
                     },
@@ -69,6 +67,10 @@ const router = createBrowserRouter([
                     {
                         path: "recettes/:uuid",
                         element: <RecipeDetail />,
+                    },
+                    {
+                        path: "recipes-v2/:uuid",
+                        element: <RecipeDetailV2 />,
                     },
                     {
                         path: "legal/cgu",
@@ -103,6 +105,10 @@ const router = createBrowserRouter([
                             },
                             {
                                 path: "recettes/generer/sandbox",
+                                element: <GuidedSandbox />,
+                            },
+                            {
+                                path: "recettes/generer/sandbox-v1",
                                 element: <Sandbox />,
                             },
                             {

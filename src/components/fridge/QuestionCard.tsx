@@ -123,7 +123,12 @@ export default function QuestionCard({ question, value, onChange, index, total }
                         <BooleanControl value={value as boolean} onChange={onChangeWithHaptic} />
                     )}
                     {question.type === "choice" && (
-                        <ChoiceControl options={question.options!} value={value as string} onChange={onChangeWithHaptic} />
+                        <ChoiceControl
+                            options={question.options!}
+                            value={value as string}
+                            onChange={onChangeWithHaptic}
+                            allowFreeText={question.allowFreeText ?? true}
+                        />
                     )}
                 </div>
             </motion.div>
@@ -230,12 +235,14 @@ function ChoiceControl({
     options,
     value,
     onChange,
+    allowFreeText = true,
 }: {
     options: string[];
     value: string;
     onChange: (v: unknown) => void;
+    allowFreeText?: boolean;
 }) {
-    const isCustomValue = value !== "" && !options.includes(value);
+    const isCustomValue = allowFreeText && value !== "" && !options.includes(value);
 
     return (
         <div className="space-y-2">
@@ -252,19 +259,21 @@ function ChoiceControl({
                     {option}
                 </button>
             ))}
-            <input
-                type="text"
-                value={isCustomValue ? (value as string) : ""}
-                onChange={(e) => onChange(e.target.value.slice(0, 30))}
-                onFocus={() => { if (!isCustomValue) onChange(""); }}
-                placeholder="Autre..."
-                maxLength={30}
-                className={`w-full py-3 px-4 rounded-xl text-sm font-medium text-left transition-all duration-200 ${
-                    isCustomValue
-                        ? "bg-cout-yellow text-cout-purple shadow-md border-2 border-cout-yellow"
-                        : "bg-secondary text-text-primary border border-border-color focus:border-cout-base focus:outline-none"
-                }`}
-            />
+            {allowFreeText && (
+                <input
+                    type="text"
+                    value={isCustomValue ? (value as string) : ""}
+                    onChange={(e) => onChange(e.target.value.slice(0, 60))}
+                    onFocus={() => { if (!isCustomValue) onChange(""); }}
+                    placeholder="Autre..."
+                    maxLength={60}
+                    className={`w-full py-3 px-4 rounded-xl text-sm font-medium text-left transition-all duration-200 ${
+                        isCustomValue
+                            ? "bg-cout-yellow text-cout-purple shadow-md border-2 border-cout-yellow"
+                            : "bg-secondary text-text-primary border border-border-color focus:border-cout-base focus:outline-none"
+                    }`}
+                />
+            )}
         </div>
     );
 }

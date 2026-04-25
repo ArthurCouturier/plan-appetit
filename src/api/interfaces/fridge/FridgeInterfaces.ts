@@ -7,6 +7,11 @@ export interface FridgeQuestion {
     max?: number;
     plusLabel?: string;
     options?: string[];
+    /**
+     * Si faux, masque le champ "Autre..." sur les questions de type `choice`.
+     * Non défini = comportement historique (champ affiché, utilisé par le mode Frigo).
+     */
+    allowFreeText?: boolean;
 }
 
 export interface FridgeQuestionsResponse {

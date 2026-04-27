@@ -3,16 +3,33 @@ import { useCallback, useRef, useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeSummaryInterface from "../../api/interfaces/recipes/RecipeSummaryInterface";
 import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
-import { UserGroupIcon, CurrencyEuroIcon, ListBulletIcon } from "@heroicons/react/24/solid";
+import { UserGroupIcon, CurrencyEuroIcon, ClockIcon } from "@heroicons/react/24/solid";
 import { heavyHaptic } from "../../haptics/heavy";
 
 type RecipeCardProps = {
     recipe: RecipeInterface | RecipeSummaryInterface;
 };
 
-function getStepsCount(recipe: RecipeInterface | RecipeSummaryInterface): number {
-    if ('stepsCount' in recipe) return recipe.stepsCount;
-    return recipe.steps.length;
+function formatDuration(min: number | null | undefined): string | null {
+    if (min === null || min === undefined || min <= 0) return null;
+    if (min < 60) return `${min} min`;
+    const hours = Math.floor(min / 60);
+    const remainder = min % 60;
+    if (remainder === 0) return `${hours} h`;
+    return `${hours} h ${remainder.toString().padStart(2, "0")}`;
+}
+
+function getRecipeTimes(recipe: RecipeInterface | RecipeSummaryInterface): {
+    totalTimeMin: number | null | undefined;
+    restTimeMin: number | null | undefined;
+} {
+    if ('totalTimeMin' in recipe || 'restTimeMin' in recipe) {
+        return {
+            totalTimeMin: (recipe as RecipeSummaryInterface).totalTimeMin,
+            restTimeMin: (recipe as RecipeSummaryInterface).restTimeMin,
+        };
+    }
+    return { totalTimeMin: null, restTimeMin: null };
 }
 
 const ZONE_THRESHOLD = 0.3;
@@ -39,7 +56,9 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         directionLocked: boolean;
     } | null>(null);
 
-    const stepsCount = getStepsCount(recipe);
+    const { totalTimeMin, restTimeMin } = getRecipeTimes(recipe);
+    const totalLabel = formatDuration(totalTimeMin);
+    const restLabel = restTimeMin && restTimeMin > 0 ? formatDuration(restTimeMin) : null;
 
     const updateRotation = useCallback((value: number) => {
         rotationRef.current = value;
@@ -196,7 +215,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         if (transitioning) return;
 
         if (!isCurrentlyFlipped()) {
-            navigate(`/recettes/${recipe.uuid}`);
+            navigate(`/recipes-v2/${recipe.uuid}`);
             return;
         }
 
@@ -305,12 +324,19 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                                     {recipe.covers} personne{recipe.covers > 1 ? 's' : ''}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2 text-text-secondary">
-                                <ListBulletIcon className="w-4 h-4 text-cout-base flex-shrink-0" />
-                                <span className="text-sm font-medium">
-                                    {stepsCount} étape{stepsCount > 1 ? 's' : ''}
-                                </span>
-                            </div>
+                            {totalLabel && (
+                                <div className="flex items-center gap-2 text-text-secondary text-center">
+                                    <ClockIcon className="w-4 h-4 text-cout-base flex-shrink-0" />
+                                    <span className="text-sm font-medium">
+                                        {totalLabel}
+                                        {restLabel && (
+                                            <span className="block text-xs text-text-secondary/80">
+                                                dont {restLabel} de repos
+                                            </span>
+                                        )}
+                                    </span>
+                                </div>
+                            )}
                             {recipe.buyPrice > 0 && (
                                 <div className="flex items-center gap-2 text-text-secondary">
                                     <CurrencyEuroIcon className="w-4 h-4 text-cout-yellow flex-shrink-0" />

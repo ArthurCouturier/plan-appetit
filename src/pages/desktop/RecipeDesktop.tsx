@@ -4,7 +4,9 @@ import CollectionCard from "../../components/cards/CollectionCard";
 import QuickActions from "../../components/actions/QuickActions";
 import { SparklesIcon, FolderIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
-import CollectionService from "../../api/services/CollectionService";
+import { useDefaultCollection, useCollection } from "../../api/hooks/useCollectionQueries";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../api/queryConfig";
 import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/modals/CreditPaywallModal";
@@ -13,12 +15,17 @@ export default function RecipeDesktop() {
 
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showPaywall, setShowPaywall] = useState(false);
   const [linkingRecipe, setLinkingRecipe] = useState(false);
-  const [collections, setCollections] = useState<RecipeCollectionInterface[]>([]);
-  const [loadingCollections, setLoadingCollections] = useState(true);
 
-  // Compute total recipes count from all collections recursively
+  const { data: defaultCollection } = useDefaultCollection();
+  const { data: rootCollection, isLoading: loadingCollections } = useCollection(defaultCollection?.uuid);
+
+  const collections: RecipeCollectionInterface[] = useMemo(() => {
+    return rootCollection?.subCollections ?? [];
+  }, [rootCollection]);
+
   const totalRecipesCount = useMemo(() => {
     const countRecipes = (cols: RecipeCollectionInterface[]): number => {
       return cols.reduce((total, col) => {
@@ -27,29 +34,10 @@ export default function RecipeDesktop() {
         return total + recipesInCol + recipesInSubCols;
       }, 0);
     };
-    return countRecipes(collections);
-  }, [collections]);
+    const ownRecipes = rootCollection?.recipes?.length ?? 0;
+    return ownRecipes + countRecipes(collections);
+  }, [collections, rootCollection]);
 
-  // Fetch des collections de niveau 0 (avec toutes les données récursives)
-  useEffect(() => {
-    const fetchCollections = async () => {
-      if (!user) return;
-
-      try {
-        setLoadingCollections(true);
-        const fetchedCollections = await CollectionService.getRootCollections();
-        setCollections(fetchedCollections);
-      } catch (err) {
-        console.error('Erreur lors du fetch des collections:', err);
-      } finally {
-        setLoadingCollections(false);
-      }
-    };
-
-    fetchCollections();
-  }, [user]);
-
-  // Vérifier et lier une recette anonyme au chargement de la page
   useEffect(() => {
     const linkAnonymousRecipeIfExists = async () => {
       if (!user) return;
@@ -64,17 +52,13 @@ export default function RecipeDesktop() {
 
         if (result.success) {
           localStorage.removeItem('anonymousRecipeUuid');
-          console.log('Recette liée avec succès');
-
-          // Rafraîchir les collections après liaison
-          const fetchedCollections = await CollectionService.getRootCollections();
-          setCollections(fetchedCollections);
+          if (defaultCollection?.uuid) {
+            queryClient.invalidateQueries({ queryKey: queryKeys.collections.byId(defaultCollection.uuid) });
+          }
         } else if (result.error === 'INSUFFICIENT_CREDITS') {
-          console.warn('Quota insuffisant pour lier la recette');
           setShowPaywall(true);
         } else if (result.alreadyLinked) {
           localStorage.removeItem('anonymousRecipeUuid');
-          console.log('Recette déjà liée');
         }
       } catch (err) {
         console.error('Erreur lors de la liaison de la recette:', err);
@@ -84,7 +68,7 @@ export default function RecipeDesktop() {
     };
 
     linkAnonymousRecipeIfExists();
-  }, [user]);
+  }, [user, defaultCollection, queryClient]);
 
   return (
     <div className="min-h-screen bg-bg-color p-6">
@@ -175,4 +159,3 @@ export default function RecipeDesktop() {
     </div>
   )
 }
-

@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import RecipeCollectionInterface from "../../api/interfaces/collections/RecipeCollectionInterface";
 import CollectionCard from "../../components/cards/CollectionCard";
 import { SparklesIcon, FolderIcon } from "@heroicons/react/24/solid";
-import CollectionService from "../../api/services/CollectionService";
+import { useDefaultCollection, useCollection } from "../../api/hooks/useCollectionQueries";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../../api/queryConfig";
 import SandboxService from "../../api/services/SandboxService";
 import useAuth from "../../api/hooks/useAuth";
 import CreditPaywallModal from "../../components/modals/CreditPaywallModal";
@@ -16,10 +18,16 @@ export default function MyRecipesMobile({
 
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showPaywall, setShowPaywall] = useState(false);
   const [linkingRecipe, setLinkingRecipe] = useState(false);
-  const [collections, setCollections] = useState<RecipeCollectionInterface[]>([]);
-  const [loadingCollections, setLoadingCollections] = useState(true);
+
+  const { data: defaultCollection } = useDefaultCollection();
+  const { data: rootCollection, isLoading: loadingCollections } = useCollection(defaultCollection?.uuid);
+
+  const collections: RecipeCollectionInterface[] = useMemo(() => {
+    return rootCollection?.subCollections ?? [];
+  }, [rootCollection]);
 
   const totalRecipesCount = useMemo(() => {
     const countRecipes = (cols: RecipeCollectionInterface[]): number => {
@@ -29,26 +37,9 @@ export default function MyRecipesMobile({
         return total + recipesInCol + recipesInSubCols;
       }, 0);
     };
-    return countRecipes(collections);
-  }, [collections]);
-
-  useEffect(() => {
-    const fetchCollections = async () => {
-      if (!user) return;
-
-      try {
-        setLoadingCollections(true);
-        const fetchedCollections = await CollectionService.getRootCollections();
-        setCollections(fetchedCollections);
-      } catch (err) {
-        console.error('Erreur lors du fetch des collections:', err);
-      } finally {
-        setLoadingCollections(false);
-      }
-    };
-
-    fetchCollections();
-  }, [user]);
+    const ownRecipes = rootCollection?.recipes?.length ?? 0;
+    return ownRecipes + countRecipes(collections);
+  }, [collections, rootCollection]);
 
   useEffect(() => {
     const linkAnonymousRecipeIfExists = async () => {
@@ -64,8 +55,9 @@ export default function MyRecipesMobile({
 
         if (result.success) {
           localStorage.removeItem('anonymousRecipeUuid');
-          const fetchedCollections = await CollectionService.getRootCollections();
-          setCollections(fetchedCollections);
+          if (defaultCollection?.uuid) {
+            queryClient.invalidateQueries({ queryKey: queryKeys.collections.byId(defaultCollection.uuid) });
+          }
         } else if (result.error === 'INSUFFICIENT_CREDITS') {
           setShowPaywall(true);
         } else if (result.alreadyLinked) {
@@ -79,7 +71,7 @@ export default function MyRecipesMobile({
     };
 
     linkAnonymousRecipeIfExists();
-  }, [user]);
+  }, [user, defaultCollection, queryClient]);
 
   return (
     <div className="min-h-screen bg-bg-color px-4 pt-20 pb-24">

@@ -4,6 +4,7 @@ import {
     formatIngredientCategoryV2,
     formatQuantityV2,
 } from "./recipeV2Labels";
+import { isMeaningfulText } from "./isMeaningfulText";
 
 const GROUPING_THRESHOLD = 8;
 
@@ -92,8 +93,8 @@ function IngredientRow({ ingredient }: { ingredient: RecipeV2IngredientDTO }) {
                         </span>
                     )}
                 </div>
-                {ingredient.preparationNote && (
-                    <p className="text-xs text-text-secondary italic mt-0.5">
+                {isMeaningfulText(ingredient.preparationNote) && (
+                    <p className="text-xs text-text-secondary italic mt-0.5 text-left">
                         {ingredient.preparationNote}
                     </p>
                 )}

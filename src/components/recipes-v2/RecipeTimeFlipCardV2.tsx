@@ -6,6 +6,8 @@ interface RecipeTimeFlipCardV2Props {
     cookTimeMin: number | null;
     restTimeMin: number | null;
     totalTimeMin: number | null;
+    /** When true, fills its container's height instead of using a fixed aspect ratio. */
+    stretchHeight?: boolean;
 }
 
 const FLIP_DURATION_MS = 350;
@@ -24,6 +26,7 @@ export default function RecipeTimeFlipCardV2({
     cookTimeMin,
     restTimeMin,
     totalTimeMin,
+    stretchHeight = false,
 }: RecipeTimeFlipCardV2Props) {
     const [rotation, setRotation] = useState<number>(0);
     const [transitioning, setTransitioning] = useState<boolean>(false);
@@ -44,7 +47,7 @@ export default function RecipeTimeFlipCardV2({
 
     return (
         <div
-            className="w-full max-w-md mx-auto select-none"
+            className={`w-full max-w-[14rem] mx-auto select-none ${stretchHeight ? "h-full" : ""}`}
             style={{ perspective: "800px" }}
         >
             <div
@@ -57,7 +60,7 @@ export default function RecipeTimeFlipCardV2({
                         handleClick();
                     }
                 }}
-                className="relative w-full aspect-[3/1] cursor-pointer"
+                className={`relative w-full cursor-pointer ${stretchHeight ? "h-full" : "aspect-[5/2]"}`}
                 style={{
                     transformStyle: "preserve-3d",
                     transform: `rotateY(${rotation}deg)`,
@@ -67,19 +70,22 @@ export default function RecipeTimeFlipCardV2({
             >
                 {/* Front : temps total */}
                 <div
-                    className="absolute inset-0 bg-primary border border-border-color rounded-2xl shadow-md flex items-center justify-center gap-3 px-4"
+                    className="absolute inset-0 bg-primary border border-border-color rounded-xl shadow-md flex items-center justify-center gap-2.5 px-3"
                     style={{ backfaceVisibility: "hidden" }}
                 >
-                    <ClockIcon className="w-6 h-6 text-cout-base" />
-                    <div className="flex flex-col items-start">
-                        <span className="text-xl font-semibold text-text-primary">{total}</span>
-                        <span className="text-xs text-text-secondary">au total · touche pour le détail</span>
+                    <ClockIcon className="w-8 h-8 text-cout-base flex-shrink-0" />
+                    <div className="flex items-baseline gap-2 min-w-0">
+                        <span className="text-xl font-semibold text-text-primary leading-tight">{total}</span>
+                        <span className="text-xs text-text-secondary leading-tight">au total</span>
                     </div>
+                    <span className="absolute bottom-1.5 left-0 right-0 text-center text-[10px] text-text-secondary leading-tight">
+                        touche pour le détail
+                    </span>
                 </div>
 
                 {/* Back : prép / cuisson / repos */}
                 <div
-                    className="absolute inset-0 bg-primary border border-border-color rounded-2xl shadow-md flex items-stretch justify-around px-3 py-3"
+                    className="absolute inset-0 bg-primary border border-border-color rounded-xl shadow-md flex items-stretch justify-around px-2 py-2"
                     style={{
                         backfaceVisibility: "hidden",
                         transform: "rotateY(180deg)",
@@ -99,8 +105,8 @@ export default function RecipeTimeFlipCardV2({
 function TimeCell({ label, value }: { label: string; value: string }) {
     return (
         <div className="flex-1 flex flex-col items-center justify-center">
-            <span className="text-xs text-text-secondary">{label}</span>
-            <span className="text-base font-semibold text-text-primary mt-0.5">{value}</span>
+            <span className="text-[10px] text-text-secondary leading-tight">{label}</span>
+            <span className="text-xs font-semibold text-text-primary mt-0.5 leading-tight">{value}</span>
         </div>
     );
 }

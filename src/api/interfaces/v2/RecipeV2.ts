@@ -102,6 +102,17 @@ export interface RecipeV2SummaryDTO {
     userUid: string | null;
 }
 
+export interface RecipeV2CardSummaryDTO {
+    uuid: string;
+    name: string;
+    emoji: string | null;
+    covers: number;
+    buyPrice: number | null;
+    totalTimeMin: number | null;
+    restTimeMin: number | null;
+    creationDate: string | null;
+}
+
 export interface RecipeV2ListDTO {
     total: number;
     items: RecipeV2SummaryDTO[];

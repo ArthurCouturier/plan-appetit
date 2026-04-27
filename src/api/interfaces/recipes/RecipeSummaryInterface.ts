@@ -4,9 +4,11 @@ export default interface RecipeSummaryInterface {
     uuid: UUIDTypes;
     name: string;
     covers: number;
-    stepsCount: number;
+    stepsCount?: number;
     buyPrice: number;
     isPublic: boolean;
     displayOrder: number;
-    creationDate?: string;
+    creationDate?: string | null;
+    totalTimeMin?: number | null;
+    restTimeMin?: number | null;
 }

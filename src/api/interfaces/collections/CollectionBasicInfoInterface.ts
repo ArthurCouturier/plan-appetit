@@ -3,4 +3,6 @@ export default interface CollectionBasicInfoInterface {
     name: string;
     level: number;
     isDefault: boolean;
+    displayOrder?: number;
+    parentCollectionUuid?: string | null;
 }

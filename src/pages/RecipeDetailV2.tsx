@@ -11,8 +11,10 @@ import RecipeV2Service, {
 } from "../api/services/RecipeV2Service";
 import useIsMobile from "../hooks/useIsMobile";
 import IngredientsListV2 from "../components/recipes-v2/IngredientsListV2";
+import useAuth from "../api/hooks/useAuth";
+import RecipeImageV2 from "../components/recipes-v2/RecipeImageV2";
 import RecipeStepsListV2 from "../components/recipes-v2/RecipeStepsListV2";
-import RecipeTimeBreakdownV2 from "../components/recipes-v2/RecipeTimeBreakdownV2";
+import RecipeTimeFlipCardV2 from "../components/recipes-v2/RecipeTimeFlipCardV2";
 import RecipeSeasonsV2 from "../components/recipes-v2/RecipeSeasonsV2";
 import RecipeKeyTrickV2 from "../components/recipes-v2/RecipeKeyTrickV2";
 import { formatCourseV2, formatPriceV2 } from "../components/recipes-v2/recipeV2Labels";
@@ -28,6 +30,7 @@ export default function RecipeDetailV2() {
     const { uuid } = useParams<{ uuid: string }>();
     const navigate = useNavigate();
     const isMobile = useIsMobile();
+    const { user } = useAuth();
 
     const [state, setState] = useState<LoadState>({ status: "loading" });
 
@@ -111,7 +114,6 @@ export default function RecipeDetailV2() {
     const recipe = state.recipe;
     const courseLabel = formatCourseV2(recipe.courseCode);
     const priceLabel = formatPriceV2(recipe.buyPrice, recipe.currency);
-    const hasImageMetadata = recipe.images && recipe.images.length > 0;
 
     return (
         <div className={containerClasses}>
@@ -125,16 +127,9 @@ export default function RecipeDetailV2() {
                         <ArrowLeftIcon className="w-5 h-5" />
                     </button>
                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                            {recipe.emoji && (
-                                <span className="text-2xl" aria-hidden>
-                                    {recipe.emoji}
-                                </span>
-                            )}
-                            <h1 className="text-xl md:text-2xl font-bold text-text-primary truncate">
-                                {recipe.name}
-                            </h1>
-                        </div>
+                        <h1 className="text-xl md:text-2xl font-bold text-text-primary truncate">
+                            {recipe.name}
+                        </h1>
                         {(courseLabel || priceLabel) && (
                             <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-text-secondary">
                                 {courseLabel && (
@@ -167,35 +162,23 @@ export default function RecipeDetailV2() {
                 )}
             </div>
 
-            <div className="bg-primary rounded-xl shadow-lg border border-border-color p-4 md:p-6 mt-4">
-                <div className="w-full rounded-lg bg-secondary/50 flex items-center justify-center py-12">
-                    <span className="text-7xl" aria-hidden>
-                        {recipe.emoji ?? "🍽️"}
-                    </span>
-                </div>
-                {hasImageMetadata && (
-                    <p className="text-xs text-text-secondary text-center mt-2">
-                        {recipe.images.length} image{recipe.images.length > 1 ? "s" : ""} disponible{recipe.images.length > 1 ? "s" : ""}
-                    </p>
-                )}
+            <div className="mt-4">
+                <RecipeImageV2
+                    recipeUuid={recipe.uuid}
+                    isOwner={!!recipe.userUid && !!user?.uid && recipe.userUid === user.uid}
+                    emoji={recipe.emoji}
+                />
             </div>
 
-            <div className="bg-primary rounded-xl shadow-lg border border-border-color p-4 md:p-6 mt-4">
-                <h2 className="text-lg font-bold text-text-primary mb-3">
-                    Temps et portions
-                </h2>
-                <RecipeTimeBreakdownV2
+            <div className="mt-4">
+                <RecipeTimeFlipCardV2
                     prepTimeMin={recipe.prepTimeMin}
                     cookTimeMin={recipe.cookTimeMin}
                     restTimeMin={recipe.restTimeMin}
                     totalTimeMin={recipe.totalTimeMin}
-                    covers={recipe.covers}
                 />
                 {recipe.seasons && recipe.seasons.length > 0 && (
                     <div className="mt-4">
-                        <h3 className="text-xs font-bold uppercase tracking-wide text-text-secondary mb-2">
-                            Saisons
-                        </h3>
                         <RecipeSeasonsV2 seasons={recipe.seasons} />
                     </div>
                 )}

@@ -44,7 +44,7 @@ export default class RecipeV2Service {
 
     public static async getRecipe(uuid: string): Promise<RecipeV2DTO> {
         const response = await fetchWithTokenRefresh(
-            `${RecipeV2Service.getApiUrl()}/api/v1/v2/recipes/${uuid}`,
+            `${RecipeV2Service.getApiUrl()}/api/v2/recipes/${uuid}`,
             {
                 method: "GET",
                 headers: RecipeV2Service.buildHeaders(),
@@ -73,7 +73,7 @@ export default class RecipeV2Service {
         if (params?.limit !== undefined) query.set("limit", String(params.limit));
         if (params?.offset !== undefined) query.set("offset", String(params.offset));
         const qs = query.toString();
-        const url = `${RecipeV2Service.getApiUrl()}/api/v1/v2/recipes${qs ? `?${qs}` : ""}`;
+        const url = `${RecipeV2Service.getApiUrl()}/api/v2/recipes${qs ? `?${qs}` : ""}`;
 
         const response = await fetchWithTokenRefresh(url, {
             method: "GET",

@@ -150,7 +150,7 @@ export default class GuidedSandboxService {
         token: string
     ): Promise<GuidedSandboxRecipeSummary> {
         const response = await fetchWithTokenRefresh(
-            `${this.getApiUrl()}/api/v1/v2/recipes/${uuid}`,
+            `${this.getApiUrl()}/api/v2/recipes/${uuid}`,
             {
                 method: "GET",
                 headers: this.buildHeaders(email, token),

@@ -404,7 +404,7 @@ export default class BackendService {
     public static async getRecipeImagesBatch(
         uuids: string[]
     ): Promise<{ images: Record<string, string>; pending: string[] }> {
-        const response = await fetch(`${this.getApiUrl()}/api/v1/recipes/images/batch`, {
+        const response = await fetch(`${this.getApiUrl()}/api/v2/recipes/images/batch`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ uuids }),
@@ -436,6 +436,47 @@ export default class BackendService {
             throw new Error('Erreur lors de la génération de l\'image');
         }
 
+        return response.json();
+    }
+
+    public static async getRecipeV2Image(
+        recipeUuid: string,
+        email?: string | null,
+        token?: string | null
+    ): Promise<{ recipeUuid: string; imageData: string; generated: boolean } | null> {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (email && token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            headers['Email'] = email;
+        }
+
+        const response = await fetch(`${this.getApiUrl()}/api/v2/recipes/${recipeUuid}/image`, {
+            method: 'GET',
+            headers,
+        });
+
+        if (response.status === 404) return null;
+        if (response.status === 202) return { recipeUuid, imageData: '', generated: false };
+        if (!response.ok) throw new Error('Erreur lors de la récupération de l\'image v2');
+        return response.json();
+    }
+
+    public static async generateRecipeV2Image(
+        email: string,
+        token: string,
+        recipeUuid: string
+    ): Promise<{ recipeUuid: string; imageData: string; generated: boolean } | null> {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v2/recipes/${recipeUuid}/image/generate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (response.status === 404) return null;
+        if (!response.ok) throw new Error('Erreur lors de la génération de l\'image v2');
         return response.json();
     }
 

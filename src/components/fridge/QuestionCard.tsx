@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, useMotionValue, useTransform, type PanInfo } from "framer-motion";
 import type { FridgeQuestion } from "../../api/interfaces/fridge/FridgeInterfaces";
 import { lightHaptic } from "../../haptics/light";
@@ -9,11 +9,12 @@ interface QuestionCardProps {
     onChange: (value: unknown) => void;
     index: number;
     total: number;
+    showProgress?: boolean;
 }
 
 const SWIPE_THRESHOLD = 80;
 
-export default function QuestionCard({ question, value, onChange, index, total }: QuestionCardProps) {
+export default function QuestionCard({ question, value, onChange, index, total, showProgress = true }: QuestionCardProps) {
     const onChangeWithHaptic = useCallback((v: unknown) => {
         lightHaptic();
         onChange(v);
@@ -74,9 +75,11 @@ export default function QuestionCard({ question, value, onChange, index, total }
             className="relative"
         >
             {/* Progress indicator */}
-            <div className="text-xs text-text-secondary text-center mb-2">
-                {index + 1}/{total}
-            </div>
+            {showProgress && (
+                <div className="text-xs text-text-secondary text-center mb-2">
+                    {index + 1}/{total}
+                </div>
+            )}
 
             <motion.div
                 drag="x"
@@ -243,6 +246,48 @@ function ChoiceControl({
     allowFreeText?: boolean;
 }) {
     const isCustomValue = allowFreeText && value !== "" && !options.includes(value);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const previousScrollRef = useRef<number | null>(null);
+    // Conserve la saisie libre même quand l'utilisateur sélectionne une option,
+    // pour qu'il puisse revenir au champ "Autre..." sans perdre son texte.
+    const [customDraft, setCustomDraft] = useState<string>(isCustomValue ? value : "");
+
+    useEffect(() => {
+        if (isCustomValue) setCustomDraft(value);
+    }, [value, isCustomValue]);
+
+    const isMobileLike = () => {
+        if (typeof window === "undefined") return false;
+        return window.matchMedia("(pointer: coarse)").matches;
+    };
+
+    const handleFreeTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const next = e.target.value.slice(0, 200);
+        setCustomDraft(next);
+        onChange(next);
+    };
+
+    const handleFreeTextFocus = () => {
+        if (!isCustomValue) onChange(customDraft);
+        if (isMobileLike()) {
+            previousScrollRef.current = window.scrollY;
+            setTimeout(() => {
+                textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 300);
+        }
+    };
+
+    const handleFreeTextBlur = () => {
+        if (isMobileLike() && previousScrollRef.current !== null) {
+            const target = previousScrollRef.current;
+            previousScrollRef.current = null;
+            setTimeout(() => {
+                window.scrollTo({ top: target, behavior: "smooth" });
+            }, 100);
+        }
+    };
+
+    const freeTextRows = customDraft.length > 0 ? 2 : 1;
 
     return (
         <div className="space-y-2">
@@ -260,14 +305,16 @@ function ChoiceControl({
                 </button>
             ))}
             {allowFreeText && (
-                <input
-                    type="text"
-                    value={isCustomValue ? (value as string) : ""}
-                    onChange={(e) => onChange(e.target.value.slice(0, 60))}
-                    onFocus={() => { if (!isCustomValue) onChange(""); }}
+                <textarea
+                    ref={textareaRef}
+                    value={customDraft}
+                    onChange={handleFreeTextChange}
+                    onFocus={handleFreeTextFocus}
+                    onBlur={handleFreeTextBlur}
                     placeholder="Autre..."
-                    maxLength={60}
-                    className={`w-full py-3 px-4 rounded-xl text-sm font-medium text-left transition-all duration-200 ${
+                    maxLength={200}
+                    rows={freeTextRows}
+                    className={`w-full py-3 px-4 rounded-xl text-sm font-medium text-left transition-all duration-200 resize-none ${
                         isCustomValue
                             ? "bg-cout-yellow text-cout-purple shadow-md border-2 border-cout-yellow"
                             : "bg-secondary text-text-primary border border-border-color focus:border-cout-base focus:outline-none"

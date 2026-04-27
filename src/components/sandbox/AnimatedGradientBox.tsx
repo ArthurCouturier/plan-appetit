@@ -32,7 +32,6 @@ const AnimatedGradientBox = forwardRef<HTMLTextAreaElement, AnimatedGradientBoxP
             placeholder={animatedPlaceholder}
             rows={1}
             style={{
-              minHeight: '60px',
               maxHeight: '200px',
             }}
             onInput={(e) => {

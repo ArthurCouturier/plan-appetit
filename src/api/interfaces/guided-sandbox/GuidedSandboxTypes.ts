@@ -46,14 +46,6 @@ export interface GuidedSandboxGenerateResponse {
     recipeUuid: string;
 }
 
-export interface GuidedSandboxDraft {
-    seed: string;
-    surpriseMe: boolean;
-    sourceRecipeUuid: string | null;
-    turns: GuidedSandboxTurn[];
-    timestamp: number;
-}
-
 export interface GuidedSandboxRecipeSummary {
     uuid: string;
     name: string;

@@ -19,14 +19,17 @@ interface GuidedStepViewProps {
 
 const CUSTOM_VALUE_PREFIX = "__custom__:";
 
-function toFridgeQuestion(q: GuidedSandboxQuestion): FridgeQuestion {
+function toFridgeQuestion(_q: GuidedSandboxQuestion): FridgeQuestion {
     return {
-        id: q.id,
+        id: _q.id,
         type: "choice",
-        label: q.prompt,
+        label: _q.prompt,
         emoji: "",
-        options: q.options.map((o) => o.label),
-        allowFreeText: q.allowFreeText,
+        options: _q.options.map((o) => o.label),
+        // Toujours offrir un champ libre dans la sandbox guidée pour permettre à
+        // l'utilisateur de prolonger le dialogue avec l'IA, même quand l'IA n'a
+        // pas explicitement marqué la question comme allowFreeText.
+        allowFreeText: true,
     };
 }
 
@@ -66,10 +69,8 @@ export default function GuidedStepView({
         if (!selectedLabel || selectedLabel.trim().length === 0) return null;
         const option = question.options.find((o) => o.label === selectedLabel);
         if (option) return option.value;
-        if (question.allowFreeText) {
-            return `${CUSTOM_VALUE_PREFIX}${selectedLabel.trim()}`;
-        }
-        return null;
+        // Champ libre toujours autorisé sur la sandbox guidée.
+        return `${CUSTOM_VALUE_PREFIX}${selectedLabel.trim()}`;
     };
 
     const choice = resolveChoice();
@@ -102,6 +103,7 @@ export default function GuidedStepView({
                         onChange={handleChange}
                         index={turnIndex}
                         total={totalTurns}
+                        showProgress={false}
                     />
                 )}
 

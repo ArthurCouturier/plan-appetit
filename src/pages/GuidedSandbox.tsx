@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import useAuth from "../api/hooks/useAuth";
 import GuidedSandboxService from "../api/services/GuidedSandboxService";
 import type {
-    GuidedSandboxDraft,
     GuidedSandboxQuestion,
     GuidedSandboxStepResponse,
     GuidedSandboxTurn,
@@ -12,11 +11,8 @@ import type {
 import SeedInput from "../components/guided-sandbox/SeedInput";
 import GuidedStepView from "../components/guided-sandbox/GuidedStepView";
 import SurpriseConfirmModal from "../components/guided-sandbox/SurpriseConfirmModal";
-import ResumeDraftModal from "../components/guided-sandbox/ResumeDraftModal";
 import RecipeGenerationLoadingModal from "../components/modals/RecipeGenerationLoadingModal";
 
-const DRAFT_KEY = "GuidedSandboxDraft";
-const DRAFT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 const TOTAL_TURNS = 5;
 
 type PageStep = "seed" | "question" | "generating";
@@ -32,39 +28,6 @@ interface StepEndpointCall {
         email: string,
         token: string
     ): Promise<GuidedSandboxStepResponse>;
-}
-
-function loadDraft(): GuidedSandboxDraft | null {
-    try {
-        const raw = sessionStorage.getItem(DRAFT_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw) as GuidedSandboxDraft;
-        if (!parsed.timestamp || Date.now() - parsed.timestamp > DRAFT_MAX_AGE_MS) {
-            return null;
-        }
-        if (!parsed.seed || parsed.seed.trim().length === 0) {
-            return null;
-        }
-        return parsed;
-    } catch {
-        return null;
-    }
-}
-
-function saveDraft(draft: GuidedSandboxDraft) {
-    try {
-        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-    } catch {
-        // ignore quota errors
-    }
-}
-
-function clearDraft() {
-    try {
-        sessionStorage.removeItem(DRAFT_KEY);
-    } catch {
-        // ignore
-    }
 }
 
 export default function GuidedSandbox() {
@@ -84,29 +47,13 @@ export default function GuidedSandbox() {
     const [seedError, setSeedError] = useState<string | null>(null);
     const [stepError, setStepError] = useState<string | null>(null);
     const [showSurpriseConfirm, setShowSurpriseConfirm] = useState<boolean>(false);
-    const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
     const [remixRecipeName, setRemixRecipeName] = useState<string | null>(null);
-
-    const stashedDraft = useRef<GuidedSandboxDraft | null>(null);
-    const mountedRef = useRef<boolean>(false);
 
     const getAuthHeaders = useCallback(() => {
         const email = user?.email ?? localStorage.getItem("email") ?? "";
         const token = user?.token ?? localStorage.getItem("firebaseIdToken") ?? "";
         return { email, token };
     }, [user]);
-
-    // Mount: check for resumable draft + fetch remix recipe name
-    useEffect(() => {
-        if (mountedRef.current) return;
-        mountedRef.current = true;
-
-        const draft = loadDraft();
-        if (draft) {
-            stashedDraft.current = draft;
-            setShowResumeModal(true);
-        }
-    }, []);
 
     useEffect(() => {
         if (!sourceRecipeUuid) {
@@ -130,21 +77,6 @@ export default function GuidedSandbox() {
             cancelled = true;
         };
     }, [sourceRecipeUuid, getAuthHeaders]);
-
-    // Persist draft whenever state changes after user actually started flow
-    useEffect(() => {
-        if (pageStep === "seed" && turns.length === 0 && seed.trim().length === 0) {
-            return;
-        }
-        const draft: GuidedSandboxDraft = {
-            seed,
-            surpriseMe,
-            sourceRecipeUuid,
-            turns,
-            timestamp: Date.now(),
-        };
-        saveDraft(draft);
-    }, [seed, surpriseMe, sourceRecipeUuid, turns, pageStep]);
 
     const callStepEndpoint = useCallback(
         async (
@@ -185,7 +117,6 @@ export default function GuidedSandbox() {
                     email,
                     token
                 );
-                clearDraft();
                 navigate(`/recipes-v2/${result.recipeUuid}`);
             } catch {
                 setIsGenerating(false);
@@ -369,70 +300,11 @@ export default function GuidedSandbox() {
         }
     }, [turns, callStepEndpoint, stepEndpointForTurnCount, surpriseMe]);
 
-    const handleResumeDraft = useCallback(async () => {
-        const draft = stashedDraft.current;
-        setShowResumeModal(false);
-        if (!draft) return;
-        setSeed(draft.seed);
-        setSurpriseMe(draft.surpriseMe);
-        setTurns(draft.turns);
-        setStepError(null);
-        setSeedError(null);
-
-        if (draft.turns.length >= TOTAL_TURNS) {
-            await handleGenerate(draft.turns, draft.surpriseMe);
-            return;
-        }
-
-        setPageStep("question");
-        setIsStepLoading(true);
-        try {
-            const response = await callStepEndpoint(
-                stepEndpointForTurnCount(draft.turns.length),
-                draft.turns,
-                draft.surpriseMe
-            );
-            applyStepResponse(response, draft.turns, draft.surpriseMe);
-        } catch {
-            setPageStep("seed");
-            setSeedError("Impossible de reprendre la session. Réessaie.");
-        } finally {
-            setIsStepLoading(false);
-        }
-    }, [
-        callStepEndpoint,
-        stepEndpointForTurnCount,
-        applyStepResponse,
-        handleGenerate,
-    ]);
-
-    const handleDiscardDraft = useCallback(() => {
-        stashedDraft.current = null;
-        clearDraft();
-        setShowResumeModal(false);
-    }, []);
-
     const previousChoiceForCurrentTurn = useMemo(() => {
         if (!currentQuestion) return undefined;
         const existing = turns.find((t) => t.questionId === currentQuestion.id);
         return existing?.choice;
     }, [currentQuestion, turns]);
-
-    const progressIndicator = useMemo(() => {
-        if (pageStep === "seed") return null;
-        const totalShown = turns.length + 1;
-        return (
-            <div className="flex justify-center gap-2 mb-4 px-4">
-                {Array.from({ length: totalShown }).map((_, idx) => (
-                    <div
-                        key={idx}
-                        className={`h-1.5 rounded-full transition-all duration-300 w-8 ${idx < turns.length ? "bg-cout-yellow" : "bg-cout-base"
-                            }`}
-                    />
-                ))}
-            </div>
-        );
-    }, [pageStep, turns.length]);
 
     const remixBanner = useMemo(() => {
         if (!sourceRecipeUuid) return null;
@@ -453,7 +325,6 @@ export default function GuidedSandbox() {
                 style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4rem)" }}
             >
                 {remixBanner}
-                {progressIndicator}
 
                 <AnimatePresence mode="wait">
                     {pageStep === "seed" && (
@@ -471,7 +342,10 @@ export default function GuidedSandbox() {
                     )}
 
                     {pageStep === "question" && (
-                        <motion.div key={`turn-${turns.length}`} className="w-full">
+                        <motion.div
+                            key={`turn-${turns.length}`}
+                            className="w-full md:flex md:items-start min-h-[calc(100vh-12rem)] md:min-h-0 flex flex-col items-center justify-center"
+                        >
                             {currentQuestion ? (
                                 <GuidedStepView
                                     question={currentQuestion}
@@ -501,13 +375,6 @@ export default function GuidedSandbox() {
                 isOpen={showSurpriseConfirm}
                 onConfirm={handleSurpriseConfirm}
                 onCancel={() => setShowSurpriseConfirm(false)}
-            />
-
-            <ResumeDraftModal
-                isOpen={showResumeModal}
-                seedPreview={stashedDraft.current?.seed ?? ""}
-                onResume={handleResumeDraft}
-                onDiscard={handleDiscardDraft}
             />
 
             <RecipeGenerationLoadingModal isOpen={isGenerating} />
@@ -560,14 +427,16 @@ function GuidedStepViewSkeleton({
                     </div>
                 )}
 
-                <div className="flex gap-3 mt-6">
-                    <button
-                        onClick={onBack}
-                        className="px-5 py-3 bg-secondary text-text-primary font-semibold rounded-xl hover:bg-secondary/80 transition-all"
-                    >
-                        Retour
-                    </button>
-                </div>
+                {!loading && (
+                    <div className="flex gap-3 mt-6">
+                        <button
+                            onClick={onBack}
+                            className="px-5 py-3 bg-secondary text-text-primary font-semibold rounded-xl hover:bg-secondary/80 transition-all"
+                        >
+                            Retour
+                        </button>
+                    </div>
+                )}
             </div>
         </motion.div>
     );

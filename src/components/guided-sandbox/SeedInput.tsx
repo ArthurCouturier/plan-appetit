@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { SparklesIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon, ArrowPathIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import AnimatedGradientBox from "../sandbox/AnimatedGradientBox";
+import SamplePromptIdeas from "../sandbox/SamplePromptIdeas";
 import { useTypingPlaceholder } from "../../hooks/useTypingPlaceholder";
+import SandboxService from "../../api/services/SandboxService";
 
 interface SeedInputProps {
     seed: string;
@@ -13,15 +16,6 @@ interface SeedInputProps {
     onRetry?: () => void;
 }
 
-const PLACEHOLDERS = [
-    "Un dahl de lentilles corail pour ce soir",
-    "Une recette rapide avec des courgettes",
-    "Un dessert sans lactose aux poires",
-    "Un plat réconfortant pour l'hiver",
-    "Un curry thaï végétalien express",
-    "Des tapas espagnoles pour l'apéro",
-];
-
 export default function SeedInput({
     seed,
     onSeedChange,
@@ -31,8 +25,24 @@ export default function SeedInput({
     error,
     onRetry,
 }: SeedInputProps) {
+    const [placeholders, setPlaceholders] = useState<string[]>([]);
+
+    useEffect(() => {
+        let cancelled = false;
+        SandboxService.getPlaceholders()
+            .then((p) => {
+                if (!cancelled) setPlaceholders(p);
+            })
+            .catch(() => {
+                if (!cancelled) setPlaceholders([]);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     const animatedPlaceholder = useTypingPlaceholder({
-        phrases: PLACEHOLDERS,
+        phrases: placeholders,
         typingSpeed: 80,
         deletingSpeed: 50,
         pauseDuration: 2000,
@@ -60,21 +70,32 @@ export default function SeedInput({
             <div className="w-full max-w-2xl">
                 <div className="text-center mb-8">
                     <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
-                        Qu'est-ce qu'on cuisine ?
+                        Qu'est-ce qu'on cuisine?
                     </h2>
-                    <p className="text-text-secondary text-sm md:text-base">
-                        Décris librement ton envie, on t'accompagne en 3 questions.
-                    </p>
                 </div>
 
-                <AnimatedGradientBox
-                    value={seed}
-                    onChange={(e) => onSeedChange(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    animatedPlaceholder={animatedPlaceholder}
-                    disabled={disabled}
-                    aria-label="Décris ton envie de recette"
-                />
+                <div className="relative">
+                    <AnimatedGradientBox
+                        value={seed}
+                        onChange={(e) => onSeedChange(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        animatedPlaceholder={animatedPlaceholder}
+                        disabled={disabled}
+                        aria-label="Décris ton envie de recette"
+                        className={seed.length > 0 ? "pr-12" : undefined}
+                    />
+                    {seed.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={() => onSeedChange("")}
+                            disabled={disabled}
+                            aria-label="Effacer"
+                            className="absolute top-[28px] -translate-y-1/2 right-3 z-20 p-1.5 rounded-full bg-white/20 backdrop-blur-md text-text-primary border border-white/30 hover:bg-white/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                            <XMarkIcon className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
 
                 {error && (
                     <div className="mt-4 bg-cancel-1/10 border border-cancel-1 text-cancel-1 px-4 py-3 rounded-xl text-sm flex items-center justify-between gap-3">
@@ -108,6 +129,10 @@ export default function SeedInput({
                     >
                         Surprends-moi
                     </button>
+                </div>
+
+                <div className="mx-auto w-full md:w-md lg:w-lg xl:w-xl">
+                    <SamplePromptIdeas onPick={onSeedChange} disabled={disabled} />
                 </div>
             </div>
         </motion.div>

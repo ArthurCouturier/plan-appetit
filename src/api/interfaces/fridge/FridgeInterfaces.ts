@@ -3,6 +3,11 @@ export interface FridgeQuestion {
     type: "slider" | "level" | "boolean" | "choice";
     label: string;
     emoji: string;
+    /**
+     * Texte court affiché sous la question pour dire pourquoi on la pose.
+     * Tutoiement. Optionnel, masqué si absent.
+     */
+    explanation?: string;
     min?: number;
     max?: number;
     plusLabel?: string;

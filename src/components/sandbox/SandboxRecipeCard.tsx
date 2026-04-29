@@ -21,7 +21,7 @@ export default function SandboxRecipeCard({ recipe, isClickable = false }: Sandb
 
   const handleClick = () => {
     if (isClickable && recipe.uuid) {
-      navigate(`/recettes/${recipe.uuid}`);
+      navigate(`/recipes-v2/${recipe.uuid}`);
     }
   };
 

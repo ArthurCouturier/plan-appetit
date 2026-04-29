@@ -116,7 +116,7 @@ export default function RecipeLocationGeneration() {
                 TrackingService.promptATTIfNeeded();
 
                 invalidateCollections();
-                navigate(`/recettes/${newRecipe.uuid}`);
+                navigate(`/recipes-v2/${newRecipe.uuid}`);
                 dispatchFeedbackEvent("recipe_generated");
             }
         } catch (error: any) {

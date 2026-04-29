@@ -143,7 +143,7 @@ export default function BatchCookingMode() {
             );
 
             queryClient.invalidateQueries({ queryKey: queryKeys.collections.all() });
-            queryClient.invalidateQueries({ queryKey: ["batch-cookings-all"] });
+            queryClient.invalidateQueries({ queryKey: ["batch-cookings-all-v2"] });
             TrackingService.logRecipeGenerated("batch");
             SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
 

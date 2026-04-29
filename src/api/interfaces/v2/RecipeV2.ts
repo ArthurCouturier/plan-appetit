@@ -74,6 +74,7 @@ export interface RecipeV2DTO {
     isPublic: boolean;
     isGenerated: boolean;
     isImported: boolean;
+    remainingModifications: number;
     keyTrickFr: string | null;
     rescuePlanFr: string | null;
     dailyRecipeType: string | null;

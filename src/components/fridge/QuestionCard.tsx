@@ -105,10 +105,15 @@ export default function QuestionCard({ question, value, onChange, index, total, 
                 </motion.div>
 
                 {/* Question header */}
-                <div className="flex items-center gap-3 mb-5">
+                <div className={`flex items-center gap-3 ${question.explanation ? "mb-2" : "mb-5"}`}>
                     <span className="text-3xl">{question.emoji}</span>
                     <h4 className="text-lg font-semibold text-text-primary">{question.label}</h4>
                 </div>
+                {question.explanation && (
+                    <p className="text-xs text-text-secondary mb-4 leading-snug">
+                        {question.explanation}
+                    </p>
+                )}
 
                 {/* Question controls */}
                 <div
@@ -245,15 +250,18 @@ function ChoiceControl({
     onChange: (v: unknown) => void;
     allowFreeText?: boolean;
 }) {
-    const isCustomValue = allowFreeText && value !== "" && !options.includes(value);
+    const isCustomValue =
+        allowFreeText && typeof value === "string" && value !== "" && !options.includes(value);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const previousScrollRef = useRef<number | null>(null);
     // Conserve la saisie libre même quand l'utilisateur sélectionne une option,
     // pour qu'il puisse revenir au champ "Autre..." sans perdre son texte.
-    const [customDraft, setCustomDraft] = useState<string>(isCustomValue ? value : "");
+    const [customDraft, setCustomDraft] = useState<string>(
+        isCustomValue && typeof value === "string" ? value : "",
+    );
 
     useEffect(() => {
-        if (isCustomValue) setCustomDraft(value);
+        if (isCustomValue && typeof value === "string") setCustomDraft(value);
     }, [value, isCustomValue]);
 
     const isMobileLike = () => {

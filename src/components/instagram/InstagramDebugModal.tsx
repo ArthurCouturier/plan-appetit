@@ -28,7 +28,7 @@ export default function InstagramDebugModal({ debugData, onClose }: Props) {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => { navigate(`/recettes/${debugData.recipeUuid}`); onClose(); }}
+              onClick={() => { navigate(`/recipes-v2/${debugData.recipeUuid}`); onClose(); }}
               className="px-4 py-2 bg-cout-purple text-white font-semibold rounded-lg hover:bg-cout-base transition-colors"
             >
               Voir la recette

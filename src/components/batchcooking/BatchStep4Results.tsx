@@ -324,7 +324,7 @@ function ShoppingTab({ items, recipes }: { items: BatchCookingShoppingItem[]; re
                                             >
                                                 <div className="py-2 flex flex-wrap gap-2 justify-center">
                                                     {linkedRecipes.map((r) => (
-                                                        <ShoppingRecipeThumb key={r.uuid} recipeUuid={r.uuid} onClick={() => navigate(`/recettes/${r.uuid}`)} />
+                                                        <ShoppingRecipeThumb key={r.uuid} recipeUuid={r.uuid} onClick={() => navigate(`/recipes-v2/${r.uuid}`)} />
                                                     ))}
                                                 </div>
                                             </motion.div>
@@ -451,7 +451,7 @@ function PlanningTab({ steps, recipes }: { steps: BatchCookingExecutionStep[]; r
                                                     <ShoppingRecipeThumb
                                                         key={r.uuid}
                                                         recipeUuid={r.uuid!}
-                                                        onClick={() => navigate(`/recettes/${r.uuid}`)}
+                                                        onClick={() => navigate(`/recipes-v2/${r.uuid}`)}
                                                     />
                                                 ))}
                                             </div>

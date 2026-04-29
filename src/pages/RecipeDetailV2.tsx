@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { SparklesIcon, TrashIcon, BookmarkIcon } from "@heroicons/react/24/solid";
 import { RecipeV2DTO } from "../api/interfaces/v2/RecipeV2";
 import RecipeV2Service, {
     RecipeV2ForbiddenError,
     RecipeV2NotFoundError,
 } from "../api/services/RecipeV2Service";
+import RecipeService from "../api/services/RecipeService";
+import BackendService from "../api/services/BackendService";
 import useAuth from "../api/hooks/useAuth";
 import IngredientsListV2 from "../components/recipes-v2/IngredientsListV2";
 import RecipeImageV2 from "../components/recipes-v2/RecipeImageV2";
@@ -14,7 +17,12 @@ import RecipeKeyTrickV2 from "../components/recipes-v2/RecipeKeyTrickV2";
 import RecipeHeaderV2 from "../components/recipes-v2/RecipeHeaderV2";
 import RecipeRemixButtonV2 from "../components/recipes-v2/RecipeRemixButtonV2";
 import RecipeShareButtonV2 from "../components/recipes-v2/RecipeShareButtonV2";
+import RecipeModificationModal from "../components/modals/RecipeModificationModal";
+import PurchaseModificationCreditsModal from "../components/modals/PurchaseModificationCreditsModal";
+import CreditPaywallModal from "../components/modals/CreditPaywallModal";
+import SaveToCollectionModal from "../components/modals/SaveToCollectionModal";
 import { isMeaningfulText } from "../components/recipes-v2/isMeaningfulText";
+import { TrackingService } from "../api/tracking/TrackingService";
 
 type LoadState =
     | { status: "loading" }
@@ -25,41 +33,85 @@ type LoadState =
 
 export default function RecipeDetailV2() {
     const { uuid } = useParams<{ uuid: string }>();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const isFromShare = searchParams.has("share");
     const { user } = useAuth();
 
     const [state, setState] = useState<LoadState>({ status: "loading" });
+    const [showModificationModal, setShowModificationModal] = useState(false);
+    const [showPurchaseCreditsModal, setShowPurchaseCreditsModal] = useState(false);
+    const [showCreditPaywallModal, setShowCreditPaywallModal] = useState(false);
+    const [showSaveModal, setShowSaveModal] = useState(false);
+    const [userCredits, setUserCredits] = useState(0);
+
+    const fetchRecipe = useCallback(async (recipeUuid: string) => {
+        try {
+            const recipe = await RecipeV2Service.getRecipe(recipeUuid);
+            setState({ status: "ok", recipe });
+        } catch (err: unknown) {
+            if (err instanceof RecipeV2NotFoundError) {
+                setState({ status: "not-found" });
+                return;
+            }
+            if (err instanceof RecipeV2ForbiddenError) {
+                setState({ status: "forbidden" });
+                return;
+            }
+            const message = err instanceof Error ? err.message : "Erreur inconnue";
+            setState({ status: "error", message });
+        }
+    }, []);
 
     useEffect(() => {
         if (!uuid) {
             setState({ status: "not-found" });
             return;
         }
-        let cancelled = false;
         setState({ status: "loading" });
+        fetchRecipe(uuid).then(() => TrackingService.logViewContent(uuid));
+    }, [uuid, fetchRecipe]);
 
-        RecipeV2Service.getRecipe(uuid)
-            .then((recipe) => {
-                if (cancelled) return;
-                setState({ status: "ok", recipe });
-            })
-            .catch((err: unknown) => {
-                if (cancelled) return;
-                if (err instanceof RecipeV2NotFoundError) {
-                    setState({ status: "not-found" });
-                    return;
-                }
-                if (err instanceof RecipeV2ForbiddenError) {
-                    setState({ status: "forbidden" });
-                    return;
-                }
-                const message = err instanceof Error ? err.message : "Erreur inconnue";
-                setState({ status: "error", message });
-            });
+    useEffect(() => {
+        const email = localStorage.getItem("email");
+        const token = localStorage.getItem("firebaseIdToken");
+        if (!email || !token) return;
+        BackendService.getUserCredits(email, token).then(setUserCredits).catch(() => undefined);
+    }, [showPurchaseCreditsModal]);
 
-        return () => {
-            cancelled = true;
-        };
-    }, [uuid]);
+    const handleOpenModification = () => {
+        if (state.status !== "ok") return;
+        if (state.recipe.remainingModifications <= 0) {
+            setShowPurchaseCreditsModal(true);
+        } else {
+            setShowModificationModal(true);
+        }
+    };
+
+    const handleModificationComplete = async () => {
+        if (uuid) await fetchRecipe(uuid);
+    };
+
+    const handlePurchaseComplete = async () => {
+        if (uuid) await fetchRecipe(uuid);
+        setShowModificationModal(true);
+    };
+
+    const handleDelete = async () => {
+        if (state.status !== "ok") return;
+        if (!confirm(`Êtes-vous sûr de vouloir supprimer "${state.recipe.name}" ?`)) return;
+        await RecipeService.deleteRecipe(state.recipe.uuid);
+        navigate("/recettes");
+    };
+
+    const handleSaveToCollection = () => {
+        const token = localStorage.getItem("firebaseIdToken");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+        setShowSaveModal(true);
+    };
 
     const containerClasses = "min-h-screen bg-bg-color px-4 pb-24 mobile-content-with-header lg:px-8 lg:max-w-7xl lg:mx-auto";
 
@@ -140,6 +192,16 @@ export default function RecipeDetailV2() {
 
                         <RecipeShareButtonV2 recipeName={recipe.name} fullWidth className="flex-1" />
 
+                        {isOwner && (
+                            <button
+                                onClick={handleOpenModification}
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg transition-all"
+                            >
+                                <SparklesIcon className="w-5 h-5 flex-shrink-0" />
+                                <span>Assistant IA</span>
+                            </button>
+                        )}
+
                         <RecipeRemixButtonV2 recipeUuid={recipe.uuid} fullWidth className="flex-1" />
                     </div>
                 </div>
@@ -166,13 +228,43 @@ export default function RecipeDetailV2() {
                         />
                         <div className="flex flex-col gap-2 h-full">
                             <RecipeShareButtonV2 recipeName={recipe.name} fullWidth className="flex-1" />
+                            {isOwner && (
+                                <button
+                                    onClick={handleOpenModification}
+                                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg transition-all flex-1"
+                                >
+                                    <SparklesIcon className="w-5 h-5 flex-shrink-0" />
+                                    <span>Assistant IA</span>
+                                </button>
+                            )}
                             <RecipeRemixButtonV2 recipeUuid={recipe.uuid} fullWidth className="flex-1" />
                         </div>
                     </div>
                 ) : (
                     <div className="lg:hidden flex flex-col gap-2">
                         <RecipeShareButtonV2 recipeName={recipe.name} fullWidth />
+                        {isOwner && (
+                            <button
+                                onClick={handleOpenModification}
+                                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg transition-all w-full"
+                            >
+                                <SparklesIcon className="w-5 h-5 flex-shrink-0" />
+                                <span>Assistant IA</span>
+                            </button>
+                        )}
                         <RecipeRemixButtonV2 recipeUuid={recipe.uuid} fullWidth />
+                    </div>
+                )}
+
+                {isFromShare && !isOwner && (
+                    <div className="lg:col-start-2">
+                        <button
+                            onClick={handleSaveToCollection}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+                        >
+                            <BookmarkIcon className="w-5 h-5" />
+                            Enregistrer dans...
+                        </button>
                     </div>
                 )}
 
@@ -206,7 +298,7 @@ export default function RecipeDetailV2() {
                     </div>
                 </div>
 
-                {recipe.owner && (
+                {recipe.owner && !isOwner && (
                     <div className="lg:[grid-area:owner] flex items-center justify-center gap-3 p-4 bg-primary rounded-xl shadow-lg border border-border-color">
                         <span className="text-text-secondary text-sm">Recette de</span>
                         <span className="text-text-primary font-semibold">
@@ -225,7 +317,53 @@ export default function RecipeDetailV2() {
                         )}
                     </div>
                 )}
+
+                {isOwner && (
+                    <div className="lg:col-start-2 mt-2">
+                        <button
+                            onClick={handleDelete}
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-red-500/50 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all duration-200"
+                        >
+                            <TrashIcon className="w-5 h-5" />
+                            Supprimer la recette
+                        </button>
+                    </div>
+                )}
             </div>
+
+            <RecipeModificationModal
+                isOpen={showModificationModal}
+                onClose={() => setShowModificationModal(false)}
+                recipeUuid={recipe.uuid}
+                remainingModifications={recipe.remainingModifications}
+                onComplete={handleModificationComplete}
+                onInsufficientCredits={() => setShowPurchaseCreditsModal(true)}
+            />
+
+            <PurchaseModificationCreditsModal
+                isOpen={showPurchaseCreditsModal}
+                onClose={() => setShowPurchaseCreditsModal(false)}
+                recipeUuid={recipe.uuid}
+                userCredits={userCredits}
+                onPurchaseComplete={handlePurchaseComplete}
+                onInsufficientCredits={() => {
+                    setShowPurchaseCreditsModal(false);
+                    setShowCreditPaywallModal(true);
+                }}
+            />
+
+            {showCreditPaywallModal && (
+                <CreditPaywallModal onClose={() => setShowCreditPaywallModal(false)} />
+            )}
+
+            <SaveToCollectionModal
+                isOpen={showSaveModal}
+                onClose={() => setShowSaveModal(false)}
+                recipeUuid={recipe.uuid}
+                onSaved={() => {
+                    if (uuid) fetchRecipe(uuid);
+                }}
+            />
         </div>
     );
 }

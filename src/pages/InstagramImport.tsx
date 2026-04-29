@@ -154,7 +154,7 @@ export default function InstagramImport() {
         if (isAdminMode && response.debug) {
           setDebugData({ ...response.debug, recipeUuid: response.recipe.uuid, recipeName: response.recipe.name });
         } else {
-          navigate(`/recettes/${response.recipe.uuid}`);
+          navigate(`/recipes-v2/${response.recipe.uuid}`);
         }
       } else {
         setError("Recette generee mais impossible de recuperer son identifiant");

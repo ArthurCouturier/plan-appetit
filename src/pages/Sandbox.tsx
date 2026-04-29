@@ -467,7 +467,7 @@ export default function Sandbox() {
                     .map((sandboxRecipe) => (
                       <button
                         key={sandboxRecipe.uuid}
-                        onClick={() => navigate(`/recettes/${sandboxRecipe.uuid}`)}
+                        onClick={() => navigate(`/recipes-v2/${sandboxRecipe.uuid}`)}
                         className="bg-primary rounded-xl border-2 border-border-color p-6 text-left hover:border-cout-base transition-all duration-200 hover:shadow-lg"
                       >
                         <h3 className="text-lg font-bold text-text-primary mb-2">{sandboxRecipe.title}</h3>

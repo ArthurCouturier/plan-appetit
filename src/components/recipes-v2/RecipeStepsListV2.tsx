@@ -96,14 +96,51 @@ function StepRow({
 
     const hasTitle = isMeaningfulText(step.title);
     const hasEquipments = !!(step.equipments && step.equipments.length > 0);
-    const hasInlineMeta =
+    const hasMeta =
         durationLabel !== null ||
         restLabel !== null ||
         !!hasHeatingInfo ||
         step.isParallelizable ||
         hasEquipments;
-    const showInlineMeta = hasTitle && hasInlineMeta;
-    const showBottomMeta = !hasTitle && hasInlineMeta;
+
+    const renderMetaTags = () => (
+        <>
+            {hasEquipments && step.equipments!.map((equipment) => (
+                <span
+                    key={equipment}
+                    className="text-[11px] px-2 py-0.5 rounded-md border border-border-color bg-primary text-text-secondary"
+                >
+                    {equipment}
+                </span>
+            ))}
+            {hasHeatingInfo && (
+                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500">
+                    <FireIcon className="w-3.5 h-3.5" />
+                    {[heatingLabel, temperatureLabel, step.heatingIntensityLabel]
+                        .filter(Boolean)
+                        .join(" · ")}
+                </span>
+            )}
+            {step.isParallelizable && (
+                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-cout-purple/10 text-cout-purple">
+                    <ArrowsRightLeftIcon className="w-3.5 h-3.5" />
+                    En parallèle
+                </span>
+            )}
+            {restLabel && (
+                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-text-secondary">
+                    <ClockIcon className="w-3.5 h-3.5" />
+                    {restLabel}
+                </span>
+            )}
+            {durationLabel && (
+                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-text-secondary">
+                    <ClockIcon className="w-3.5 h-3.5" />
+                    {durationLabel}
+                </span>
+            )}
+        </>
+    );
 
     const { segments, matchedNames } = useMemo(
         () => buildInstructionSegments(step.instruction, step.ingredientsUsed ?? []),
@@ -135,49 +172,23 @@ function StepRow({
             </div>
             <div className="flex-1 min-w-0 text-left">
                 {hasTitle && (
-                    <div className="flex items-baseline justify-between gap-3 mb-1">
-                        <h3 className="font-semibold text-text-primary">
-                            {step.title}
-                        </h3>
-                        {showInlineMeta && (
-                            <div className="flex flex-wrap gap-1.5 flex-shrink-0 justify-end">
-                                {hasEquipments && step.equipments!.map((equipment) => (
-                                    <span
-                                        key={equipment}
-                                        className="text-[11px] px-2 py-0.5 rounded-md border border-border-color bg-primary text-text-secondary"
-                                    >
-                                        {equipment}
-                                    </span>
-                                ))}
-                                {hasHeatingInfo && (
-                                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500">
-                                        <FireIcon className="w-3.5 h-3.5" />
-                                        {[heatingLabel, temperatureLabel, step.heatingIntensityLabel]
-                                            .filter(Boolean)
-                                            .join(" · ")}
-                                    </span>
-                                )}
-                                {step.isParallelizable && (
-                                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-cout-purple/10 text-cout-purple">
-                                        <ArrowsRightLeftIcon className="w-3.5 h-3.5" />
-                                        En parallèle
-                                    </span>
-                                )}
-                                {restLabel && (
-                                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-text-secondary">
-                                        <ClockIcon className="w-3.5 h-3.5" />
-                                        {restLabel}
-                                    </span>
-                                )}
-                                {durationLabel && (
-                                    <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-text-secondary">
-                                        <ClockIcon className="w-3.5 h-3.5" />
-                                        {durationLabel}
-                                    </span>
-                                )}
+                    <>
+                        <div className="flex items-baseline justify-between gap-3 mb-1">
+                            <h3 className="font-semibold text-text-primary">
+                                {step.title}
+                            </h3>
+                            {hasMeta && (
+                                <div className="hidden md:flex flex-wrap gap-1.5 flex-shrink-0 justify-end">
+                                    {renderMetaTags()}
+                                </div>
+                            )}
+                        </div>
+                        {hasMeta && (
+                            <div className="flex md:hidden flex-wrap gap-1.5 mb-2">
+                                {renderMetaTags()}
                             </div>
                         )}
-                    </div>
+                    </>
                 )}
                 <p className="text-text-primary whitespace-pre-line break-words">
                     {segments.map((segment, idx) => {
@@ -207,42 +218,9 @@ function StepRow({
                     </div>
                 )}
 
-                {showBottomMeta && (
+                {!hasTitle && hasMeta && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
-                        {durationLabel && (
-                            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-text-secondary">
-                                <ClockIcon className="w-3.5 h-3.5" />
-                                {durationLabel}
-                            </span>
-                        )}
-                        {restLabel && (
-                            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-secondary text-text-secondary">
-                                <ClockIcon className="w-3.5 h-3.5" />
-                                {restLabel}
-                            </span>
-                        )}
-                        {hasHeatingInfo && (
-                            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-500">
-                                <FireIcon className="w-3.5 h-3.5" />
-                                {[heatingLabel, temperatureLabel, step.heatingIntensityLabel]
-                                    .filter(Boolean)
-                                    .join(" · ")}
-                            </span>
-                        )}
-                        {step.isParallelizable && (
-                            <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-cout-purple/10 text-cout-purple">
-                                <ArrowsRightLeftIcon className="w-3.5 h-3.5" />
-                                En parallèle
-                            </span>
-                        )}
-                        {hasEquipments && step.equipments!.map((equipment) => (
-                            <span
-                                key={equipment}
-                                className="text-[11px] px-2 py-0.5 rounded-md border border-border-color bg-primary text-text-secondary"
-                            >
-                                {equipment}
-                            </span>
-                        ))}
+                        {renderMetaTags()}
                     </div>
                 )}
 
@@ -386,6 +364,7 @@ function normalizeIngredientName(s: string): string {
     return s
         .toLowerCase()
         .trim()
+        .replace(/[‘’ʼ]/g, "'")
         .replace(/œ/g, "oe")
         .replace(/æ/g, "ae")
         .normalize("NFD")
@@ -407,19 +386,12 @@ function escapeRegex(s: string): string {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/**
- * Builds a tolerant regex matching an ingredient name in a free-text instruction.
- * Handles : case-insensitive, accent variants (e/é/è/ê), œ↔oe / æ↔ae, optional
- * trailing plural `s`, and word boundaries to avoid matching substrings of
- * unrelated words (e.g. "ail" inside "saladier").
- */
-function buildIngredientRegex(name: string): RegExp | null {
-    const normalized = normalizeIngredientName(name);
-    if (!normalized) return null;
+function buildTokenPattern(token: string): string {
+    const stripped = token.replace(/s$/, "");
     let pattern = "";
-    for (let i = 0; i < normalized.length; i++) {
-        const ch = normalized[i];
-        const next = normalized[i + 1];
+    for (let i = 0; i < stripped.length; i++) {
+        const ch = stripped[i];
+        const next = stripped[i + 1];
         if (ch === "o" && next === "e") {
             pattern += "(?:o[eéèêë]|œ)";
             i++;
@@ -430,13 +402,63 @@ function buildIngredientRegex(name: string): RegExp | null {
             i++;
             continue;
         }
+        if (ch === "'") {
+            pattern += "[''ʼ']";
+            continue;
+        }
         pattern += ACCENT_CLASSES[ch] ?? escapeRegex(ch);
     }
     pattern += "s?";
-    // Unicode-aware word boundaries : `\b` ne fonctionne pas pour œ, é, etc. (caractères
-    // non-ASCII), donc on utilise des lookbehind/lookahead sur la classe Unicode des
-    // lettres.
-    return new RegExp(`(?<![\\p{L}])${pattern}(?![\\p{L}])`, "giu");
+    return pattern;
+}
+
+/**
+ * Builds a tolerant regex matching an ingredient name in a free-text instruction.
+ * Tolerates: case, accent variants, œ↔oe / æ↔ae, curly/straight apostrophes,
+ * per-word optional trailing `s` (so "olives vertes" matches "olive verte" too),
+ * and Unicode word boundaries (`\b` doesn't work on é/œ/etc.).
+ */
+function buildIngredientRegex(name: string): RegExp | null {
+    const normalized = normalizeIngredientName(name);
+    if (!normalized) return null;
+    const tokens = normalized.split(/\s+/).filter((t) => t.length > 0);
+    if (tokens.length === 0) return null;
+    const fullPattern = tokens.map(buildTokenPattern).join("\\s+");
+    return new RegExp(`(?<![\\p{L}])${fullPattern}(?![\\p{L}])`, "giu");
+}
+
+const STOP_TRAILING_TOKENS = new Set([
+    "de", "du", "des", "le", "la", "les", "au", "aux", "en", "et", "ou", "à", "a",
+    "d'", "l'", "d", "l",
+]);
+
+function isStopTrailingToken(token: string): boolean {
+    return STOP_TRAILING_TOKENS.has(
+        token.toLowerCase().replace(/[‘’ʼ]/g, "'"),
+    );
+}
+
+/**
+ * Generates progressively shorter prefixes of an ingredient name so we can match
+ * the "head" form when the instruction text uses a less specific phrasing —
+ * e.g. "Huile d'olive extra vierge" → ["...extra vierge", "...extra", "huile d'olive", "huile"].
+ * Variants ending in connector words ("de", "d'", ...) are skipped since they'd
+ * cut mid-phrase. Variants are returned longest-first.
+ */
+function generateNameVariants(name: string): string[] {
+    const trimmed = name.trim();
+    if (!trimmed) return [];
+    const tokens = trimmed.split(/\s+/).filter((t) => t.length > 0);
+    if (tokens.length === 0) return [];
+    const variants: string[] = [];
+    for (let i = tokens.length; i >= 1; i--) {
+        if (isStopTrailingToken(tokens[i - 1])) continue;
+        const candidate = tokens.slice(0, i).join(" ");
+        if (normalizeIngredientName(candidate).length >= 3) {
+            variants.push(candidate);
+        }
+    }
+    return variants;
 }
 
 interface InstructionSegment {
@@ -447,9 +469,13 @@ interface InstructionSegment {
 
 /**
  * Splits an instruction string into segments — plain text or matched ingredient chips.
- * For each ingredient used in the step, we try to find its name in the instruction and
- * substitute the match with a chip. Longer names are matched first so "crème fraîche"
- * wins over "crème". Overlapping matches are dropped.
+ * For each ingredient, we collect hits from every prefix variant of its name (longest
+ * to shortest, with connector words trimmed off the tail). All hits then go through
+ * a single non-overlap pass that keeps the longest span at each position; ties are
+ * broken in favour of the ingredient whose full name is more specific. This way
+ * "huile d'olive extra vierge" and a later bare "huile" both get chipped to the
+ * same ingredient, while a competing "huile de tournesol" doesn't steal the bare
+ * "huile" if a more specific oil is the rightful owner of that span.
  */
 function buildInstructionSegments(
     instruction: string,
@@ -463,19 +489,32 @@ function buildInstructionSegments(
         };
     }
 
-    const sortedByLength = [...ingredientsUsed].sort((a, b) => b.name.length - a.name.length);
     type Hit = { start: number; end: number; ingredient: RecipeV2StepIngredientUsedDTO };
     const hits: Hit[] = [];
-    for (const used of sortedByLength) {
-        const regex = buildIngredientRegex(used.name);
-        if (!regex) continue;
-        let m: RegExpExecArray | null;
-        while ((m = regex.exec(instruction)) !== null) {
-            hits.push({ start: m.index, end: m.index + m[0].length, ingredient: used });
+
+    for (const used of ingredientsUsed) {
+        const variants = generateNameVariants(used.name);
+        const seenSpans = new Set<string>();
+        for (const variant of variants) {
+            const regex = buildIngredientRegex(variant);
+            if (!regex) continue;
+            let m: RegExpExecArray | null;
+            while ((m = regex.exec(instruction)) !== null) {
+                const start = m.index;
+                const end = start + m[0].length;
+                const key = `${start}:${end}`;
+                if (seenSpans.has(key)) continue;
+                seenSpans.add(key);
+                hits.push({ start, end, ingredient: used });
+            }
         }
     }
 
-    hits.sort((a, b) => a.start - b.start || b.end - a.end);
+    hits.sort((a, b) =>
+        a.start - b.start ||
+        b.end - a.end ||
+        b.ingredient.name.length - a.ingredient.name.length,
+    );
     const accepted: Hit[] = [];
     let cursor = 0;
     for (const hit of hits) {

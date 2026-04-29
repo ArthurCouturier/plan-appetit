@@ -20,13 +20,19 @@ export default function IngredientsListV2({ ingredients }: IngredientsListV2Prop
     const grouped = useMemo(() => {
         const map = new Map<string, RecipeV2IngredientDTO[]>();
         for (const ingredient of sorted) {
-            const key = (ingredient.categoryCode || "OTHER").toUpperCase();
-            const bucket = map.get(key);
+            const label = formatIngredientCategoryV2(ingredient.categoryCode || "OTHER");
+            const bucket = map.get(label);
             if (bucket) {
                 bucket.push(ingredient);
             } else {
-                map.set(key, [ingredient]);
+                map.set(label, [ingredient]);
             }
+        }
+        const otherLabel = formatIngredientCategoryV2("OTHER");
+        const otherBucket = map.get(otherLabel);
+        if (otherBucket) {
+            map.delete(otherLabel);
+            map.set(otherLabel, otherBucket);
         }
         return map;
     }, [sorted]);
@@ -53,10 +59,10 @@ export default function IngredientsListV2({ ingredients }: IngredientsListV2Prop
 
     return (
         <div className="space-y-4">
-            {Array.from(grouped.entries()).map(([category, list]) => (
-                <div key={category}>
+            {Array.from(grouped.entries()).map(([label, list]) => (
+                <div key={label}>
                     <h3 className="text-xs font-bold uppercase tracking-wide text-text-secondary mb-2">
-                        {formatIngredientCategoryV2(category)}
+                        {label}
                     </h3>
                     <ul className="space-y-2">
                         {list.map((ingredient) => (

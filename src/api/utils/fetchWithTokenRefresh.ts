@@ -1,6 +1,7 @@
 import { auth } from "../authentication/firebase";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
+import { getAppVersionHeaders } from "./appVersionHeaders";
 
 async function getNewToken(): Promise<string | null> {
     if (Capacitor.isNativePlatform()) {
@@ -31,7 +32,11 @@ export async function fetchWithTokenRefresh(
 ): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    const fetchOptions = { ...options, signal: controller.signal };
+    const fetchOptions: RequestInit = {
+        ...options,
+        headers: { ...getAppVersionHeaders(), ...(options.headers as Record<string, string> | undefined) },
+        signal: controller.signal,
+    };
 
     let response: Response;
     try {

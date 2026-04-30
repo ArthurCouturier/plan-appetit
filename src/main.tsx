@@ -10,6 +10,9 @@ import { PostHogProvider } from './contexts/PostHogContext.tsx'
 import { STALE_TIME, GC_TIME } from './api/queryConfig.ts'
 import { Capacitor } from '@capacitor/core'
 import { WatchBridge } from './api/plugins/WatchBridge'
+import { initAppVersionHeaders } from './api/utils/appVersionHeaders'
+
+initAppVersionHeaders();
 
 if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios') {
   console.log('[WatchSync][boot] iOS detected, pinging WatchBridge plugin at startup');

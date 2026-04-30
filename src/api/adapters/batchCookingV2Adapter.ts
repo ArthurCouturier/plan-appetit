@@ -63,6 +63,9 @@ export function mapV2BcToV0Response(v2: BatchCookingV2DTO): BatchCookingResponse
             currency: v2.currency,
         },
         executionPlan: v2.executionSteps.map(mapV2ExecutionStepToV0),
+        // Pass-through des execution steps en formalisme v2 pour permettre à PlanningTab
+        // de réutiliser RecipeStepsListV2 avec ingredientsUsed + heatingSurface + etc.
+        executionStepsV2: v2.executionSteps,
     };
 }
 

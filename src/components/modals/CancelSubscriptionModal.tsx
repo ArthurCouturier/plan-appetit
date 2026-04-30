@@ -136,10 +136,11 @@ export default function CancelSubscriptionModal({
                         <div className="mt-4">
                             <textarea
                                 value={otherReasonText}
-                                onChange={(e) => setOtherReasonText(e.target.value)}
+                                onChange={(e) => setOtherReasonText(e.target.value.slice(0, 500))}
                                 placeholder="Décrivez votre raison (optionnel)"
                                 className="w-full px-4 py-3 bg-secondary border border-border-color rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-cout-base resize-none"
                                 rows={3}
+                                maxLength={500}
                             />
                         </div>
                     )}

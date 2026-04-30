@@ -37,14 +37,10 @@ export interface BatchCookingV2ShoppingItemDTO {
     recipeUuids: string[];
 }
 
-export interface BatchCookingV2ExecutionStepDTO {
-    uuid: string;
-    displayOrder: number;
-    instruction: string;
-    stepType: string;
-    durationMin: number | null;
-    tipFr: string | null;
-}
+// Les execution steps BC partagent le même formalisme que les recipe steps v2
+// (rendu cohérent via RecipeStepsListV2 côté front, ingredientsUsed inclus).
+import type { RecipeV2StepDTO } from "./RecipeV2";
+export type BatchCookingV2ExecutionStepDTO = RecipeV2StepDTO;
 
 export interface BatchCookingV2DTO {
     uuid: string;

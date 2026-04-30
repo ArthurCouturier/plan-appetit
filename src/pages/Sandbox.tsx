@@ -295,10 +295,11 @@ export default function Sandbox() {
               <AnimatedGradientBox
                 ref={inputRef}
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={(e) => setPrompt(e.target.value.slice(0, 300))}
                 onKeyDown={handleKeyDown}
                 animatedPlaceholder={animatedPlaceholder}
                 disabled={isLoading}
+                maxLength={300}
                 aria-label="Entrez votre demande de recette"
               />
 

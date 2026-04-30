@@ -77,10 +77,11 @@ export default function SeedInput({
                 <div className="relative">
                     <AnimatedGradientBox
                         value={seed}
-                        onChange={(e) => onSeedChange(e.target.value)}
+                        onChange={(e) => onSeedChange(e.target.value.slice(0, 300))}
                         onKeyDown={handleKeyDown}
                         animatedPlaceholder={animatedPlaceholder}
                         disabled={disabled}
+                        maxLength={300}
                         aria-label="Décris ton envie de recette"
                         className={seed.length > 0 ? "pr-12" : undefined}
                     />

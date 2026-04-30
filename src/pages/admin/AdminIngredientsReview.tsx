@@ -8,7 +8,13 @@ import {
     AdminIngredientReviewItemDTO,
 } from "../../api/interfaces/admin/AdminIngredientReview";
 
-type RowAction = "merge" | "accept";
+type RowAction =
+    | "accept"
+    | "merge_into" // item → candidate
+    | "merge_from" // candidate → item
+    | "derive_from" // item part-of candidate
+    | "derive_to" // candidate part-of item
+    | "dismiss";
 
 interface RowState {
     action: RowAction;
@@ -66,12 +72,34 @@ export default function AdminIngredientsReview() {
         clearRowError(uuid);
     };
 
-    const handleAccept = async (item: AdminIngredientReviewItemDTO) => {
+    const removeCandidateFromItem = (itemUuid: string, candidateUuid: string) => {
+        setItems((prev) =>
+            prev.map((i) =>
+                i.uuid === itemUuid
+                    ? { ...i, candidates: i.candidates.filter((c) => c.uuid !== candidateUuid) }
+                    : i
+            )
+        );
+        setRowStates((prev) => {
+            const next = { ...prev };
+            delete next[itemUuid];
+            return next;
+        });
+        clearRowError(itemUuid);
+    };
+
+    const runRowAction = async (
+        item: AdminIngredientReviewItemDTO,
+        action: RowAction,
+        targetUuid: string | undefined,
+        op: () => Promise<void>,
+        onSuccess: () => void
+    ) => {
         clearRowError(item.uuid);
-        setRowStates((prev) => ({ ...prev, [item.uuid]: { action: "accept" } }));
+        setRowStates((prev) => ({ ...prev, [item.uuid]: { action, targetUuid } }));
         try {
-            await AdminService.acceptIngredient(item.uuid);
-            removeItem(item.uuid);
+            await op();
+            onSuccess();
         } catch (e) {
             setRowError(item.uuid, e instanceof Error ? e.message : "Erreur inconnue");
             setRowStates((prev) => {
@@ -82,27 +110,73 @@ export default function AdminIngredientsReview() {
         }
     };
 
-    const handleMerge = async (
+    const handleAccept = (item: AdminIngredientReviewItemDTO) =>
+        runRowAction(
+            item,
+            "accept",
+            undefined,
+            () => AdminService.acceptIngredient(item.uuid).then(() => undefined),
+            () => removeItem(item.uuid)
+        );
+
+    const handleMergeInto = (item: AdminIngredientReviewItemDTO, candidate: AdminIngredientCandidateDTO) =>
+        runRowAction(
+            item,
+            "merge_into",
+            candidate.uuid,
+            () => AdminService.mergeIngredient(item.uuid, candidate.uuid).then(() => undefined),
+            () => removeItem(item.uuid)
+        );
+
+    const handleMergeFrom = (item: AdminIngredientReviewItemDTO, candidate: AdminIngredientCandidateDTO) =>
+        runRowAction(
+            item,
+            "merge_from",
+            candidate.uuid,
+            () => AdminService.mergeIngredient(candidate.uuid, item.uuid).then(() => undefined),
+            // L'item courant absorbe le candidat : on retire le candidat de la ligne mais
+            // on garde l'item visible (il peut encore être merged/accepted ensuite).
+            () => removeCandidateFromItem(item.uuid, candidate.uuid)
+        );
+
+    const handleDerive = (
         item: AdminIngredientReviewItemDTO,
-        candidate: AdminIngredientCandidateDTO
+        candidate: AdminIngredientCandidateDTO,
+        direction: "from" | "to"
     ) => {
-        clearRowError(item.uuid);
-        setRowStates((prev) => ({
-            ...prev,
-            [item.uuid]: { action: "merge", targetUuid: candidate.uuid },
-        }));
-        try {
-            await AdminService.mergeIngredient(item.uuid, candidate.uuid);
-            removeItem(item.uuid);
-        } catch (e) {
-            setRowError(item.uuid, e instanceof Error ? e.message : "Erreur inconnue");
-            setRowStates((prev) => {
-                const next = { ...prev };
-                delete next[item.uuid];
-                return next;
-            });
-        }
+        const childLabel = direction === "from" ? item.name : candidate.name;
+        const parentLabel = direction === "from" ? candidate.name : item.name;
+        const partLabel = window.prompt(
+            `"${childLabel}" est-il une partie de "${parentLabel}" ?\n\nQuel label pour cette partie ? (ex: "feuille", "graine", "écorce")`,
+            ""
+        );
+        if (partLabel === null || partLabel.trim().length === 0) return;
+
+        const childUuid = direction === "from" ? item.uuid : candidate.uuid;
+        const parentUuid = direction === "from" ? candidate.uuid : item.uuid;
+        const action: RowAction = direction === "from" ? "derive_from" : "derive_to";
+
+        runRowAction(
+            item,
+            action,
+            candidate.uuid,
+            () => AdminService.deriveIngredientFrom(childUuid, parentUuid, partLabel.trim()).then(() => undefined),
+            // L'item est désormais validé (sortie de la review) : on retire la card.
+            // Si le child est l'item courant on le supprime ; sinon, le candidat est "rangé"
+            // et l'item reste à reviewer pour ses autres candidats — on retire seulement
+            // ce candidat de la liste.
+            () => (direction === "from" ? removeItem(item.uuid) : removeCandidateFromItem(item.uuid, candidate.uuid))
+        );
     };
+
+    const handleDismiss = (item: AdminIngredientReviewItemDTO, candidate: AdminIngredientCandidateDTO) =>
+        runRowAction(
+            item,
+            "dismiss",
+            candidate.uuid,
+            () => AdminService.dismissIngredientPair(item.uuid, candidate.uuid).then(() => undefined),
+            () => removeCandidateFromItem(item.uuid, candidate.uuid)
+        );
 
     return (
         <div
@@ -153,7 +227,11 @@ export default function AdminIngredientsReview() {
                                 rowState={rowStates[item.uuid]}
                                 rowError={rowErrors[item.uuid]}
                                 onAccept={() => handleAccept(item)}
-                                onMerge={(candidate) => handleMerge(item, candidate)}
+                                onMergeInto={(candidate) => handleMergeInto(item, candidate)}
+                                onMergeFrom={(candidate) => handleMergeFrom(item, candidate)}
+                                onDeriveFrom={(candidate) => handleDerive(item, candidate, "from")}
+                                onDeriveTo={(candidate) => handleDerive(item, candidate, "to")}
+                                onDismiss={(candidate) => handleDismiss(item, candidate)}
                             />
                         ))}
                     </div>
@@ -168,13 +246,21 @@ function IngredientReviewCard({
     rowState,
     rowError,
     onAccept,
-    onMerge,
+    onMergeInto,
+    onMergeFrom,
+    onDeriveFrom,
+    onDeriveTo,
+    onDismiss,
 }: {
     item: AdminIngredientReviewItemDTO;
     rowState: RowState | undefined;
     rowError: string | undefined;
     onAccept: () => void;
-    onMerge: (candidate: AdminIngredientCandidateDTO) => void;
+    onMergeInto: (candidate: AdminIngredientCandidateDTO) => void;
+    onMergeFrom: (candidate: AdminIngredientCandidateDTO) => void;
+    onDeriveFrom: (candidate: AdminIngredientCandidateDTO) => void;
+    onDeriveTo: (candidate: AdminIngredientCandidateDTO) => void;
+    onDismiss: (candidate: AdminIngredientCandidateDTO) => void;
 }) {
     const busy = rowState !== undefined;
     const accepting = rowState?.action === "accept";
@@ -240,62 +326,160 @@ function IngredientReviewCard({
                     </p>
                 ) : (
                     <div className="space-y-2">
-                        {item.candidates.map((candidate) => {
-                            const mergingThis =
-                                rowState?.action === "merge" &&
-                                rowState.targetUuid === candidate.uuid;
-                            return (
-                                <div
-                                    key={candidate.uuid}
-                                    className="flex items-center justify-between gap-3 border border-border-color rounded-lg p-3 bg-primary"
-                                >
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            {candidate.emoji && (
-                                                <span className="text-base leading-none">
-                                                    {candidate.emoji}
-                                                </span>
-                                            )}
-                                            <p className="text-sm font-medium text-text-primary">
-                                                {candidate.name}
-                                            </p>
-                                            <span className="text-[11px] text-text-secondary font-mono">
-                                                {candidate.nameNormalized}
-                                            </span>
-                                        </div>
-                                        <div className="flex flex-wrap gap-2 mt-1.5">
-                                            <span className="px-2 py-0.5 text-[10px] rounded-full bg-thirdary text-text-secondary">
-                                                {candidate.categoryCode}
-                                            </span>
-                                            <span className="px-2 py-0.5 text-[10px] rounded-full bg-orange-100 text-orange-700 font-semibold">
-                                                {Math.round(candidate.score * 100)}%
-                                            </span>
-                                            <span className="px-2 py-0.5 text-[10px] rounded-full bg-thirdary text-text-secondary">
-                                                {candidate.usageCount} utilisation
-                                                {candidate.usageCount > 1 ? "s" : ""}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => onMerge(candidate)}
-                                        disabled={busy}
-                                        className="shrink-0 px-3 py-1.5 text-xs font-semibold rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {mergingThis ? (
-                                            <span className="flex items-center gap-2">
-                                                <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                                En cours...
-                                            </span>
-                                        ) : (
-                                            "Merger dans celui-ci"
-                                        )}
-                                    </button>
-                                </div>
-                            );
-                        })}
+                        {item.candidates.map((candidate) => (
+                            <CandidateRow
+                                key={candidate.uuid}
+                                item={item}
+                                candidate={candidate}
+                                rowState={rowState}
+                                busy={busy}
+                                onMergeInto={() => onMergeInto(candidate)}
+                                onMergeFrom={() => onMergeFrom(candidate)}
+                                onDeriveFrom={() => onDeriveFrom(candidate)}
+                                onDeriveTo={() => onDeriveTo(candidate)}
+                                onDismiss={() => onDismiss(candidate)}
+                            />
+                        ))}
                     </div>
                 )}
             </div>
         </div>
+    );
+}
+
+function CandidateRow({
+    item,
+    candidate,
+    rowState,
+    busy,
+    onMergeInto,
+    onMergeFrom,
+    onDeriveFrom,
+    onDeriveTo,
+    onDismiss,
+}: {
+    item: AdminIngredientReviewItemDTO;
+    candidate: AdminIngredientCandidateDTO;
+    rowState: RowState | undefined;
+    busy: boolean;
+    onMergeInto: () => void;
+    onMergeFrom: () => void;
+    onDeriveFrom: () => void;
+    onDeriveTo: () => void;
+    onDismiss: () => void;
+}) {
+    const isTarget = rowState?.targetUuid === candidate.uuid;
+    const activeAction = isTarget ? rowState?.action : undefined;
+
+    return (
+        <div className="border border-border-color rounded-lg p-3 bg-primary">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {candidate.emoji && (
+                            <span className="text-base leading-none">{candidate.emoji}</span>
+                        )}
+                        <p className="text-sm font-medium text-text-primary">{candidate.name}</p>
+                        <span className="text-[11px] text-text-secondary font-mono">
+                            {candidate.nameNormalized}
+                        </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-1.5">
+                        <span className="px-2 py-0.5 text-[10px] rounded-full bg-thirdary text-text-secondary">
+                            {candidate.categoryCode}
+                        </span>
+                        <span className="px-2 py-0.5 text-[10px] rounded-full bg-orange-100 text-orange-700 font-semibold">
+                            {Math.round(candidate.score * 100)}%
+                        </span>
+                        <span className="px-2 py-0.5 text-[10px] rounded-full bg-thirdary text-text-secondary">
+                            {candidate.usageCount} utilisation
+                            {candidate.usageCount > 1 ? "s" : ""}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+                <ActionButton
+                    label={`« ${item.name} » → « ${candidate.name} »`}
+                    color="orange"
+                    busy={busy}
+                    loading={activeAction === "merge_into"}
+                    onClick={onMergeInto}
+                    title={`Merge: l'item courant disparaît et est absorbé par "${candidate.name}"`}
+                />
+                <ActionButton
+                    label={`« ${candidate.name} » → « ${item.name} »`}
+                    color="orange"
+                    busy={busy}
+                    loading={activeAction === "merge_from"}
+                    onClick={onMergeFrom}
+                    title={`Merge inverse: "${candidate.name}" disparaît et est absorbé par l'item courant`}
+                />
+                <ActionButton
+                    label={`« ${item.name} » est partie de « ${candidate.name} »`}
+                    color="blue"
+                    busy={busy}
+                    loading={activeAction === "derive_from"}
+                    onClick={onDeriveFrom}
+                    title={`Déclarer l'item courant comme partie dérivée de "${candidate.name}"`}
+                />
+                <ActionButton
+                    label={`« ${candidate.name} » est partie de « ${item.name} »`}
+                    color="blue"
+                    busy={busy}
+                    loading={activeAction === "derive_to"}
+                    onClick={onDeriveTo}
+                    title={`Déclarer "${candidate.name}" comme partie dérivée de l'item courant`}
+                />
+                <ActionButton
+                    label="Séparer (jamais re-suggérer)"
+                    color="gray"
+                    busy={busy}
+                    loading={activeAction === "dismiss"}
+                    onClick={onDismiss}
+                    title="Marquer cette paire comme distincte (ne sera plus suggérée)"
+                />
+            </div>
+        </div>
+    );
+}
+
+function ActionButton({
+    label,
+    color,
+    busy,
+    loading,
+    onClick,
+    title,
+}: {
+    label: string;
+    color: "orange" | "blue" | "gray";
+    busy: boolean;
+    loading: boolean;
+    onClick: () => void;
+    title: string;
+}) {
+    const colorClasses = {
+        orange: "bg-orange-500 text-white hover:bg-orange-600",
+        blue: "bg-blue-500 text-white hover:bg-blue-600",
+        gray: "bg-thirdary text-text-secondary hover:bg-border-color",
+    }[color];
+    return (
+        <button
+            onClick={onClick}
+            disabled={busy}
+            title={title}
+            className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${colorClasses}`}
+        >
+            {loading ? (
+                <span className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ...
+                </span>
+            ) : (
+                label
+            )}
+        </button>
     );
 }

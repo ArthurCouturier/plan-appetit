@@ -275,20 +275,21 @@ function ApplyCodeForm() {
             <div className="text-xs text-text-secondary mb-3">
                 Saisis-le ici pour recevoir 2 crédits gratuits.
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center mx-auto w-fit">
                 <input
                     type="text"
                     value={input}
-                    onChange={(e) => setInput(e.target.value.toUpperCase())}
+                    onChange={(e) => setInput(e.target.value.toUpperCase().slice(0, REFERRAL_CODE_LENGTH))}
                     placeholder="ABC23K"
                     maxLength={REFERRAL_CODE_LENGTH}
-                    className="flex-1 px-3 py-2 rounded-lg bg-secondary border border-border-color text-text-primary placeholder:text-text-secondary uppercase tracking-widest font-mono focus:outline-none focus:border-cout-purple"
+                    style={{ width: "11ch" }}
+                    className="px-3 py-2.5 rounded-lg bg-secondary border border-border-color text-text-primary placeholder:text-text-secondary uppercase tracking-widest font-mono text-center text-lg focus:outline-none focus:border-cout-purple"
                 />
                 <button
                     type="button"
                     onClick={handleSubmit}
                     disabled={!canSubmit}
-                    className="px-4 py-2 rounded-lg bg-cout-yellow text-cout-purple font-bold disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-4 py-2.5 rounded-lg bg-cout-yellow text-cout-purple font-bold disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                     {isPending ? "…" : "Valider"}
                 </button>

@@ -18,15 +18,15 @@ export const convertFirebaseUser = async (firebaseUser: User): Promise<UserInter
     try {
         const backendUserData = await BackendService.connectUser(email, token);
 
-        // Fusionner les données Firebase avec les données backend
+        // Fusionner les données Firebase avec les données backend (backend prioritaire pour displayName/photo)
         return {
             ...backendUserData,
             uid: firebaseUser.uid,
             email,
-            displayName: firebaseUser.displayName || backendUserData.displayName || "",
+            displayName: backendUserData.displayName || firebaseUser.displayName || "",
             token,
             provider,
-            profilePhoto: firebaseUser.photoURL || backendUserData.profilePhoto || "/no-pp.jpg",
+            profilePhoto: backendUserData.profilePhoto || firebaseUser.photoURL || "/no-pp.jpg",
             lastLogin: firebaseUser.metadata.lastSignInTime ? new Date(firebaseUser.metadata.lastSignInTime) : backendUserData.lastLogin,
         };
     } catch (error) {

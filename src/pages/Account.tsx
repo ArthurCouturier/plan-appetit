@@ -15,6 +15,7 @@ import useIsMobile from '../hooks/useIsMobile';
 import { dispatchFeedbackEvent } from '../components/feedbacks/feedbackEvents';
 import useFeedback from '../api/hooks/useFeedback';
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import ReferralSection from '../components/referral/ReferralSection';
 
 export default function Account() {
     const { user, logout, login } = useAuth();
@@ -154,6 +155,9 @@ export default function Account() {
                     {showCreditModal && (
                         <CreditPaywallModal onClose={() => setShowCreditModal(false)} />
                     )}
+
+                    {/* Code ami */}
+                    <ReferralSection />
 
                     {/* Theme Switcher */}
                     <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">

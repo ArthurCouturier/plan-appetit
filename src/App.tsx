@@ -7,6 +7,7 @@ import CookieConsentBanner from './components/global/CookieConsentBanner';
 import { DailyRecipeProvider } from './contexts/DailyRecipeContext';
 import { FeedbackProvider } from './contexts/FeedbackContext';
 import FeedbackEventBridge from './components/feedbacks/FeedbackEventBridge';
+import ReferralBootstrap from './components/referral/ReferralBootstrap';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <DailyRecipeProvider>
         <FeedbackProvider>
           <FeedbackEventBridge />
+          <ReferralBootstrap />
           <RouterProvider router={router} />
           <CookieConsentBanner />
         </FeedbackProvider>

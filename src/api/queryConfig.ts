@@ -13,4 +13,7 @@ export const queryKeys = {
     recipes: {
         image: (uuid: string) => ['recipes', uuid, 'image'] as const,
     },
+    referral: {
+        stats: () => ['referral', 'stats'] as const,
+    },
 } as const;

@@ -71,8 +71,12 @@ export default function DailyRecipeModal({ isOpen, onClose }: DailyRecipeModalPr
     }, [isOpen]);
 
     const handleRecipeClick = (uuid: string) => {
+        // Le back retourne désormais des UUIDs v2 pour ce front 2.0+ (cf. branching
+        // X-App-Version sur DailyRecipeController). On navigue vers /recipes-v2/{uuid}
+        // qui résout l'API v2. L'ancien path /recettes/{uuid} hit l'API v0 et 404 sur
+        // un UUID v2 — c'est ce qui causait "Recette introuvable".
         handleClose();
-        navigate(`/recettes/${uuid}?share`);
+        navigate(`/recipes-v2/${uuid}`);
     };
 
     const handleClose = () => {

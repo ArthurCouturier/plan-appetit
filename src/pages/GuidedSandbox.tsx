@@ -12,6 +12,7 @@ import SeedInput from "../components/guided-sandbox/SeedInput";
 import GuidedStepView from "../components/guided-sandbox/GuidedStepView";
 import SurpriseConfirmModal from "../components/guided-sandbox/SurpriseConfirmModal";
 import RecipeGenerationLoadingModal from "../components/modals/RecipeGenerationLoadingModal";
+import CreditPaywallModal from "../components/modals/CreditPaywallModal";
 
 const TOTAL_TURNS = 5;
 
@@ -48,6 +49,7 @@ export default function GuidedSandbox() {
     const [stepError, setStepError] = useState<string | null>(null);
     const [showSurpriseConfirm, setShowSurpriseConfirm] = useState<boolean>(false);
     const [remixRecipeName, setRemixRecipeName] = useState<string | null>(null);
+    const [showPaywall, setShowPaywall] = useState<boolean>(false);
 
     const getAuthHeaders = useCallback(() => {
         const email = user?.email ?? localStorage.getItem("email") ?? "";
@@ -118,9 +120,18 @@ export default function GuidedSandbox() {
                     token
                 );
                 navigate(`/recipes-v2/${result.recipeUuid}`);
-            } catch {
+            } catch (err) {
                 setIsGenerating(false);
                 setPageStep(finalTurns.length === 0 ? "seed" : "question");
+                if (
+                    err &&
+                    typeof err === "object" &&
+                    "type" in err &&
+                    (err as { type: string }).type === "INSUFFICIENT_CREDITS"
+                ) {
+                    setShowPaywall(true);
+                    return;
+                }
                 const message = "La génération a échoué. Réessaie.";
                 if (finalTurns.length === 0) {
                     setSeedError(message);
@@ -378,6 +389,8 @@ export default function GuidedSandbox() {
             />
 
             <RecipeGenerationLoadingModal isOpen={isGenerating} />
+
+            {showPaywall && <CreditPaywallModal onClose={() => setShowPaywall(false)} />}
         </>
     );
 }

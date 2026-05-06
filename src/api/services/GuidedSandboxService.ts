@@ -35,6 +35,15 @@ export default class GuidedSandboxService {
         });
 
         if (!response.ok) {
+            if (response.status === 402) {
+                let detail: unknown = null;
+                try {
+                    detail = await response.json();
+                } catch {
+                    /* ignore */
+                }
+                throw { type: "INSUFFICIENT_CREDITS", status: 402, detail };
+            }
             throw new Error(`Requête ${path} a échoué (${response.status})`);
         }
 

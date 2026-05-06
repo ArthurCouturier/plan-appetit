@@ -5,7 +5,7 @@ export type RecipeGenerationType =
     | "fridge"
     | "ingredient"
     | "batch"
-    | "budget";
+    | "routine";
 
 interface VariantConfig {
     title: string;
@@ -54,13 +54,13 @@ const VARIANTS: Record<RecipeGenerationType, VariantConfig> = {
         gradientTo: "#cd9777",
         route: "/batch-cooking",
     },
-    budget: {
-        title: "Voici mon budget!",
-        subtitle: "Pas besoin de se ruiner",
-        subtitleColor: "#e1994d",
-        icon: "/icons/IconEuro.svg",
-        gradientFrom: "#ffdd00",
-        gradientTo: "#ffd000",
+    routine: {
+        title: "Les courses du quotidien...",
+        subtitle: "Va en courses sans te prendre la tête",
+        subtitleColor: "#d8f3dc",
+        icon: "/icons/IconBasket.svg",
+        gradientFrom: "#b7e4c7",
+        gradientTo: "#52b788",
         route: null,
     },
 };

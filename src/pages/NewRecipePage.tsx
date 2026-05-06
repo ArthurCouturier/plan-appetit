@@ -6,7 +6,7 @@ const GENERATION_TYPES: RecipeGenerationType[] = [
     "fridge",
     "batch",
     "ingredient",
-    "budget",
+    "routine",
 ];
 
 export default function NewRecipePage() {

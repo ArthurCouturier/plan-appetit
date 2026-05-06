@@ -76,7 +76,7 @@ export default function DailyRecipeModal({ isOpen, onClose }: DailyRecipeModalPr
         // qui résout l'API v2. L'ancien path /recettes/{uuid} hit l'API v0 et 404 sur
         // un UUID v2 — c'est ce qui causait "Recette introuvable".
         handleClose();
-        navigate(`/recipes-v2/${uuid}`);
+        navigate(`/recipes-v2/${uuid}?share`);
     };
 
     const handleClose = () => {

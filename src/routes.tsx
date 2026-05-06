@@ -7,7 +7,6 @@ import GuidedSandbox from "./pages/GuidedSandbox";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
 
-import RecipeLocationGeneration from "./pages/RecipeLocationGeneration";
 import LoginPage from "./pages/Login";
 import ProtectedRoute from "./components/authentication/ProtectedRoute";
 import Account from "./pages/Account";
@@ -99,10 +98,6 @@ const router = createBrowserRouter([
                             {
                                 path: "profile/settings",
                                 element: <AccountSettings />,
-                            },
-                            {
-                                path: "recettes/generer/localisation",
-                                element: <RecipeLocationGeneration />,
                             },
                             {
                                 path: "recettes/generer/sandbox",

@@ -4,7 +4,6 @@ import type { RecipeGenerationType } from "../components/buttons/RecipeGeneratio
 const GENERATION_TYPES: RecipeGenerationType[] = [
     "sandbox",
     "fridge",
-    "location",
     "batch",
     "ingredient",
     "budget",

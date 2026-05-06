@@ -1,5 +1,3 @@
-import { redirect } from "react-router-dom";
-import RecipeGenerationParametersInterface from "../interfaces/recipes/RecipeGenerationParametersInterface";
 import RecipeInterface from "../interfaces/recipes/RecipeInterface";
 import UserInterface from "../interfaces/users/UserInterface";
 import UserAccountInfoInterface from "../interfaces/users/UserAccountInfoInterface";
@@ -101,38 +99,6 @@ export default class BackendService {
 
         if (!response.ok) {
             throw new Error('Erreur lors de l\'import de la recette');
-        }
-
-        return response.json();
-    }
-
-    public static async generateRecipeWithOpenAI(
-        generationParameters: RecipeGenerationParametersInterface,
-        email: string,
-        token: string
-    ): Promise<RecipeInterface | null> {
-        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/recipes/generate`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Email': email,
-            },
-            body: JSON.stringify(generationParameters),
-        });
-
-        if (!response.ok) {
-            if (response.status == 403) {
-                redirect('/premium');
-                return null;
-            }
-
-            if (response.status === 402) {
-                const problem = await response.json().catch(() => ({}));
-                throw { type: "INSUFFICIENT_CREDITS", detail: problem };
-            }
-
-            throw new Error('Erreur lors de la génération de la recette');
         }
 
         return response.json();

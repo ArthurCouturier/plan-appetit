@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 export type RecipeGenerationType =
     | "sandbox"
     | "fridge"
-    | "location"
     | "ingredient"
     | "batch"
     | "budget";
@@ -36,15 +35,6 @@ const VARIANTS: Record<RecipeGenerationType, VariantConfig> = {
         gradientFrom: "#caf0f8",
         gradientTo: "#90e0ef",
         route: "/frigo",
-    },
-    location: {
-        title: "Recette typique de...",
-        subtitle: "Un vrai voyage culinaire",
-        subtitleColor: "#ffe1c1",
-        icon: "/icons/IconLocalize.svg",
-        gradientFrom: "#80ed99",
-        gradientTo: "#57cc99",
-        route: "/recettes/generer/localisation",
     },
     ingredient: {
         title: "Quoi cuisiner avec?",

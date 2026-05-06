@@ -30,6 +30,7 @@ import AdminModals from "./pages/admin/AdminModals";
 import AdminIngredientsReview from "./pages/admin/AdminIngredientsReview";
 import AdminIngredientsCleanup from "./pages/admin/AdminIngredientsCleanup";
 import FridgeMode from "./pages/FridgeMode";
+import InstagramTwistMode from "./pages/InstagramTwistMode";
 import BatchCookingMode from "./pages/BatchCookingMode";
 import BatchCookingDetail from "./pages/BatchCookingDetail";
 import NotFound from "./pages/NotFound";
@@ -122,6 +123,10 @@ const router = createBrowserRouter([
                             {
                                 path: "frigo",
                                 element: <FridgeMode />,
+                            },
+                            {
+                                path: "instagram/twist",
+                                element: <InstagramTwistMode />,
                             },
                             {
                                 path: "batch-cooking",

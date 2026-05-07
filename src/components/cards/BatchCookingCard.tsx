@@ -1,9 +1,20 @@
 import { useNavigate } from "react-router-dom";
 import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
-import type { BatchCookingResponse } from "../../api/interfaces/batchcooking/BatchCookingInterfaces";
+
+/**
+ * Forme minimale consommée par la card. Accepte aussi bien v0 (`BatchCookingResponse`)
+ * que v2 (`BatchCookingV2SummaryDTO`). Une seule des deux formes recipe-preview est
+ * fournie à la fois ; on lit la première qui matche.
+ */
+interface BatchCookingCardData {
+    uuid: string;
+    name: string;
+    recipes?: Array<{ uuid: string }>;
+    recipePreviewUuids?: string[];
+}
 
 interface BatchCookingCardProps {
-    batch: BatchCookingResponse;
+    batch: BatchCookingCardData;
 }
 
 function BatchImageCell({ recipeUuid }: { recipeUuid: string }) {
@@ -30,7 +41,9 @@ function BatchImageCell({ recipeUuid }: { recipeUuid: string }) {
 
 export default function BatchCookingCard({ batch }: BatchCookingCardProps) {
     const navigate = useNavigate();
-    const recipeUuids = batch.recipes.slice(0, 4).map((r) => String(r.uuid));
+    const recipeUuids = (
+        batch.recipePreviewUuids ?? batch.recipes?.map((r) => String(r.uuid)) ?? []
+    ).slice(0, 4);
 
     return (
         <div className="w-full">

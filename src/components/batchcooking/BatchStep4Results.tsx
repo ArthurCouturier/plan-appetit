@@ -8,10 +8,11 @@ import TabSlider, { type TabSliderHandle } from "../common/TabSlider";
 import type {
     BatchCookingResponse,
     BatchCookingShoppingItem,
-    BatchCookingExecutionStep,
 } from "../../api/interfaces/batchcooking/BatchCookingInterfaces";
+import type { RecipeV2StepDTO } from "../../api/interfaces/v2/RecipeV2";
 import RecipeCard from "../cards/RecipeCard";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
+import RecipeStepsListV2 from "../recipes-v2/RecipeStepsListV2";
 import { useRecipeImageVisible, scheduleBatch } from "../../api/hooks/useRecipeImageBatch";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "../../api/queryConfig";
@@ -251,7 +252,7 @@ export default function BatchStep4Results({ batchCooking, onDelete }: BatchStep4
                     <ShoppingTab items={batchCooking.shoppingList} recipes={batchCooking.recipes} />
                 </div>
                 <div style={{ display: activeTab === "planning" ? undefined : "none" }}>
-                    <PlanningTab steps={batchCooking.executionPlan} recipes={batchCooking.recipes} />
+                    <PlanningTab steps={batchCooking.executionStepsV2} />
                 </div>
                 {deleteButton}
             </div>
@@ -324,7 +325,7 @@ function ShoppingTab({ items, recipes }: { items: BatchCookingShoppingItem[]; re
                                             >
                                                 <div className="py-2 flex flex-wrap gap-2 justify-center">
                                                     {linkedRecipes.map((r) => (
-                                                        <ShoppingRecipeThumb key={r.uuid} recipeUuid={r.uuid} onClick={() => navigate(`/recettes/${r.uuid}`)} />
+                                                        <ShoppingRecipeThumb key={r.uuid} recipeUuid={r.uuid} onClick={() => navigate(`/recipes-v2/${r.uuid}`)} />
                                                     ))}
                                                 </div>
                                             </motion.div>
@@ -344,124 +345,47 @@ function ShoppingTab({ items, recipes }: { items: BatchCookingShoppingItem[]; re
     );
 }
 
-function PlanningTab({ steps, recipes }: { steps: BatchCookingExecutionStep[]; recipes: RecipeInterface[] }) {
-    const navigate = useNavigate();
-    const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-
+/**
+ * Plan d'exécution BC affiché via RecipeStepsListV2 (cohérence visuelle avec les
+ * recipe steps v2 — ingredientsUsed, heatingSurface, durations, etc.).
+ *
+ * Les steps arrivent déjà au formalisme v2 via `executionStepsV2` (carried through
+ * by `mapV2BcToV0Response`). Aucun adapter intermédiaire nécessaire.
+ */
+function PlanningTab({ steps }: { steps: RecipeV2StepDTO[] }) {
     if (steps.length === 0) {
         return <p className="text-text-secondary text-center text-sm">Aucun planning disponible</p>;
     }
 
-    const totalMinutes = steps.reduce((sum, s) => {
-        if (s.stepType === "ACTIVE") return sum + (s.durationMinutes ?? 0);
-        return sum;
-    }, 0);
+    const totalActiveMin = steps.reduce(
+        (sum, s) => (s.stepType === "ACTIVE" ? sum + (s.durationMin ?? 0) : sum),
+        0,
+    );
+    const totalMin = steps.reduce(
+        (sum, s) => sum + (s.durationMin ?? 0) + (s.restMin ?? 0),
+        0,
+    );
 
-    const totalWithPassive = steps.reduce((sum, s) => sum + (s.durationMinutes ?? 0), 0);
-
-    const sorted = [...steps].sort((a, b) => a.executionOrder - b.executionOrder);
-
-    // Map recipe names to UUIDs for image thumbnails
-    const recipeNameToUuid = new Map(recipes.map((r) => [r.name, String(r.uuid)]));
+    const sorted = [...steps].sort((a, b) => {
+        if (a.displayOrder !== b.displayOrder) return a.displayOrder - b.displayOrder;
+        return a.stepKey - b.stepKey;
+    });
 
     return (
         <div>
             <div className="flex justify-center gap-4 mb-4">
                 <div className="text-center">
-                    <div className="text-sm font-bold text-cout-yellow">{formatMinutes(totalMinutes)}</div>
+                    <div className="text-sm font-bold text-cout-yellow">{formatMinutes(totalActiveMin)}</div>
                     <div className="text-xs text-text-secondary">actif</div>
                 </div>
                 <div className="text-center">
-                    <div className="text-sm font-bold text-text-secondary">{formatMinutes(totalWithPassive)}</div>
+                    <div className="text-sm font-bold text-text-secondary">{formatMinutes(totalMin)}</div>
                     <div className="text-xs text-text-secondary">total</div>
                 </div>
             </div>
 
-            <div className="bg-primary rounded-xl shadow-lg border border-border-color p-4">
-                {sorted.map((step, index) => {
-                    const isExpanded = expandedIndex === index;
-                    const linkedRecipes = step.recipeNames
-                        .map((name) => ({ name, uuid: recipeNameToUuid.get(name) }))
-                        .filter((r) => r.uuid);
-
-                    return (
-                        <div
-                            key={step.uuid || index}
-                            className="flex items-start py-2 mb-1"
-                        >
-                            <div
-                                className="flex flex-col cursor-pointer rounded-xl px-3 py-2 -mx-1 w-full transition-all duration-300 ease-out"
-                                style={{
-                                    background: isExpanded ? "var(--color-secondary)" : undefined,
-                                    boxShadow: isExpanded ? "0 4px 12px rgba(0,0,0,0.08)" : undefined,
-                                }}
-                                onClick={() => {
-                                    setExpandedIndex(isExpanded ? null : index);
-                                    lightHaptic();
-                                }}
-                            >
-                                {/* Header */}
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-extrabold text-text-primary text-sm">
-                                        Etape {index + 1}
-                                    </span>
-                                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${step.stepType === "PASSIVE"
-                                        ? "bg-blue-500/10 text-blue-500"
-                                        : "bg-cout-yellow/10 text-cout-yellow"
-                                        }`}>
-                                        {step.stepType === "PASSIVE" ? "Passif" : "Actif"}
-                                    </span>
-                                    {step.durationMinutes && (
-                                        <span className="text-xs text-text-secondary ml-auto">
-                                            {formatMinutes(step.durationMinutes)}
-                                        </span>
-                                    )}
-                                    {linkedRecipes.length > 0 && (
-                                        <span className={`text-xs text-text-secondary transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}>
-                                            ▼
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Description */}
-                                <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
-                                    {step.description}
-                                </p>
-
-                                {/* Tip - always visible */}
-                                {step.tip && (
-                                    <div className="mt-2 flex items-start gap-1.5 text-xs text-cout-purple">
-                                        <span className="shrink-0">💡</span>
-                                        <span>{step.tip}</span>
-                                    </div>
-                                )}
-
-                                {/* Expandable: recipe image thumbnails */}
-                                <AnimatePresence>
-                                    {isExpanded && linkedRecipes.length > 0 && (
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: "auto", opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.2 }}
-                                            className="overflow-hidden"
-                                        >
-                                            <div className="py-2 flex flex-wrap gap-2 justify-center">
-                                                {linkedRecipes.map((r) => (
-                                                    <ShoppingRecipeThumb
-                                                        key={r.uuid}
-                                                        recipeUuid={r.uuid!}
-                                                        onClick={() => navigate(`/recettes/${r.uuid}`)}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                        </div>
-                    );
-                })}
+            <div className="bg-primary rounded-xl shadow-lg border border-border-color p-4 md:p-6">
+                <RecipeStepsListV2 steps={sorted} />
             </div>
         </div>
     );

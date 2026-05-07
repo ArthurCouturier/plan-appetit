@@ -43,12 +43,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                         // Récupérer un nouveau token
                         const idTokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: true });
 
-                        // Mettre à jour le localStorage
+                        // Stocker token et email tout de suite
                         localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
                         localStorage.setItem('email', result.user.email || "");
-                        localStorage.setItem('profilePhoto', result.user.photoUrl || "/no-pp.jpg");
 
-                        // Créer userData
+                        // Créer userData avec valeurs Firebase comme fallback
                         const userData: UserInterface = {
                             uid: result.user.uid,
                             email: result.user.email || "",
@@ -61,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             profilePhoto: result.user.photoUrl || "/no-pp.jpg"
                         };
 
-                        // Synchroniser avec le backend pour récupérer le rôle actuel
+                        // Synchroniser avec le backend, prioritaire sur les valeurs Firebase pour displayName/photo
                         try {
                             const backendUser = await BackendService.connectUser(
                                 userData.email,
@@ -69,11 +68,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             );
                             userData.role = backendUser.role;
                             userData.isPremium = backendUser.isPremium;
+                            if (backendUser.displayName) userData.displayName = backendUser.displayName;
+                            if (backendUser.profilePhoto) userData.profilePhoto = backendUser.profilePhoto;
                             queryClient.setQueryData(queryKeys.user.connect(), backendUser);
                         } catch (err) {
                             console.warn('Backend sync failed during session restore, using default values');
                         }
 
+                        localStorage.setItem('profilePhoto', userData.profilePhoto || "/no-pp.jpg");
                         setUser(userData);
 
                         // Re-register le token FCM uniquement si la permission est déjà accordée

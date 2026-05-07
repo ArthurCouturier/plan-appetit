@@ -106,7 +106,6 @@ export default function LoginPage() {
 
                     localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
                     localStorage.setItem('email', result.user.email || "");
-                    localStorage.setItem('profilePhoto', result.user.photoUrl || "/no-pp.jpg");
 
                     userData = {
                         uid: result.user.uid,
@@ -127,9 +126,13 @@ export default function LoginPage() {
                         );
                         userData.role = backendUser.role;
                         userData.isPremium = backendUser.isPremium;
+                        if (backendUser.displayName) userData.displayName = backendUser.displayName;
+                        if (backendUser.profilePhoto) userData.profilePhoto = backendUser.profilePhoto;
                     } catch (err) {
                         console.warn('Backend sync failed, using default values');
                     }
+
+                    localStorage.setItem('profilePhoto', userData.profilePhoto || "/no-pp.jpg");
                 } else {
                     throw new Error('Échec de la connexion par email');
                 }
@@ -313,7 +316,6 @@ export default function LoginPage() {
                     // Stocker les infos pour le backend
                     localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
                     localStorage.setItem('email', result.user.email || "");
-                    localStorage.setItem('profilePhoto', result.user.photoUrl || "/no-pp.jpg");
 
                     // Créer userData manuellement depuis le résultat natif
                     const userData = {
@@ -336,9 +338,13 @@ export default function LoginPage() {
                         );
                         userData.role = backendUser.role;
                         userData.isPremium = backendUser.isPremium;
+                        if (backendUser.displayName) userData.displayName = backendUser.displayName;
+                        if (backendUser.profilePhoto) userData.profilePhoto = backendUser.profilePhoto;
                     } catch (err) {
                         console.warn('Backend sync failed, using default values');
                     }
+
+                    localStorage.setItem('profilePhoto', userData.profilePhoto || "/no-pp.jpg");
 
                     login(userData);
 
@@ -418,7 +424,6 @@ export default function LoginPage() {
 
                     localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
                     localStorage.setItem('email', result.user.email || "");
-                    localStorage.setItem('profilePhoto', result.user.photoUrl || "/no-pp.jpg");
 
                     const userData = {
                         uid: result.user.uid,
@@ -439,9 +444,13 @@ export default function LoginPage() {
                         );
                         userData.role = backendUser.role;
                         userData.isPremium = backendUser.isPremium;
+                        if (backendUser.displayName) userData.displayName = backendUser.displayName;
+                        if (backendUser.profilePhoto) userData.profilePhoto = backendUser.profilePhoto;
                     } catch (err) {
                         console.warn('Backend sync failed, using default values');
                     }
+
+                    localStorage.setItem('profilePhoto', userData.profilePhoto || "/no-pp.jpg");
 
                     login(userData);
 

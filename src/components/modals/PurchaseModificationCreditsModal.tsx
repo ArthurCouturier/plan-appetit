@@ -1,21 +1,20 @@
 import { useState } from "react";
 import { XMarkIcon, SparklesIcon, CreditCardIcon } from "@heroicons/react/24/solid";
 import BackendService from "../../api/services/BackendService";
-import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 
 interface PurchaseModificationCreditsModalProps {
     isOpen: boolean;
     onClose: () => void;
-    recipe: RecipeInterface;
+    recipeUuid: string;
     userCredits: number;
-    onPurchaseComplete: (updatedRecipe: RecipeInterface) => void;
+    onPurchaseComplete: () => void;
     onInsufficientCredits: () => void;
 }
 
 export default function PurchaseModificationCreditsModal({
     isOpen,
     onClose,
-    recipe,
+    recipeUuid,
     userCredits,
     onPurchaseComplete,
     onInsufficientCredits,
@@ -33,13 +32,13 @@ export default function PurchaseModificationCreditsModal({
             const email = localStorage.getItem("email") as string;
             const token = localStorage.getItem("firebaseIdToken") as string;
 
-            const updatedRecipe = await BackendService.purchaseModificationCredits(
+            await BackendService.purchaseModificationCredits(
                 email,
                 token,
-                recipe.uuid as string
+                recipeUuid
             );
 
-            onPurchaseComplete(updatedRecipe);
+            onPurchaseComplete();
             onClose();
         } catch (err: any) {
             if (err.type === "INSUFFICIENT_CREDITS") {

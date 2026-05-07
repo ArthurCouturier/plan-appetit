@@ -15,7 +15,7 @@ export default function NotFound() {
                 <h1 className="text-6xl font-bold text-cout-base">404</h1>
                 <p className="text-text-primary font-semibold mt-2 text-lg">Page introuvable</p>
                 <p className="text-text-secondary text-sm mt-1">
-                    Cette page n'existe pas ou a ete deplacee.
+                    Cette page n'existe pas ou a été déplacée.
                 </p>
             </div>
             <button

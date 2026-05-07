@@ -30,6 +30,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         TikTokBusiness.initializeSdk(config)
         print("[TikTokSDK] Initialized at app launch with appId: \(tiktokAppId)")
 
+        WatchBridge.shared.activate()
+
         return true
     }
 

@@ -1,21 +1,22 @@
 import { useState } from "react";
 import { SparklesIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import BackendService from "../../api/services/BackendService";
-import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 
 interface RecipeModificationModalProps {
     isOpen: boolean;
     onClose: () => void;
-    recipe: RecipeInterface;
-    onModificationComplete: (modifiedRecipe: RecipeInterface) => void;
+    recipeUuid: string;
+    remainingModifications: number;
+    onComplete: () => void;
     onInsufficientCredits: () => void;
 }
 
 export default function RecipeModificationModal({
     isOpen,
     onClose,
-    recipe,
-    onModificationComplete,
+    recipeUuid,
+    remainingModifications,
+    onComplete,
     onInsufficientCredits,
 }: RecipeModificationModalProps) {
     const [prompt, setPrompt] = useState("");
@@ -35,15 +36,15 @@ export default function RecipeModificationModal({
             const email = localStorage.getItem("email") as string;
             const token = localStorage.getItem("firebaseIdToken") as string;
 
-            const modifiedRecipe = await BackendService.modifyRecipe(
+            await BackendService.modifyRecipe(
                 email,
                 token,
-                recipe.uuid as string,
+                recipeUuid,
                 prompt.trim()
             );
 
             setPrompt("");
-            onModificationComplete(modifiedRecipe);
+            onComplete();
             onClose();
         } catch (err: any) {
             if (err.type === "INSUFFICIENT_MODIFICATION_CREDITS") {
@@ -90,7 +91,7 @@ export default function RecipeModificationModal({
                     <div className="bg-secondary rounded-lg p-4 flex items-center justify-between">
                         <span className="text-text-secondary text-sm">Modifications restantes</span>
                         <span className="text-cout-base font-bold text-lg">
-                            {recipe.remainingModifications}
+                            {remainingModifications}
                         </span>
                     </div>
 

@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import Modal from "./Modal";
 import CollectionService from "../../api/services/CollectionService";
-import RecipeCollectionInterface from "../../api/interfaces/collections/RecipeCollectionInterface";
+import RecipeCollectionV2Service from "../../api/services/RecipeCollectionV2Service";
+import { RecipeCollectionV2BasicInfoDTO } from "../../api/interfaces/v2/RecipeCollectionV2";
 import { FolderIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { queryKeys } from "../../api/queryConfig";
 
@@ -30,24 +31,35 @@ export default function SaveToCollectionModal({
     onSaved,
 }: SaveToCollectionModalProps) {
     const queryClient = useQueryClient();
-    const [currentCollection, setCurrentCollection] = useState<RecipeCollectionInterface | null>(null);
+    const [allCollections, setAllCollections] = useState<RecipeCollectionV2BasicInfoDTO[]>([]);
+    const [currentUuid, setCurrentUuid] = useState<string | null>(null);
     const [breadcrumb, setBreadcrumb] = useState<BreadcrumbItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const loadCollection = useCallback(async (uuid: string) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const collection = await CollectionService.getCollectionById(uuid);
-            setCurrentCollection(collection);
-        } catch {
-            setError("Impossible de charger les collections");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const collectionsByUuid = useMemo(() => {
+        const map = new Map<string, RecipeCollectionV2BasicInfoDTO>();
+        allCollections.forEach((c) => map.set(c.uuid, c));
+        return map;
+    }, [allCollections]);
+
+    const childrenByParent = useMemo(() => {
+        const map = new Map<string | null, RecipeCollectionV2BasicInfoDTO[]>();
+        allCollections.forEach((c) => {
+            const parentKey = c.parentCollectionUuid;
+            if (!map.has(parentKey)) map.set(parentKey, []);
+            map.get(parentKey)!.push(c);
+        });
+        map.forEach((list) => list.sort((a, b) => a.displayOrder - b.displayOrder));
+        return map;
+    }, [allCollections]);
+
+    const currentCollection = currentUuid ? collectionsByUuid.get(currentUuid) ?? null : null;
+    const subCollections = useMemo(() => {
+        if (!currentUuid) return [];
+        return childrenByParent.get(currentUuid) ?? [];
+    }, [currentUuid, childrenByParent]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -56,12 +68,18 @@ export default function SaveToCollectionModal({
             setLoading(true);
             setError(null);
             setBreadcrumb([]);
-            setCurrentCollection(null);
+            setCurrentUuid(null);
             try {
-                const defaultCol = await CollectionService.getDefaultCollection();
-                const collection = await CollectionService.getCollectionById(defaultCol.uuid);
-                setCurrentCollection(collection);
-                setBreadcrumb([{ uuid: defaultCol.uuid, name: collection?.name || "Mes recettes" }]);
+                const collections = await RecipeCollectionV2Service.getAllCollections();
+                setAllCollections(collections);
+
+                const defaultCol = collections.find((c) => c.isDefault);
+                if (!defaultCol) {
+                    setError("Aucune collection par défaut trouvée");
+                    return;
+                }
+                setCurrentUuid(defaultCol.uuid);
+                setBreadcrumb([{ uuid: defaultCol.uuid, name: defaultCol.name }]);
             } catch {
                 setError("Impossible de charger les collections");
             } finally {
@@ -72,20 +90,19 @@ export default function SaveToCollectionModal({
         init();
     }, [isOpen]);
 
-    const navigateToSubCollection = async (subCollection: RecipeCollectionInterface) => {
-        if (!subCollection.uuid) return;
-        setBreadcrumb(prev => [...prev, { uuid: subCollection.uuid!, name: subCollection.name }]);
-        await loadCollection(subCollection.uuid);
-    };
+    const navigateToSubCollection = useCallback((sub: RecipeCollectionV2BasicInfoDTO) => {
+        setBreadcrumb((prev) => [...prev, { uuid: sub.uuid, name: sub.name }]);
+        setCurrentUuid(sub.uuid);
+    }, []);
 
-    const navigateToBreadcrumb = async (index: number) => {
+    const navigateToBreadcrumb = useCallback((index: number) => {
         const target = breadcrumb[index];
-        setBreadcrumb(prev => prev.slice(0, index + 1));
-        await loadCollection(target.uuid);
-    };
+        setBreadcrumb((prev) => prev.slice(0, index + 1));
+        setCurrentUuid(target.uuid);
+    }, [breadcrumb]);
 
     const handleSave = async () => {
-        if (!currentCollection?.uuid) return;
+        if (!currentCollection) return;
 
         setSaving(true);
         setError(null);
@@ -141,8 +158,8 @@ export default function SaveToCollectionModal({
                 {/* Sub-collections list */}
                 {!loading && currentCollection && (
                     <div className="space-y-2">
-                        {currentCollection.subCollections && currentCollection.subCollections.length > 0 ? (
-                            currentCollection.subCollections.map((sub) => (
+                        {subCollections.length > 0 ? (
+                            subCollections.map((sub) => (
                                 <button
                                     key={sub.uuid}
                                     onClick={() => navigateToSubCollection(sub)}

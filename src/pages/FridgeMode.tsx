@@ -198,7 +198,7 @@ export default function FridgeMode() {
 
         try {
             const { email, token } = getAuthHeaders();
-            const recipe = await FridgeService.generateRecipe(
+            const { recipeUuid } = await FridgeService.generateRecipe(
                 {
                     ingredients,
                     servings,
@@ -217,7 +217,7 @@ export default function FridgeMode() {
 
             TrackingService.logRecipeGenerated('fridge');
             SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
-            navigate(`/recettes/${recipe.uuid}`);
+            navigate(`/recipes-v2/${recipeUuid}`);
         } catch (err: unknown) {
             if (err && typeof err === "object" && "type" in err && (err as { type: string }).type === "INSUFFICIENT_CREDITS") {
                 SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);

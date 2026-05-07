@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, useMotionValue, useTransform, type PanInfo } from "framer-motion";
 import type { FridgeQuestion } from "../../api/interfaces/fridge/FridgeInterfaces";
 import { lightHaptic } from "../../haptics/light";
@@ -9,11 +9,12 @@ interface QuestionCardProps {
     onChange: (value: unknown) => void;
     index: number;
     total: number;
+    showProgress?: boolean;
 }
 
 const SWIPE_THRESHOLD = 80;
 
-export default function QuestionCard({ question, value, onChange, index, total }: QuestionCardProps) {
+export default function QuestionCard({ question, value, onChange, index, total, showProgress = true }: QuestionCardProps) {
     const onChangeWithHaptic = useCallback((v: unknown) => {
         lightHaptic();
         onChange(v);
@@ -74,9 +75,11 @@ export default function QuestionCard({ question, value, onChange, index, total }
             className="relative"
         >
             {/* Progress indicator */}
-            <div className="text-xs text-text-secondary text-center mb-2">
-                {index + 1}/{total}
-            </div>
+            {showProgress && (
+                <div className="text-xs text-text-secondary text-center mb-2">
+                    {index + 1}/{total}
+                </div>
+            )}
 
             <motion.div
                 drag="x"
@@ -102,10 +105,15 @@ export default function QuestionCard({ question, value, onChange, index, total }
                 </motion.div>
 
                 {/* Question header */}
-                <div className="flex items-center gap-3 mb-5">
+                <div className={`flex items-center gap-3 ${question.explanation ? "mb-2" : "mb-5"}`}>
                     <span className="text-3xl">{question.emoji}</span>
                     <h4 className="text-lg font-semibold text-text-primary">{question.label}</h4>
                 </div>
+                {question.explanation && (
+                    <p className="text-xs text-text-secondary mb-4 leading-snug">
+                        {question.explanation}
+                    </p>
+                )}
 
                 {/* Question controls */}
                 <div
@@ -123,7 +131,12 @@ export default function QuestionCard({ question, value, onChange, index, total }
                         <BooleanControl value={value as boolean} onChange={onChangeWithHaptic} />
                     )}
                     {question.type === "choice" && (
-                        <ChoiceControl options={question.options!} value={value as string} onChange={onChangeWithHaptic} />
+                        <ChoiceControl
+                            options={question.options!}
+                            value={value as string}
+                            onChange={onChangeWithHaptic}
+                            allowFreeText={question.allowFreeText ?? true}
+                        />
                     )}
                 </div>
             </motion.div>
@@ -230,12 +243,59 @@ function ChoiceControl({
     options,
     value,
     onChange,
+    allowFreeText = true,
 }: {
     options: string[];
     value: string;
     onChange: (v: unknown) => void;
+    allowFreeText?: boolean;
 }) {
-    const isCustomValue = value !== "" && !options.includes(value);
+    const isCustomValue =
+        allowFreeText && typeof value === "string" && value !== "" && !options.includes(value);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const previousScrollRef = useRef<number | null>(null);
+    // Conserve la saisie libre même quand l'utilisateur sélectionne une option,
+    // pour qu'il puisse revenir au champ "Autre..." sans perdre son texte.
+    const [customDraft, setCustomDraft] = useState<string>(
+        isCustomValue && typeof value === "string" ? value : "",
+    );
+
+    useEffect(() => {
+        if (isCustomValue && typeof value === "string") setCustomDraft(value);
+    }, [value, isCustomValue]);
+
+    const isMobileLike = () => {
+        if (typeof window === "undefined") return false;
+        return window.matchMedia("(pointer: coarse)").matches;
+    };
+
+    const handleFreeTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const next = e.target.value.slice(0, 200);
+        setCustomDraft(next);
+        onChange(next);
+    };
+
+    const handleFreeTextFocus = () => {
+        if (!isCustomValue) onChange(customDraft);
+        if (isMobileLike()) {
+            previousScrollRef.current = window.scrollY;
+            setTimeout(() => {
+                textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 300);
+        }
+    };
+
+    const handleFreeTextBlur = () => {
+        if (isMobileLike() && previousScrollRef.current !== null) {
+            const target = previousScrollRef.current;
+            previousScrollRef.current = null;
+            setTimeout(() => {
+                window.scrollTo({ top: target, behavior: "smooth" });
+            }, 100);
+        }
+    };
+
+    const freeTextRows = customDraft.length > 0 ? 2 : 1;
 
     return (
         <div className="space-y-2">
@@ -252,19 +312,23 @@ function ChoiceControl({
                     {option}
                 </button>
             ))}
-            <input
-                type="text"
-                value={isCustomValue ? (value as string) : ""}
-                onChange={(e) => onChange(e.target.value.slice(0, 30))}
-                onFocus={() => { if (!isCustomValue) onChange(""); }}
-                placeholder="Autre..."
-                maxLength={30}
-                className={`w-full py-3 px-4 rounded-xl text-sm font-medium text-left transition-all duration-200 ${
-                    isCustomValue
-                        ? "bg-cout-yellow text-cout-purple shadow-md border-2 border-cout-yellow"
-                        : "bg-secondary text-text-primary border border-border-color focus:border-cout-base focus:outline-none"
-                }`}
-            />
+            {allowFreeText && (
+                <textarea
+                    ref={textareaRef}
+                    value={customDraft}
+                    onChange={handleFreeTextChange}
+                    onFocus={handleFreeTextFocus}
+                    onBlur={handleFreeTextBlur}
+                    placeholder="Autre..."
+                    maxLength={200}
+                    rows={freeTextRows}
+                    className={`w-full py-3 px-4 rounded-xl text-sm font-medium text-left transition-all duration-200 resize-none ${
+                        isCustomValue
+                            ? "bg-cout-yellow text-cout-purple shadow-md border-2 border-cout-yellow"
+                            : "bg-secondary text-text-primary border border-border-color focus:border-cout-base focus:outline-none"
+                    }`}
+                />
+            )}
         </div>
     );
 }

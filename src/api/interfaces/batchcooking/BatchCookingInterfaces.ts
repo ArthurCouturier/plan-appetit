@@ -1,4 +1,5 @@
 import RecipeInterface from "../recipes/RecipeInterface";
+import type { RecipeV2StepDTO } from "../v2/RecipeV2";
 
 export type BatchMode = "SIMPLE" | "DETAILED";
 export type MealType = "LUNCH" | "DINNER" | "UNSPECIFIED";
@@ -79,7 +80,13 @@ export interface BatchCookingResponse {
     recipes: RecipeInterface[];
     shoppingList: BatchCookingShoppingItem[];
     estimatedCost: BatchCookingCost;
+    /**
+     * @deprecated Shape v0 historique. Pour le rendu du plan, préférer `executionStepsV2`
+     * qui porte le formalisme step v2 complet (ingredientsUsed, heatingSurface, etc.).
+     */
     executionPlan: BatchCookingExecutionStep[];
+    /** Steps v2 du plan d'exécution (formalisme identique aux recipe steps v2). */
+    executionStepsV2: RecipeV2StepDTO[];
 }
 
 export interface BatchCookingDraft {

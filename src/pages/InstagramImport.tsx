@@ -154,7 +154,7 @@ export default function InstagramImport() {
         if (isAdminMode && response.debug) {
           setDebugData({ ...response.debug, recipeUuid: response.recipe.uuid, recipeName: response.recipe.name });
         } else {
-          navigate(`/recettes/${response.recipe.uuid}`);
+          navigate(`/recipes-v2/${response.recipe.uuid}`);
         }
       } else {
         setError("Recette generee mais impossible de recuperer son identifiant");
@@ -176,6 +176,23 @@ export default function InstagramImport() {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") { e.preventDefault(); handleFetchPost(); }
+  };
+
+  /**
+   * Bouton « Remasteriser cette recette » : navigue vers la page dédiée /instagram/twist
+   * qui héberge le flow turn-by-turn. La page consomme `postInfo` via location.state pour
+   * éviter de re-fetcher Instagram (HTML déjà téléchargé sur cette page).
+   */
+  const handleStartTwist = () => {
+    if (!user) { navigate("/login"); return; }
+    if (!postInfo) return;
+
+    if (quotaInfo && !quotaInfo.isSubscriber && quotaInfo.remainingFree <= 0) {
+      setShowPaywall(true);
+      return;
+    }
+
+    navigate("/instagram/twist", { state: { postInfo } });
   };
 
   return (
@@ -317,18 +334,27 @@ export default function InstagramImport() {
                 )}
               </div>
 
-              {/* Generate button */}
-              <button
-                onClick={handleGenerateRecipe}
-                disabled={isGenerating}
-                className="w-full px-6 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl shadow-lg hover:bg-yellow-400 transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
-              >
-                {isGenerating ? (
-                  <><ArrowPathIcon className="w-6 h-6 animate-spin" /> Demarrage...</>
-                ) : (
-                  <><SparklesIcon className="w-6 h-6" />Avoir les secrets de cette recette!</>
-                )}
-              </button>
+              {/* Action buttons : récupérer fidèlement OU remasteriser à sa sauce */}
+              <div className="space-y-3">
+                <button
+                  onClick={handleGenerateRecipe}
+                  disabled={isGenerating}
+                  className="w-full px-6 py-4 bg-cout-yellow text-cout-purple font-bold rounded-xl shadow-lg hover:bg-yellow-400 transform hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
+                >
+                  {isGenerating ? (
+                    <><ArrowPathIcon className="w-6 h-6 animate-spin" /> Démarrage...</>
+                  ) : (
+                    <><SparklesIcon className="w-6 h-6" />Récupérer la recette exacte</>
+                  )}
+                </button>
+                <button
+                  onClick={handleStartTwist}
+                  disabled={isGenerating}
+                  className="w-full px-6 py-3 bg-transparent text-white font-semibold rounded-xl border-2 border-white/40 hover:border-white/80 hover:bg-white/5 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <SparklesIcon className="w-5 h-5" />Remasteriser cette recette
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -343,6 +369,7 @@ export default function InstagramImport() {
       )}
 
       {showPaywall && <CreditPaywallModal onClose={() => setShowPaywall(false)} />}
+
 
       <style>{`
         @keyframes gradient-x {

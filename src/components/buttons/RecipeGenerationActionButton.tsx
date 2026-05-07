@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 export type RecipeGenerationType =
     | "sandbox"
     | "fridge"
-    | "location"
     | "ingredient"
     | "batch"
-    | "budget";
+    | "routine";
 
 interface VariantConfig {
     title: string;
@@ -37,15 +36,6 @@ const VARIANTS: Record<RecipeGenerationType, VariantConfig> = {
         gradientTo: "#90e0ef",
         route: "/frigo",
     },
-    location: {
-        title: "Recette typique de...",
-        subtitle: "Un vrai voyage culinaire",
-        subtitleColor: "#ffe1c1",
-        icon: "/icons/IconLocalize.svg",
-        gradientFrom: "#80ed99",
-        gradientTo: "#57cc99",
-        route: "/recettes/generer/localisation",
-    },
     ingredient: {
         title: "Quoi cuisiner avec?",
         subtitle: "Cuisine autour de cet aliment",
@@ -64,13 +54,13 @@ const VARIANTS: Record<RecipeGenerationType, VariantConfig> = {
         gradientTo: "#cd9777",
         route: "/batch-cooking",
     },
-    budget: {
-        title: "Voici mon budget!",
-        subtitle: "Pas besoin de se ruiner",
-        subtitleColor: "#e1994d",
-        icon: "/icons/IconEuro.svg",
-        gradientFrom: "#ffdd00",
-        gradientTo: "#ffd000",
+    routine: {
+        title: "Les courses du quotidien...",
+        subtitle: "Va en courses sans te prendre la tête",
+        subtitleColor: "#d8f3dc",
+        icon: "/icons/IconBasket.svg",
+        gradientFrom: "#b7e4c7",
+        gradientTo: "#52b788",
         route: null,
     },
 };

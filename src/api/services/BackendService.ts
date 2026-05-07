@@ -1,5 +1,3 @@
-import { redirect } from "react-router-dom";
-import RecipeGenerationParametersInterface from "../interfaces/recipes/RecipeGenerationParametersInterface";
 import RecipeInterface from "../interfaces/recipes/RecipeInterface";
 import UserInterface from "../interfaces/users/UserInterface";
 import UserAccountInfoInterface from "../interfaces/users/UserAccountInfoInterface";
@@ -101,38 +99,6 @@ export default class BackendService {
 
         if (!response.ok) {
             throw new Error('Erreur lors de l\'import de la recette');
-        }
-
-        return response.json();
-    }
-
-    public static async generateRecipeWithOpenAI(
-        generationParameters: RecipeGenerationParametersInterface,
-        email: string,
-        token: string
-    ): Promise<RecipeInterface | null> {
-        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v1/recipes/generate`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Email': email,
-            },
-            body: JSON.stringify(generationParameters),
-        });
-
-        if (!response.ok) {
-            if (response.status == 403) {
-                redirect('/premium');
-                return null;
-            }
-
-            if (response.status === 402) {
-                const problem = await response.json().catch(() => ({}));
-                throw { type: "INSUFFICIENT_CREDITS", detail: problem };
-            }
-
-            throw new Error('Erreur lors de la génération de la recette');
         }
 
         return response.json();
@@ -404,7 +370,7 @@ export default class BackendService {
     public static async getRecipeImagesBatch(
         uuids: string[]
     ): Promise<{ images: Record<string, string>; pending: string[] }> {
-        const response = await fetch(`${this.getApiUrl()}/api/v1/recipes/images/batch`, {
+        const response = await fetch(`${this.getApiUrl()}/api/v2/recipes/images/batch`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ uuids }),
@@ -436,6 +402,47 @@ export default class BackendService {
             throw new Error('Erreur lors de la génération de l\'image');
         }
 
+        return response.json();
+    }
+
+    public static async getRecipeV2Image(
+        recipeUuid: string,
+        email?: string | null,
+        token?: string | null
+    ): Promise<{ recipeUuid: string; imageData: string; generated: boolean } | null> {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (email && token) {
+            headers['Authorization'] = `Bearer ${token}`;
+            headers['Email'] = email;
+        }
+
+        const response = await fetch(`${this.getApiUrl()}/api/v2/recipes/${recipeUuid}/image`, {
+            method: 'GET',
+            headers,
+        });
+
+        if (response.status === 404) return null;
+        if (response.status === 202) return { recipeUuid, imageData: '', generated: false };
+        if (!response.ok) throw new Error('Erreur lors de la récupération de l\'image v2');
+        return response.json();
+    }
+
+    public static async generateRecipeV2Image(
+        email: string,
+        token: string,
+        recipeUuid: string
+    ): Promise<{ recipeUuid: string; imageData: string; generated: boolean } | null> {
+        const response = await fetchWithTokenRefresh(`${this.getApiUrl()}/api/v2/recipes/${recipeUuid}/image/generate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Email': email
+            },
+        });
+
+        if (response.status === 404) return null;
+        if (!response.ok) throw new Error('Erreur lors de la génération de l\'image v2');
         return response.json();
     }
 

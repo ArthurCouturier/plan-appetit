@@ -8,6 +8,8 @@ import { SKAdNetworkService } from "../api/tracking/skadnetwork/SKAdNetworkServi
 import { SKAdNetworkConversionValue } from "../api/tracking/skadnetwork/SKAdNetworkConversionValue";
 import BatchStep1Framing from "../components/batchcooking/BatchStep1Framing";
 import BatchStep2Preferences from "../components/batchcooking/BatchStep2Preferences";
+import BatchStep3Questions from "../components/batchcooking/BatchStep3Questions";
+import type { BatchCookingTurnHistory } from "../api/services/BatchCookingService";
 import RecipeGenerationLoadingModal from "../components/modals/RecipeGenerationLoadingModal";
 import CreditPaywallModal from "../components/modals/CreditPaywallModal";
 import type {
@@ -112,7 +114,7 @@ export default function BatchCookingMode() {
         return { email, token };
     }, [user]);
 
-    const handleGenerate = async () => {
+    const handleGenerate = async (turns: BatchCookingTurnHistory[] = []) => {
         setError(null);
         setIsGenerating(true);
 
@@ -137,17 +139,18 @@ export default function BatchCookingMode() {
                         availableEquipment: equipment,
                         excludedIngredients,
                     },
+                    turns,
                 },
                 email,
                 token
             );
 
             queryClient.invalidateQueries({ queryKey: queryKeys.collections.all() });
-            queryClient.invalidateQueries({ queryKey: ["batch-cookings-all"] });
+            queryClient.invalidateQueries({ queryKey: ["batch-cookings-all-v2"] });
             TrackingService.logRecipeGenerated("batch");
             SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.ONE_RECIPE_GENERATED);
 
-            navigate(`/batch-cooking/${result.uuid}?new=1`);
+            navigate(`/batch-cooking/${result.batchCookingUuid}?new=1`);
         } catch (err: unknown) {
             if (err && typeof err === "object" && "type" in err && (err as { type: string }).type === "INSUFFICIENT_CREDITS") {
                 SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
@@ -172,16 +175,19 @@ export default function BatchCookingMode() {
                     </div>
                 )}
 
-                {/* Step indicator */}
-                <div className="flex justify-center gap-2 mb-6 px-4">
-                    {[1, 2].map((s) => (
-                        <div
-                            key={s}
-                            className={`h-1.5 rounded-full transition-all duration-300 ${s === step ? "w-8 bg-cout-base" : s < step ? "w-8 bg-cout-yellow" : "w-8 bg-secondary"
-                                }`}
-                        />
-                    ))}
-                </div>
+                {/* Step indicator — masqué pendant les questions conversationnelles (step 3)
+                    pour ne pas bruiter la card de question. */}
+                {step !== 3 && (
+                    <div className="flex justify-center gap-2 mb-6 px-4">
+                        {[1, 2, 3].map((s) => (
+                            <div
+                                key={s}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${s === step ? "w-8 bg-cout-base" : s < step ? "w-8 bg-cout-yellow" : "w-8 bg-secondary"
+                                    }`}
+                            />
+                        ))}
+                    </div>
+                )}
 
                 <AnimatePresence mode="wait">
                     {step === 1 && (
@@ -214,8 +220,26 @@ export default function BatchCookingMode() {
                             onBudgetTargetChange={setBudgetTarget}
                             onExcludedIngredientsChange={setExcludedIngredients}
                             onDietaryRestrictionsChange={setDietaryRestrictions}
-                            onNext={handleGenerate}
+                            onNext={() => goToStep(3)}
                             onBack={() => goToStep(1)}
+                        />
+                    )}
+
+                    {step === 3 && (
+                        <BatchStep3Questions
+                            key="step3"
+                            turnContext={{
+                                totalMeals,
+                                defaultPeopleCount: isDetailed ? null : peopleCount,
+                                mode: isDetailed ? "DETAILED" : "SIMPLE",
+                                cuisineStyles,
+                                dietaryRestrictions,
+                                budgetTarget,
+                                availableEquipment: equipment,
+                                excludedIngredients,
+                            }}
+                            onReady={(turns) => handleGenerate(turns)}
+                            onBack={() => goToStep(2)}
                         />
                     )}
                 </AnimatePresence>

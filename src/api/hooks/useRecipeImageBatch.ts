@@ -5,8 +5,12 @@ import { queryKeys } from '../queryConfig';
 
 const BATCH_DELAY = 80;
 const BATCH_MAX_SIZE = 20;
-const RETRY_DELAY = 1000;
-const MAX_RETRIES = 20;
+// Image gen v2 latence observée : 20-30s par recette (gpt-image-2 ~22-30s).
+// Pour un BC qui déclenche 5 générations en parallèle juste avant l'arrivée sur la page,
+// les images peuvent encore être en cours bien après l'ouverture. On donne 2 minutes de
+// retry confortable (60 × 2s) pour éviter les "fail" prématurés observés sur RecipeCard.
+const RETRY_DELAY = 2000;
+const MAX_RETRIES = 60;
 const NULL_RECHECK_MS = 30_000;
 
 let pendingUuids: Set<string> = new Set();

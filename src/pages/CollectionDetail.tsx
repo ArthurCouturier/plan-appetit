@@ -21,7 +21,7 @@ import useIsMobile from "../hooks/useIsMobile";
 import useCollectionDnD from "../hooks/useCollectionDnD";
 import { useQuery } from "@tanstack/react-query";
 import useAuth from "../api/hooks/useAuth";
-import BatchCookingService from "../api/services/BatchCookingService";
+import BatchCookingV2Service from "../api/services/BatchCookingV2Service";
 
 
 interface CollectionDetailProps {
@@ -136,12 +136,11 @@ function CollectionDetailContent({
     const [showCreateCollection, setShowCreateCollection] = useState(false);
     const collUuid = String(collection.uuid);
 
-    const email = user?.email ?? localStorage.getItem("email") ?? "";
-    const token = user?.token ?? localStorage.getItem("firebaseIdToken") ?? "";
-
+    // Lecture v2 — la card consomme `recipePreviewUuids` du summary v2 (mirror pattern,
+    // data identique côté v0 mais sourcé du nouveau schéma).
     const { data: batchCookings } = useQuery({
-        queryKey: ["batch-cookings-all"],
-        queryFn: () => BatchCookingService.getAll(email, token),
+        queryKey: ["batch-cookings-all-v2"],
+        queryFn: async () => (await BatchCookingV2Service.getAll()).items,
         enabled: !!collection.isDefault && !!user,
     });
     const [subCollectionsCollapsed, setSubCollectionsCollapsed] = useState(

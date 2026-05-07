@@ -18,6 +18,7 @@ import { Clipboard } from "@capacitor/clipboard";
 import { Share } from "@capacitor/share";
 import { useDelayedNotificationPrompt } from "../api/hooks/useDelayedNotificationPrompt";
 import useIsMobile from "../hooks/useIsMobile";
+import { useWatchRecipeSync } from "../hooks/useWatchRecipeSync";
 
 export default function RecipeDetail() {
 
@@ -74,6 +75,8 @@ export default function RecipeDetail() {
     }, [clearLongPress]);
 
     useDelayedNotificationPrompt("recipe_detail", 5000);
+
+    useWatchRecipeSync(uuid, recipe?.name);
 
     useEffect(() => {
         const fetchRecipe = async () => {
@@ -134,13 +137,19 @@ export default function RecipeDetail() {
         }
     };
 
-    const handleModificationComplete = (modifiedRecipe: RecipeInterface) => {
-        setRecipe(modifiedRecipe);
+    const refetchRecipe = useCallback(async () => {
+        if (!uuid) return;
+        const fetched = await RecipeService.fetchRecipeByUuid(uuid);
+        if (fetched) setRecipe(fetched);
+    }, [uuid]);
+
+    const handleModificationComplete = async () => {
+        await refetchRecipe();
         setModificationSuccess(true);
     };
 
-    const handlePurchaseComplete = (updatedRecipe: RecipeInterface) => {
-        setRecipe(updatedRecipe);
+    const handlePurchaseComplete = async () => {
+        await refetchRecipe();
         setShowModificationModal(true);
     };
 
@@ -399,15 +408,16 @@ export default function RecipeDetail() {
             <RecipeModificationModal
                 isOpen={showModificationModal}
                 onClose={() => setShowModificationModal(false)}
-                recipe={recipe}
-                onModificationComplete={handleModificationComplete}
+                recipeUuid={recipe.uuid.toString()}
+                remainingModifications={recipe.remainingModifications}
+                onComplete={handleModificationComplete}
                 onInsufficientCredits={() => setShowPurchaseCreditsModal(true)}
             />
 
             <PurchaseModificationCreditsModal
                 isOpen={showPurchaseCreditsModal}
                 onClose={() => setShowPurchaseCreditsModal(false)}
-                recipe={recipe}
+                recipeUuid={recipe.uuid.toString()}
                 userCredits={userCredits}
                 onPurchaseComplete={handlePurchaseComplete}
                 onInsufficientCredits={() => {

@@ -7,7 +7,7 @@ import useAuth from '../api/hooks/useAuth';
 import Footer from '../components/global/Footer';
 import BackendService from '../api/services/BackendService';
 import CreditPaywallModal from '../components/modals/CreditPaywallModal';
-import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/solid";
+import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, WrenchScrewdriverIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { isPremiumUser, hasRoleLevel, UserRole } from '../api/interfaces/users/UserInterface';
 import CreditIcon from '../components/icons/CreditIcon';
 import UserAvatar from '../components/global/UserAvatar';
@@ -15,6 +15,8 @@ import useIsMobile from '../hooks/useIsMobile';
 import { dispatchFeedbackEvent } from '../components/feedbacks/feedbackEvents';
 import useFeedback from '../api/hooks/useFeedback';
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import ReferralSection from '../components/referral/ReferralSection';
+import EditProfileModal from '../components/profile/EditProfileModal';
 
 export default function Account() {
     const { user, logout, login } = useAuth();
@@ -28,6 +30,7 @@ export default function Account() {
     const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'theme1');
     const [credits, setCredits] = useState<number | null>(null);
     const [showCreditModal, setShowCreditModal] = useState(false);
+    const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
     const fetchAccountInfo = async () => {
         const token = localStorage.getItem('firebaseIdToken');
@@ -113,7 +116,14 @@ export default function Account() {
             <div className={`flex-grow ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
                 <div className="max-w-2xl mx-auto mt-4 space-y-4">
                     {/* User Info Card */}
-                    <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">
+                    <div className="relative bg-primary rounded-xl p-6 shadow-lg border border-border-color">
+                        <button
+                            onClick={() => setShowEditProfileModal(true)}
+                            aria-label="Modifier mon profil"
+                            className="absolute top-3 right-3 p-2 rounded-full text-text-secondary hover:text-cout-purple hover:bg-secondary transition-colors"
+                        >
+                            <PencilSquareIcon className="w-5 h-5" />
+                        </button>
                         <div className="flex flex-col items-center text-center mb-2">
                             <UserAvatar size="xl" className="mb-4" />
                             <h2 className="text-2xl font-bold text-text-primary">
@@ -154,6 +164,28 @@ export default function Account() {
                     {showCreditModal && (
                         <CreditPaywallModal onClose={() => setShowCreditModal(false)} />
                     )}
+
+                    {/* Modal d'édition de profil */}
+                    {showEditProfileModal && user && (
+                        <EditProfileModal
+                            onClose={() => setShowEditProfileModal(false)}
+                            onSaved={(profile) => {
+                                if (profile.profilePhoto) {
+                                    localStorage.setItem("profilePhoto", profile.profilePhoto);
+                                } else {
+                                    localStorage.setItem("profilePhoto", "/no-pp.jpg");
+                                }
+                                login({
+                                    ...user,
+                                    displayName: profile.displayName,
+                                    profilePhoto: profile.profilePhoto ?? "/no-pp.jpg",
+                                });
+                            }}
+                        />
+                    )}
+
+                    {/* Code ami */}
+                    <ReferralSection />
 
                     {/* Theme Switcher */}
                     <div className="bg-primary rounded-xl p-6 shadow-lg border border-border-color">

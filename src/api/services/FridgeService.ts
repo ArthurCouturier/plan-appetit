@@ -6,7 +6,6 @@ import {
     FridgeShoppingResponse,
     FridgeGenerateRequest,
 } from "../interfaces/fridge/FridgeInterfaces";
-import RecipeInterface from "../interfaces/recipes/RecipeInterface";
 
 export default class FridgeService {
     static baseUrl: string = import.meta.env.VITE_API_URL;
@@ -73,7 +72,7 @@ export default class FridgeService {
         request: FridgeGenerateRequest,
         email: string,
         token: string
-    ): Promise<RecipeInterface> {
+    ): Promise<{ recipeUuid: string }> {
         const response = await fetchWithTokenRefresh(
             `${this.getApiUrl()}/api/v1/recipes/generate/fridge`,
             {

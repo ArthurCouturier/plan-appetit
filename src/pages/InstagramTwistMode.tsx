@@ -124,7 +124,7 @@ export default function InstagramTwistMode() {
 
     const finalizeAndGenerate = async (
         token: string,
-        asked: InstagramTwistQuestion[],
+        _asked: InstagramTwistQuestion[],
         finalAnswers: Record<string, unknown>,
     ) => {
         if (!user || !postInfo) return;
@@ -166,8 +166,6 @@ export default function InstagramTwistMode() {
         }
         // Asked & answers volontairement non clear ici — si erreur, l'user reste sur sa
         // dernière question pour ne pas perdre son travail.
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _ = asked; // satisfy linter (asked is used implicitly via answers history)
     };
 
     const isCurrentAnswered = currentQuestion

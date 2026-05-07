@@ -79,7 +79,7 @@
 		1C737B402EE89AF3003B5695 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		1C7EDBCB2F98CB9E00FE5ACF /* WatchBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridge.swift; sourceTree = "<group>"; };
 		1C7EDBCC2F98CB9E00FE5ACF /* WatchBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridgePlugin.swift; sourceTree = "<group>"; };
-		1CE09BAB2F98D3E60008909A /* PlanAppetitWatch.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlanAppetitWatch.xcodeproj; path = /Users/arthurcouturier/Documents/GitHub/plan-appetit/PlanAppetitWatch/PlanAppetitWatch.xcodeproj; sourceTree = "<absolute>"; };
+		1CE09BAB2F98D3E60008909A /* PlanAppetitWatch.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = PlanAppetitWatch.xcodeproj; path = "/Users/arthurcouturier/Documents/GitHub/plan-appetit/PlanAppetitWatch/PlanAppetitWatch.xcodeproj"; sourceTree = "<absolute>"; };
 		1CE3A4DC2EE41733008D87DB /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		1CE3A4DE2EE4349F008D87DB /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		1CE3A4E22EE46AB8008D87DB /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
@@ -503,7 +503,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.11.2;
+				MARKETING_VERSION = 2.0.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.planappetit.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -530,7 +530,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.11.2;
+				MARKETING_VERSION = 2.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = fr.planappetit.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

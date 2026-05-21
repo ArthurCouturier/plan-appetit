@@ -37,6 +37,7 @@ import NewRecipePage from "./pages/NewRecipePage";
 import RecipeDetailV2 from "./pages/RecipeDetailV2";
 import RitualOnboarding from "./pages/RitualOnboarding";
 import RitualDailyPage from "./pages/RitualDailyPage";
+import RitualCalendarPage from "./pages/RitualCalendarPage";
 
 const router = createBrowserRouter([
     {
@@ -144,6 +145,10 @@ const router = createBrowserRouter([
                             {
                                 path: "ritual",
                                 element: <RitualDailyPage />,
+                            },
+                            {
+                                path: "ritual/calendar",
+                                element: <RitualCalendarPage />,
                             },
                             {
                                 path: "premium",

@@ -23,4 +23,8 @@ export const queryKeys = {
         byMealAndDate: (mealType: string, date: string) =>
             ['ritualDaily', mealType, date] as const,
     },
+    ritualMealPlan: {
+        week: (from: string, to: string) =>
+            ['ritualMealPlan', from, to] as const,
+    },
 } as const;

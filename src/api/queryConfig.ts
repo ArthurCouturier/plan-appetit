@@ -19,4 +19,8 @@ export const queryKeys = {
     culinaryProfile: {
         me: () => ['user', 'culinaryProfile'] as const,
     },
+    ritualDaily: {
+        byMealAndDate: (mealType: string, date: string) =>
+            ['ritualDaily', mealType, date] as const,
+    },
 } as const;

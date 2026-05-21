@@ -36,6 +36,7 @@ import NotFound from "./pages/NotFound";
 import NewRecipePage from "./pages/NewRecipePage";
 import RecipeDetailV2 from "./pages/RecipeDetailV2";
 import RitualOnboarding from "./pages/RitualOnboarding";
+import RitualDailyPage from "./pages/RitualDailyPage";
 
 const router = createBrowserRouter([
     {
@@ -139,6 +140,10 @@ const router = createBrowserRouter([
                             {
                                 path: "onboarding/ritual",
                                 element: <RitualOnboarding />,
+                            },
+                            {
+                                path: "ritual",
+                                element: <RitualDailyPage />,
                             },
                             {
                                 path: "premium",

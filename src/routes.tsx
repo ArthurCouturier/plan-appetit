@@ -40,6 +40,7 @@ import RitualOnboarding from "./pages/RitualOnboarding";
 import RitualDailyPage from "./pages/RitualDailyPage";
 import RitualCalendarPage from "./pages/RitualCalendarPage";
 import RitualSettingsPage from "./pages/RitualSettingsPage";
+import RitualShoppingPage from "./pages/RitualShoppingPage";
 
 const router = createBrowserRouter([
     {
@@ -155,6 +156,10 @@ const router = createBrowserRouter([
                             {
                                 path: "ritual/settings",
                                 element: <RitualSettingsPage />,
+                            },
+                            {
+                                path: "ritual/shopping",
+                                element: <RitualShoppingPage />,
                             },
                             {
                                 path: "premium",

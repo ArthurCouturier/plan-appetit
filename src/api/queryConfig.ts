@@ -27,4 +27,7 @@ export const queryKeys = {
         week: (from: string, to: string) =>
             ['ritualMealPlan', from, to] as const,
     },
+    ritualShopping: {
+        all: () => ['ritualShopping'] as const,
+    },
 } as const;

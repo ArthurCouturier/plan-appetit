@@ -1,0 +1,22 @@
+[
+  {"name": "Français", "emoji": "🥐"},
+  {"name": "Italien", "emoji": "🍝"},
+  {"name": "Méditerranéen", "emoji": "🫒"},
+  {"name": "Asiatique", "emoji": "🥢"},
+  {"name": "Japonais", "emoji": "🍣"},
+  {"name": "Vietnamien", "emoji": "🍜"},
+  {"name": "Indien", "emoji": "🍛"},
+  {"name": "Moyen-orient", "emoji": "🥙"},
+  {"name": "Marocain", "emoji": "🫖"},
+  {"name": "Mexicain", "emoji": "🌮"},
+  {"name": "Sud-américain", "emoji": "🌶️"},
+  {"name": "Américain", "emoji": "🍔"},
+  {"name": "Épicé", "emoji": "🌶"},
+  {"name": "Sucré-salé", "emoji": "🍯"},
+  {"name": "Acidulé", "emoji": "🍋"},
+  {"name": "Fumé", "emoji": "💨"},
+  {"name": "Herbacé", "emoji": "🌿"},
+  {"name": "Crémeux", "emoji": "🧈"},
+  {"name": "Torréfié", "emoji": "🌰"},
+  {"name": "Aromatique", "emoji": "🌸"}
+]

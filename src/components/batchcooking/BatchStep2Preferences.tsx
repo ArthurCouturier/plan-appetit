@@ -3,10 +3,9 @@ import { motion } from "framer-motion";
 import { lightHaptic } from "../../haptics/light";
 import { errorHaptic } from "../../haptics/error";
 import type { BudgetTarget } from "../../api/interfaces/batchcooking/BatchCookingInterfaces";
-import EquipmentCard from "./EquipmentCard";
 import ChipToPickList from "../common/ChipToPickList";
+import EquipmentSelector from "../shared/EquipmentSelector";
 import cuisineStylesData from "../../data/cuisineStyles.json";
-import equipmentsData from "../../data/equipments.json";
 import dietaryRestrictionsData from "../../data/dietaryRestrictions.json";
 
 interface BatchStep2PreferencesProps {
@@ -30,10 +29,6 @@ const BUDGET_OPTIONS: { value: BudgetTarget; icon: string; label: string }[] = [
     { value: "COMFORT", icon: "/icons/IconStars.svg", label: "Confort" },
 ];
 
-function toggleInList(list: string[], item: string): string[] {
-    return list.includes(item) ? list.filter((s) => s !== item) : [...list, item];
-}
-
 export default function BatchStep2Preferences({
     cuisineStyles,
     equipment,
@@ -48,7 +43,6 @@ export default function BatchStep2Preferences({
     onNext,
     onBack,
 }: BatchStep2PreferencesProps) {
-    const [showAllEquipment, setShowAllEquipment] = useState(false);
     const [pendingOthers, setPendingOthers] = useState<Record<string, string>>({});
     const [showWarning, setShowWarning] = useState(false);
 
@@ -101,11 +95,9 @@ export default function BatchStep2Preferences({
                 </div>
 
                 {/* Equipement */}
-                <EquipmentSection
-                    equipment={equipment}
-                    showAll={showAllEquipment}
-                    onToggleShowAll={() => setShowAllEquipment(!showAllEquipment)}
-                    onEquipmentChange={onEquipmentChange}
+                <EquipmentSelector
+                    selected={equipment}
+                    onChange={onEquipmentChange}
                 />
 
                 {/* Budget */}
@@ -193,72 +185,3 @@ export default function BatchStep2Preferences({
     );
 }
 
-// --- Equipment section with responsive grid + "voir plus" ---
-
-function useColumnsCount(): number {
-    const [cols, setCols] = useState(3);
-
-    useState(() => {
-        const update = () => {
-            const w = window.innerWidth;
-            if (w >= 1024) setCols(5);
-            else if (w >= 768) setCols(4);
-            else setCols(3);
-        };
-        update();
-        window.addEventListener("resize", update);
-        return () => window.removeEventListener("resize", update);
-    });
-
-    return cols;
-}
-
-function EquipmentSection({
-    equipment,
-    showAll,
-    onToggleShowAll,
-    onEquipmentChange,
-}: {
-    equipment: string[];
-    showAll: boolean;
-    onToggleShowAll: () => void;
-    onEquipmentChange: (eq: string[]) => void;
-}) {
-    const cols = useColumnsCount();
-    const collapsedCount = cols * 3;
-    const needsToggle = equipmentsData.length > collapsedCount;
-    const visibleEquipments = showAll ? equipmentsData : equipmentsData.slice(0, collapsedCount);
-
-    return (
-        <div>
-            <h3 className="text-sm font-semibold text-text-secondary mb-3">
-                Équipement disponible
-            </h3>
-            <div
-                className="grid gap-2"
-                style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-            >
-                {visibleEquipments.map((eq) => (
-                    <EquipmentCard
-                        key={eq.name}
-                        name={eq.name}
-                        icon={eq.icon}
-                        selected={equipment.includes(eq.name)}
-                        onToggle={() => onEquipmentChange(toggleInList(equipment, eq.name))}
-                    />
-                ))}
-            </div>
-            <div className="my-4">
-                {needsToggle && (
-                    <button
-                        onClick={() => { onToggleShowAll(); lightHaptic(); }}
-                        className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1.5 bg-secondary opacity-50 text-text-primary border border-border-color mx-auto"
-                    >
-                        <span className="text-lg">{showAll ? "▲" : "▼"}</span>
-                        <span className="text-xs font-semibold">{showAll ? "Voir moins" : "Voir plus"}</span>
-                    </button>
-                )}
-            </div>
-        </div>
-    );
-}

@@ -16,4 +16,7 @@ export const queryKeys = {
     referral: {
         stats: () => ['referral', 'stats'] as const,
     },
+    culinaryProfile: {
+        me: () => ['user', 'culinaryProfile'] as const,
+    },
 } as const;

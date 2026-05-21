@@ -50,22 +50,22 @@ export default function ShoppingListPage() {
     };
 
     const groupedByCategory = useMemo(() => {
-        if (!list) return [] as { category: string; label: string; items: ShoppingListItemInterface[] }[];
+        if (!list) return [] as { label: string; items: ShoppingListItemInterface[] }[];
         const visible = showChecked ? list.items : list.items.filter((it) => !it.checked);
-        const byCat = new Map<string, ShoppingListItemInterface[]>();
+        const byLabel = new Map<string, ShoppingListItemInterface[]>();
         for (const it of visible) {
-            const cat = (it.categoryCode || "OTHER").toUpperCase();
-            const bucket = byCat.get(cat) ?? [];
+            const label = formatIngredientCategoryV2(it.categoryCode || "OTHER");
+            const bucket = byLabel.get(label) ?? [];
             bucket.push(it);
-            byCat.set(cat, bucket);
+            byLabel.set(label, bucket);
         }
-        return Array.from(byCat.entries())
-            .map(([category, items]) => ({
-                category,
-                label: formatIngredientCategoryV2(category),
-                items,
-            }))
-            .sort((a, b) => a.label.localeCompare(b.label, "fr"));
+        return Array.from(byLabel.entries())
+            .map(([label, items]) => ({ label, items }))
+            .sort((a, b) => {
+                if (a.label === "Autre" && b.label !== "Autre") return 1;
+                if (b.label === "Autre" && a.label !== "Autre") return -1;
+                return a.label.localeCompare(b.label, "fr");
+            });
     }, [list, showChecked]);
 
     const toggleItem = (item: ShoppingListItemInterface) => {
@@ -162,8 +162,8 @@ export default function ShoppingListPage() {
                     </div>
                 )}
 
-                {groupedByCategory.map(({ category, label, items }) => (
-                    <section key={category} className="mb-6">
+                {groupedByCategory.map(({ label, items }) => (
+                    <section key={label} className="mb-6">
                         <h2 className="text-xs uppercase tracking-wider text-text-secondary mb-2">
                             {label} ({items.length})
                         </h2>

@@ -147,6 +147,24 @@ export default class ShoppingListService {
         if (!response.ok) throw new Error("Erreur lors de la suppression de l'article.");
     }
 
+    public static async addFromRecipe(
+        email: string,
+        token: string,
+        listUuid: string,
+        recipeUuid: string,
+    ): Promise<ShoppingListItemInterface[]> {
+        const response = await fetchWithTokenRefresh(
+            `${this.endpoint()}/${listUuid}/items/from-recipe`,
+            {
+                method: "POST",
+                headers: this.authHeaders(email, token),
+                body: JSON.stringify({ recipeUuid }),
+            },
+        );
+        if (!response.ok) throw new Error("Erreur lors de l'ajout des ingrédients de la recette.");
+        return response.json();
+    }
+
     public static async searchIngredients(
         email: string,
         token: string,

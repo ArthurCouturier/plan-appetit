@@ -6,5 +6,6 @@ export enum IngredientCategoryEnum {
     DAIRY = "DAIRY",
     CEREAL = "CEREAL",
     SPECIES = "SPECIES",
+    HERB = "HERB",
     OTHER = "OTHER"
 }

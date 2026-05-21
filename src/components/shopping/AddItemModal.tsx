@@ -6,8 +6,16 @@ import {
     SHOPPING_LIST_UNIT_CODE_MAX_LENGTH,
 } from "../../api/interfaces/shopping/ShoppingListInterface";
 import { useAddShoppingItem, useIngredientSearch } from "../../api/hooks/useShoppingLists";
+import { unitLabelsV2 } from "../recipes-v2/recipeV2Labels";
 import { lightHaptic } from "../../haptics/light";
 import { errorHaptic } from "../../haptics/error";
+
+function unitSymbol(code: string | null | undefined): string | null {
+    if (!code) return null;
+    const upper = code.toUpperCase();
+    if (upper === "NONE") return null;
+    return unitLabelsV2[upper]?.singular || code;
+}
 
 interface AddItemModalProps {
     listUuid: string;
@@ -138,7 +146,7 @@ export default function AddItemModal({ listUuid, onClose }: AddItemModalProps) {
                             value={unit}
                             onChange={(e) => setUnit(e.target.value)}
                             maxLength={SHOPPING_LIST_UNIT_CODE_MAX_LENGTH}
-                            placeholder={selected?.primaryUnitCode !== "NONE" ? selected?.primaryUnitCode ?? "kg, L..." : "kg, L..."}
+                            placeholder={unitSymbol(selected?.primaryUnitCode) ?? "g, mL..."}
                             className="w-full px-4 py-3 bg-secondary border border-border-color rounded-xl text-text-primary placeholder-text-secondary outline-none focus:ring-2 focus:ring-cout-yellow"
                         />
                     </div>

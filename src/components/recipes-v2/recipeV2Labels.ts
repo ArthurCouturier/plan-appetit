@@ -23,22 +23,22 @@ export function formatCourseV2(code: string | null): string | null {
     return courseLabelsV2[code.toUpperCase()] ?? code;
 }
 
+// Sync avec v2.ingredient_categories (back, seed V2026.05.01.00.00.02). 14 codes.
+// Toute évolution back impose la mise à jour ici. Voir shopping-lists-plan.md (flag sync long-terme).
 export const ingredientCategoryLabelsV2: Record<string, string> = {
     MEAT: "Viande",
     FISH: "Poisson",
-    SEAFOOD: "Produits de la mer",
-    VEGETABLE: "Légumes",
-    FRUIT: "Fruits",
-    DAIRY: "Produits laitiers",
-    CEREAL: "Céréales",
-    GRAIN: "Céréales",
-    SPECIES: "Épices",
-    SPICE: "Épices",
-    HERB: "Herbes",
-    CONDIMENT: "Condiments",
-    OIL: "Huiles",
-    PANTRY: "Placard",
-    SWEETENER: "Sucres",
+    DAIRY: "Produit laitier",
+    VEGETABLE: "Légume",
+    FRUIT: "Fruit",
+    CEREAL: "Céréale",
+    LEGUME: "Légumineuse",
+    NUT_SEED: "Noix / graine",
+    SPICES: "Épice",
+    HERB: "Herbe aromatique",
+    OIL_VINEGAR: "Huile / vinaigre",
+    SUGAR_SWEETENER: "Sucre / édulcorant",
+    BEVERAGE: "Boisson",
     OTHER: "Autre",
 };
 
@@ -46,26 +46,22 @@ export function formatIngredientCategoryV2(code: string): string {
     return ingredientCategoryLabelsV2[code.toUpperCase()] ?? "Autre";
 }
 
+// Sync avec v2.units (back, seed V2026.05.01.00.00.02). 14 codes.
+// Singular = symbol back ; plural géré côté UI (PIECE / PINCH / BUNCH / DROP / CUP).
 export const unitLabelsV2: Record<string, { singular: string; plural?: string }> = {
+    MILLIGRAM: { singular: "mg" },
     GRAM: { singular: "g" },
     KILOGRAM: { singular: "kg" },
-    MILLIGRAM: { singular: "mg" },
-    MILLILITER: { singular: "ml" },
-    CENTILITER: { singular: "cl" },
-    DECILITER: { singular: "dl" },
-    LITER: { singular: "l" },
+    MILLILITER: { singular: "mL" },
+    CENTILITER: { singular: "cL" },
+    LITER: { singular: "L" },
     PIECE: { singular: "pièce", plural: "pièces" },
-    TEASPOON: { singular: "c.à.c" },
-    TSP: { singular: "c.à.c" },
-    TABLESPOON: { singular: "c.à.s" },
-    TBSP: { singular: "c.à.s" },
-    CUP: { singular: "tasse", plural: "tasses" },
+    TBSP: { singular: "c. à s." },
+    TSP: { singular: "c. à c." },
+    CUP: { singular: "verre", plural: "verres" },
     PINCH: { singular: "pincée", plural: "pincées" },
-    DROP: { singular: "goutte", plural: "gouttes" },
     BUNCH: { singular: "botte", plural: "bottes" },
-    CLOVE: { singular: "gousse", plural: "gousses" },
-    SLICE: { singular: "tranche", plural: "tranches" },
-    SPRIG: { singular: "brin", plural: "brins" },
+    DROP: { singular: "goutte", plural: "gouttes" },
     NONE: { singular: "" },
 };
 

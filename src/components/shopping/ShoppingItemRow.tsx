@@ -3,6 +3,7 @@ import {
     ShoppingListItemInterface,
     shoppingListItemDisplayName,
 } from "../../api/interfaces/shopping/ShoppingListInterface";
+import { formatQuantityV2 } from "../recipes-v2/recipeV2Labels";
 import { lightHaptic } from "../../haptics/light";
 
 interface ShoppingItemRowProps {
@@ -18,15 +19,16 @@ export default function ShoppingItemRow({ item, onToggle, onDelete }: ShoppingIt
     };
 
     const displayName = shoppingListItemDisplayName(item);
-    const hasQuantity = item.quantity != null && item.quantity > 0;
+    const quantityLabel = item.quantity != null && item.quantity > 0
+        ? formatQuantityV2(String(item.quantity), item.unitCode ?? "")
+        : null;
 
     return (
         <li
-            className="bg-secondary border border-border-color rounded-xl p-3 flex items-center gap-3"
+            className="bg-secondary border border-border-color rounded-xl p-3 flex items-center gap-3 mx-auto w-full"
             style={{
                 transform: item.checked ? "scale(0.9)" : "scale(1)",
                 opacity: item.checked ? 0.6 : 1,
-                transformOrigin: "left center",
                 transition: "transform 200ms ease-out, opacity 200ms ease-out",
             }}
         >
@@ -54,10 +56,9 @@ export default function ShoppingItemRow({ item, onToggle, onDelete }: ShoppingIt
             <div className="relative flex-1 min-w-0">
                 <p className="text-sm font-semibold text-text-primary truncate">
                     {displayName}
-                    {hasQuantity && (
+                    {quantityLabel && (
                         <span className="text-text-secondary font-normal ml-2">
-                            {item.quantity}
-                            {item.unitCode ? ` ${item.unitCode}` : ""}
+                            {quantityLabel}
                         </span>
                     )}
                 </p>

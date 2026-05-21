@@ -8,5 +8,6 @@ export const IngredientCategoryLabels: Record<IngredientCategoryEnum, string> = 
     [IngredientCategoryEnum.DAIRY]: "Produits laitiers",
     [IngredientCategoryEnum.CEREAL]: "Céréale",
     [IngredientCategoryEnum.SPECIES]: "Épices",
+    [IngredientCategoryEnum.HERB]: "Herbe aromatique",
     [IngredientCategoryEnum.OTHER]: "Autre"
 };

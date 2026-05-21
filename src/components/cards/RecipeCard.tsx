@@ -1,10 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeSummaryInterface from "../../api/interfaces/recipes/RecipeSummaryInterface";
 import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
-import { UserGroupIcon, CurrencyEuroIcon, ClockIcon } from "@heroicons/react/24/solid";
+import { useAddRecipeToShoppingList } from "../../api/hooks/useAddRecipeToShoppingList";
+import { UserGroupIcon, CurrencyEuroIcon, ClockIcon, CheckIcon } from "@heroicons/react/24/solid";
 import { heavyHaptic } from "../../haptics/heavy";
+import { lightHaptic } from "../../haptics/light";
+import { errorHaptic } from "../../haptics/error";
+import ShoppingCartAddIcon from "../shopping/ShoppingCartAddIcon";
 
 type RecipeCardProps = {
     recipe: RecipeInterface | RecipeSummaryInterface;
@@ -59,6 +63,31 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     const { totalTimeMin, restTimeMin } = getRecipeTimes(recipe);
     const totalLabel = formatDuration(totalTimeMin);
     const restLabel = restTimeMin && restTimeMin > 0 ? formatDuration(restTimeMin) : null;
+
+    const addToList = useAddRecipeToShoppingList();
+    const [justAdded, setJustAdded] = useState(false);
+
+    useEffect(() => {
+        if (!justAdded) return;
+        const id = window.setTimeout(() => setJustAdded(false), 1800);
+        return () => window.clearTimeout(id);
+    }, [justAdded]);
+
+    const handleAddToShoppingList = useCallback((event: React.MouseEvent | React.TouchEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+        if (addToList.isPending) return;
+        addToList.mutate(
+            { recipeUuid: String(recipe.uuid) },
+            {
+                onSuccess: () => {
+                    lightHaptic();
+                    setJustAdded(true);
+                },
+                onError: () => errorHaptic(),
+            },
+        );
+    }, [addToList, recipe.uuid]);
 
     const updateRotation = useCallback((value: number) => {
         rotationRef.current = value;
@@ -347,6 +376,23 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                             )}
                         </div>
                     </div>
+
+                    <button
+                        type="button"
+                        onClick={handleAddToShoppingList}
+                        onTouchEnd={handleAddToShoppingList}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        disabled={addToList.isPending}
+                        aria-label="Ajouter les ingrédients à ma liste de courses"
+                        className="absolute bottom-2 left-0 right-0 mx-auto w-16 h-8 flex items-center justify-center rounded-full bg-cout-yellow text-cout-purple shadow-md disabled:opacity-50 transition-transform active:scale-95"
+                    >
+                        {justAdded ? (
+                            <CheckIcon className="w-4 h-4" />
+                        ) : (
+                            <ShoppingCartAddIcon />
+                        )}
+                    </button>
                 </div>
             </div>
         </div>

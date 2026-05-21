@@ -6,8 +6,11 @@ import PlatformService from "../../api/services/PlatformService";
 import AppVersionService, { VersionCheckResult } from "../../api/services/AppVersionService";
 import { TrackingService } from "../../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../../api/tracking/skadnetwork/SKAdNetworkService";
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, PluginListenerHandle } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
+import { RitualNotifications } from "../../api/plugins/RitualNotificationsPlugin";
+import RitualQuickFillService from "../../api/services/RitualQuickFillService";
+import type { MealType } from "../../api/interfaces/ritual/RitualDailyInterface";
 import DailyRecipeModal from "../modals/DailyRecipeModal";
 import UpdateAppModal from "../modals/UpdateAppModal";
 import { useDailyRecipeContext } from "../../contexts/DailyRecipeContext";
@@ -46,6 +49,8 @@ export default function Layout() {
         const type = data?.type;
         if (type === "daily_recipe") {
           setShowDailyRecipeModal(true);
+        } else if (type === "ritual_daily") {
+          navigate("/ritual");
         } else if (type === "broadcast") {
           const platform = Capacitor.getPlatform();
           const storeUrl = platform === "ios" ? data?.iosUrl : data?.androidUrl;
@@ -58,9 +63,24 @@ export default function Layout() {
       });
     }
 
+    let ritualQuickReplyHandle: PluginListenerHandle | undefined;
+    if (Capacitor.isNativePlatform()) {
+      RitualNotifications.addListener("ritualQuickReply", async ({ mealType, text }) => {
+        const email = localStorage.getItem("email");
+        const token = localStorage.getItem("firebaseIdToken");
+        if (!email || !token || !text.trim()) return;
+        try {
+          await RitualQuickFillService.submit(email, token, mealType as MealType, text);
+        } catch (e) {
+          console.error("[Ritual] quick-reply submit failed", e);
+        }
+      }).then((handle) => { ritualQuickReplyHandle = handle; });
+    }
+
     return () => {
       if (Capacitor.isNativePlatform()) {
         FirebaseMessaging.removeAllListeners();
+        ritualQuickReplyHandle?.remove();
       }
     };
   }, []);

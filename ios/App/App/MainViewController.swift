@@ -5,5 +5,6 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(TikTokSDKPlugin())
         bridge?.registerPluginInstance(SKAdNetworkPlugin())
         bridge?.registerPluginInstance(WatchBridgePlugin())
+        bridge?.registerPluginInstance(RitualNotificationsPlugin())
     }
 }

@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		1C0AA4552F6D75E90087E1E8 /* TikTokSDKPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */; };
 		1C32B92B2F71332100AA421A /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C32B92A2F71332100AA421A /* MainViewController.swift */; };
+		1C42F0162FBF3C3D00D7AB5F /* RitualNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C42F0142FBF3C3D00D7AB5F /* RitualNotifications.swift */; };
+		1C42F0172FBF3C3D00D7AB5F /* RitualNotificationsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C42F0152FBF3C3D00D7AB5F /* RitualNotificationsPlugin.swift */; };
 		1C71D70E2F73DFAA000373DC /* SKAdNetworkPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C71D70D2F73DFAA000373DC /* SKAdNetworkPlugin.swift */; };
 		1C737B412EE89AF3003B5695 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 1C737B402EE89AF3003B5695 /* Products.storekit */; };
 		1C7EDBCD2F98CB9E00FE5ACF /* WatchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7EDBCB2F98CB9E00FE5ACF /* WatchBridge.swift */; };
@@ -75,6 +77,8 @@
 /* Begin PBXFileReference section */
 		1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TikTokSDKPlugin.swift; sourceTree = "<group>"; };
 		1C32B92A2F71332100AA421A /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		1C42F0142FBF3C3D00D7AB5F /* RitualNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RitualNotifications.swift; sourceTree = "<group>"; };
+		1C42F0152FBF3C3D00D7AB5F /* RitualNotificationsPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RitualNotificationsPlugin.swift; sourceTree = "<group>"; };
 		1C71D70D2F73DFAA000373DC /* SKAdNetworkPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAdNetworkPlugin.swift; sourceTree = "<group>"; };
 		1C737B402EE89AF3003B5695 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		1C7EDBCB2F98CB9E00FE5ACF /* WatchBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridge.swift; sourceTree = "<group>"; };
@@ -164,6 +168,8 @@
 				1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */,
 				1CE3A4E22EE46AB8008D87DB /* App.entitlements */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
+				1C42F0142FBF3C3D00D7AB5F /* RitualNotifications.swift */,
+				1C42F0152FBF3C3D00D7AB5F /* RitualNotificationsPlugin.swift */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
@@ -339,6 +345,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				1C32B92B2F71332100AA421A /* MainViewController.swift in Sources */,
+				1C42F0162FBF3C3D00D7AB5F /* RitualNotifications.swift in Sources */,
+				1C42F0172FBF3C3D00D7AB5F /* RitualNotificationsPlugin.swift in Sources */,
 				1C7EDBCD2F98CB9E00FE5ACF /* WatchBridge.swift in Sources */,
 				1C7EDBCE2F98CB9E00FE5ACF /* WatchBridgePlugin.swift in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,

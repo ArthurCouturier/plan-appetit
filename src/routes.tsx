@@ -28,6 +28,7 @@ import AdminHaptics from "./pages/admin/AdminHaptics";
 import AdminModals from "./pages/admin/AdminModals";
 import AdminIngredientsReview from "./pages/admin/AdminIngredientsReview";
 import AdminIngredientsCleanup from "./pages/admin/AdminIngredientsCleanup";
+import AdminRitualTest from "./pages/admin/AdminRitualTest";
 import FridgeMode from "./pages/FridgeMode";
 import InstagramTwistMode from "./pages/InstagramTwistMode";
 import BatchCookingMode from "./pages/BatchCookingMode";
@@ -38,6 +39,7 @@ import RecipeDetailV2 from "./pages/RecipeDetailV2";
 import RitualOnboarding from "./pages/RitualOnboarding";
 import RitualDailyPage from "./pages/RitualDailyPage";
 import RitualCalendarPage from "./pages/RitualCalendarPage";
+import RitualSettingsPage from "./pages/RitualSettingsPage";
 
 const router = createBrowserRouter([
     {
@@ -151,6 +153,10 @@ const router = createBrowserRouter([
                                 element: <RitualCalendarPage />,
                             },
                             {
+                                path: "ritual/settings",
+                                element: <RitualSettingsPage />,
+                            },
+                            {
                                 path: "premium",
                                 element: <BecomePremium />
                             },
@@ -201,6 +207,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/ingredients-cleanup",
                                 element: <AdminIngredientsCleanup />
+                            },
+                            {
+                                path: "admin/ritual-test",
+                                element: <AdminRitualTest />
                             }
                         ],
                     },

@@ -20,6 +20,7 @@ function unitSymbol(code: string | null | undefined): string | null {
 interface AddItemModalProps {
     listUuid: string;
     onClose: () => void;
+    disableAutocomplete?: boolean;
 }
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
@@ -31,7 +32,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
     return debounced;
 }
 
-export default function AddItemModal({ listUuid, onClose }: AddItemModalProps) {
+export default function AddItemModal({ listUuid, onClose, disableAutocomplete = false }: AddItemModalProps) {
     const [name, setName] = useState("");
     const [selected, setSelected] = useState<IngredientSuggestionInterface | null>(null);
     const [quantity, setQuantity] = useState("");
@@ -39,7 +40,7 @@ export default function AddItemModal({ listUuid, onClose }: AddItemModalProps) {
     const addItem = useAddShoppingItem(listUuid);
 
     const debouncedQuery = useDebouncedValue(name, 250);
-    const suggestions = useIngredientSearch(selected ? "" : debouncedQuery);
+    const suggestions = useIngredientSearch(selected ? "" : debouncedQuery, !disableAutocomplete);
 
     const trimmed = name.trim();
     const canSubmit = useMemo(
@@ -104,7 +105,13 @@ export default function AddItemModal({ listUuid, onClose }: AddItemModalProps) {
                         />
                     </div>
 
-                    {!selected && trimmed.length >= 2 && suggestions.data && suggestions.data.length > 0 && (
+                    {disableAutocomplete && (
+                        <p className="mt-1 text-[11px] text-text-secondary">
+                            Hors ligne — autocomplete indisponible.
+                        </p>
+                    )}
+
+                    {!selected && !disableAutocomplete && trimmed.length >= 2 && suggestions.data && suggestions.data.length > 0 && (
                         <ul className="mt-2 max-h-48 overflow-y-auto bg-primary border border-border-color rounded-xl shadow-md">
                             {suggestions.data.map((s) => (
                                 <li key={s.uuid}>

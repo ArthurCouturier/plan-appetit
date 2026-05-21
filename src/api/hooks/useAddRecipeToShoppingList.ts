@@ -7,6 +7,7 @@ import {
     ShoppingListSummaryInterface,
 } from "../interfaces/shopping/ShoppingListInterface";
 import { useActiveShoppingList } from "./useActiveShoppingList";
+import { hasMirror } from "../offline/unsyncedShoppingLists";
 
 function getAuthHeaders(): { email: string | null; token: string | null } {
     return {
@@ -36,13 +37,19 @@ export function useAddRecipeToShoppingList() {
             );
             const lists = cached ?? (await ShoppingListService.list(email, token));
 
-            let listUuid = activeUuid && lists.some((l) => l.uuid === activeUuid)
+            // Eligible = lists that aren't unsync (offline). Recipe→list requires API.
+            const eligible = lists.filter((l) => !hasMirror(l.uuid));
+
+            let listUuid = activeUuid && eligible.some((l) => l.uuid === activeUuid)
                 ? activeUuid
-                : lists[0]?.uuid ?? null;
+                : eligible[0]?.uuid ?? null;
             let listName: string;
             let listCreated = false;
 
             if (!listUuid) {
+                if (lists.length > 0 && eligible.length === 0) {
+                    throw new Error("Toutes tes listes sont hors ligne. Resynchronise-en une d'abord.");
+                }
                 const created: ShoppingListInterface = await ShoppingListService.create(
                     email,
                     token,
@@ -53,7 +60,7 @@ export function useAddRecipeToShoppingList() {
                 listCreated = true;
                 setActiveUuid(created.uuid);
             } else {
-                listName = lists.find((l) => l.uuid === listUuid)?.name ?? "Liste";
+                listName = eligible.find((l) => l.uuid === listUuid)?.name ?? "Liste";
             }
 
             const addedItems = await ShoppingListService.addFromRecipe(

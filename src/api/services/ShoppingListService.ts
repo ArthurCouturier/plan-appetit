@@ -2,6 +2,7 @@ import {
     CreateShoppingListItemRequest,
     CreateShoppingListRequest,
     IngredientSuggestionInterface,
+    ReconcileShoppingListRequest,
     ShoppingListInterface,
     ShoppingListItemInterface,
     ShoppingListSummaryInterface,
@@ -9,6 +10,15 @@ import {
     UpdateShoppingListRequest,
 } from "../interfaces/shopping/ShoppingListInterface";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
+
+export class ShoppingListLimitReachedError extends Error {
+    readonly limit: number;
+    constructor(limit: number) {
+        super(`Limite de ${limit} listes atteinte.`);
+        this.name = "ShoppingListLimitReachedError";
+        this.limit = limit;
+    }
+}
 
 export default class ShoppingListService {
     static baseUrl: string = import.meta.env.VITE_API_URL;
@@ -69,6 +79,12 @@ export default class ShoppingListService {
             headers: this.authHeaders(email, token),
             body: JSON.stringify(body),
         });
+        if (response.status === 409) {
+            const payload = await response.json().catch(() => null) as { code?: string; limit?: number } | null;
+            if (payload?.code === "LIST_LIMIT_REACHED") {
+                throw new ShoppingListLimitReachedError(payload.limit ?? 20);
+            }
+        }
         if (!response.ok) throw new Error("Erreur lors de la création de la liste.");
         return response.json();
     }
@@ -145,6 +161,21 @@ export default class ShoppingListService {
             { method: "DELETE", headers: this.authHeaders(email, token) },
         );
         if (!response.ok) throw new Error("Erreur lors de la suppression de l'article.");
+    }
+
+    public static async reconcile(
+        email: string,
+        token: string,
+        uuid: string,
+        body: ReconcileShoppingListRequest,
+    ): Promise<ShoppingListInterface> {
+        const response = await fetchWithTokenRefresh(`${this.endpoint()}/${uuid}/reconcile`, {
+            method: "POST",
+            headers: this.authHeaders(email, token),
+            body: JSON.stringify(body),
+        });
+        if (!response.ok) throw new Error("Erreur lors de la resynchronisation.");
+        return response.json();
     }
 
     public static async addFromRecipe(

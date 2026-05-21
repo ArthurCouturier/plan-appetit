@@ -72,6 +72,20 @@ export interface UpdateShoppingListItemRequest {
     checked?: boolean;
 }
 
+export interface ReconcileShoppingListItem {
+    uuid: string;
+    ingredientUuid?: string | null;
+    personalIngredientName?: string | null;
+    quantity?: number | null;
+    unitCode?: string | null;
+    checked: boolean;
+}
+
+export interface ReconcileShoppingListRequest {
+    name?: string;
+    items: ReconcileShoppingListItem[];
+}
+
 export interface IngredientSuggestionInterface {
     uuid: string;
     name: string;

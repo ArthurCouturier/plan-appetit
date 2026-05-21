@@ -1,18 +1,24 @@
-import { PlusIcon, StarIcon } from "@heroicons/react/24/solid";
+import { ArrowPathIcon, PlusIcon, StarIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { StarIcon as StarOutlineIcon } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
     useDeleteShoppingItem,
+    useDeleteShoppingList,
     useRenameShoppingList,
     useShoppingList,
     useUpdateShoppingItem,
 } from "../api/hooks/useShoppingLists";
 import { useActiveShoppingList } from "../api/hooks/useActiveShoppingList";
-import { ShoppingListItemInterface } from "../api/interfaces/shopping/ShoppingListInterface";
+import { useUnsyncedShoppingList } from "../api/hooks/useUnsyncedShoppingList";
+import { ShoppingListItemInterface, ShoppingListInterface } from "../api/interfaces/shopping/ShoppingListInterface";
+import ShoppingListService from "../api/services/ShoppingListService";
+import { isNetworkError } from "../api/offline/networkError";
 import AddItemModal from "../components/shopping/AddItemModal";
+import DeleteListConfirmModal from "../components/shopping/DeleteListConfirmModal";
 import EditableShoppingListTitle from "../components/shopping/EditableShoppingListTitle";
 import EyeToggleButton from "../components/shopping/EyeToggleButton";
+import ReconcileModal from "../components/shopping/ReconcileModal";
 import ShoppingItemRow from "../components/shopping/ShoppingItemRow";
 import { formatIngredientCategoryV2 } from "../components/recipes-v2/recipeV2Labels";
 import { errorHaptic } from "../haptics/error";
@@ -33,12 +39,42 @@ export default function ShoppingListPage() {
     const rename = useRenameShoppingList(uuid ?? "");
     const updateItem = useUpdateShoppingItem(uuid ?? "");
     const deleteItem = useDeleteShoppingItem(uuid ?? "");
+    const deleteList = useDeleteShoppingList();
     const { activeUuid, setActiveUuid } = useActiveShoppingList();
+    const mirror = useUnsyncedShoppingList(uuid);
+    const isOffline = !!mirror;
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const [showChecked, setShowChecked] = useState<boolean>(() =>
         uuid ? readShowCheckedFromStorage(uuid) : true,
     );
     const [showAdd, setShowAdd] = useState(false);
+    const [reconcileState, setReconcileState] = useState<{ remote: ShoppingListInterface } | null>(null);
+    const [reconcileError, setReconcileError] = useState<string | null>(null);
+    const [resyncing, setResyncing] = useState(false);
+
+    const startReconcile = async () => {
+        if (!uuid || !mirror) return;
+        lightHaptic();
+        setReconcileError(null);
+        setResyncing(true);
+        try {
+            const email = localStorage.getItem("email");
+            const token = localStorage.getItem("firebaseIdToken");
+            if (!email || !token) throw new Error("Non authentifié");
+            const remote = await ShoppingListService.get(email, token, uuid);
+            setReconcileState({ remote });
+        } catch (err) {
+            errorHaptic();
+            if (isNetworkError(err)) {
+                setReconcileError("Pas de réseau. Réessaie quand tu es reconnecté.");
+            } else {
+                setReconcileError(err instanceof Error ? err.message : "Erreur.");
+            }
+        } finally {
+            setResyncing(false);
+        }
+    };
 
     useEffect(() => {
         if (uuid) setShowChecked(readShowCheckedFromStorage(uuid));
@@ -132,6 +168,31 @@ export default function ShoppingListPage() {
                     />
                 </div>
 
+                {isOffline && (
+                    <div className="mt-4 rounded-2xl bg-cancel-1/5 border border-cancel-1/30 p-3 flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-cancel-1 uppercase tracking-wider">
+                                Hors ligne
+                            </span>
+                            <span className="text-xs text-text-secondary">
+                                Modifs en local. À resynchroniser quand le réseau revient.
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={startReconcile}
+                            disabled={resyncing}
+                            className="self-stretch inline-flex items-center justify-center gap-1 px-3 py-2 rounded-full bg-cout-yellow text-cout-purple text-xs font-bold disabled:opacity-50"
+                        >
+                            <ArrowPathIcon className={`w-3.5 h-3.5 ${resyncing ? "animate-spin" : ""}`} />
+                            {resyncing ? "Vérif..." : "Resynchroniser"}
+                        </button>
+                    </div>
+                )}
+                {reconcileError && (
+                    <p className="mt-2 text-xs text-cancel-1 text-center">{reconcileError}</p>
+                )}
+
                 <div className="mt-3 mb-6">
                     <button
                         type="button"
@@ -179,6 +240,17 @@ export default function ShoppingListPage() {
                         </ul>
                     </section>
                 ))}
+
+                <div className="mt-8 pt-4 border-t border-border-color">
+                    <button
+                        type="button"
+                        onClick={() => { lightHaptic(); setShowDeleteConfirm(true); }}
+                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-transparent border-2 border-cancel-1 text-cancel-1 font-semibold text-sm hover:bg-cancel-1/10 transition-colors"
+                    >
+                        <TrashIcon className="w-4 h-4" />
+                        Supprimer cette liste
+                    </button>
+                </div>
             </div>
 
             <button
@@ -195,7 +267,34 @@ export default function ShoppingListPage() {
             </button>
 
             {showAdd && uuid && (
-                <AddItemModal listUuid={uuid} onClose={() => setShowAdd(false)} />
+                <AddItemModal listUuid={uuid} onClose={() => setShowAdd(false)} disableAutocomplete={isOffline} />
+            )}
+
+            {reconcileState && mirror && (
+                <ReconcileModal
+                    mirror={mirror}
+                    remote={reconcileState.remote}
+                    onClose={() => setReconcileState(null)}
+                    onSuccess={() => setReconcileState(null)}
+                />
+            )}
+
+            {showDeleteConfirm && (
+                <DeleteListConfirmModal
+                    listName={list.name}
+                    isPending={deleteList.isPending}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                    onConfirm={() => {
+                        deleteList.mutate(list.uuid, {
+                            onSuccess: () => {
+                                lightHaptic();
+                                setShowDeleteConfirm(false);
+                                navigate("/shopping", { replace: true });
+                            },
+                            onError: () => errorHaptic(),
+                        });
+                    }}
+                />
             )}
         </div>
     );

@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeftIcon, HomeIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon, HomeIcon, ShoppingCartIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
 import UserAvatar from "./UserAvatar";
 import useAuth from "../../api/hooks/useAuth";
@@ -75,6 +75,13 @@ export default function HeaderMobile() {
       </div>
 
       <div className="flex items-center gap-2">
+        <button
+          onClick={() => navigate("/shopping")}
+          aria-label="Liste de courses"
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md hover:bg-cout-purple transition-colors"
+        >
+          <ShoppingCartIcon className="w-5 h-5 text-white" />
+        </button>
         <NotificationBell
           className="w-10 h-10 rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md"
         />

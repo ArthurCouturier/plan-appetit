@@ -27,7 +27,11 @@ export const queryKeys = {
         week: (from: string, to: string) =>
             ['ritualMealPlan', from, to] as const,
     },
-    ritualShopping: {
-        all: () => ['ritualShopping'] as const,
+    shoppingLists: {
+        all: () => ['shoppingLists'] as const,
+        byId: (uuid: string) => ['shoppingLists', uuid] as const,
+    },
+    ingredientSearch: {
+        byQuery: (q: string) => ['ingredientSearch', q] as const,
     },
 } as const;

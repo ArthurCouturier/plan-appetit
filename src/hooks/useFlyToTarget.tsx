@@ -9,6 +9,7 @@ type FlyParams = {
     alt?: string;
     durationMs?: number;
     pulseTarget?: boolean;
+    startRound?: boolean;
     onArrived?: () => void;
 };
 
@@ -20,6 +21,7 @@ type FlyingItem = {
     alt: string;
     durationMs: number;
     pulseTarget: boolean;
+    startRound: boolean;
     targetElement: HTMLElement;
     onArrived?: () => void;
 };
@@ -56,6 +58,7 @@ export function useFlyToTarget() {
                 alt: params.alt ?? "",
                 durationMs: params.durationMs ?? 650,
                 pulseTarget: params.pulseTarget ?? true,
+                startRound: params.startRound ?? false,
                 targetElement: target,
                 onArrived: params.onArrived,
             },
@@ -81,17 +84,22 @@ export function useFlyToTarget() {
         : createPortal(
             <>
                 {items.map((item) => {
-                    const sx = item.sourceRect.left;
-                    const sy = item.sourceRect.top;
                     const sw = item.sourceRect.width;
                     const sh = item.sourceRect.height;
+                    const startSize = item.startRound ? Math.min(sw, sh) : null;
+                    const startWidth = startSize ?? sw;
+                    const startHeight = startSize ?? sh;
+                    const startLeft = item.sourceRect.left + (sw - startWidth) / 2;
+                    const startTop = item.sourceRect.top + (sh - startHeight) / 2;
+                    const startRadius = item.startRound ? 9999 : 9;
+
                     const tx = item.targetRect.left;
                     const ty = item.targetRect.top;
                     const tw = item.targetRect.width;
                     const th = item.targetRect.height;
 
-                    const arcPeakY = Math.min(sy, ty) - 50;
-                    const midX = (sx + tx) / 2;
+                    const arcPeakY = Math.min(startTop, ty) - 50;
+                    const midX = (startLeft + tx) / 2;
 
                     return (
                         <motion.img
@@ -107,16 +115,16 @@ export function useFlyToTarget() {
                                 willChange: "top, left, width, height",
                             }}
                             initial={{
-                                top: sy,
-                                left: sx,
-                                width: sw,
-                                height: sh,
-                                borderRadius: 9,
+                                top: startTop,
+                                left: startLeft,
+                                width: startWidth,
+                                height: startHeight,
+                                borderRadius: startRadius,
                                 opacity: 1,
                             }}
                             animate={{
-                                top: [sy, arcPeakY, ty],
-                                left: [sx, midX, tx],
+                                top: [startTop, arcPeakY, ty],
+                                left: [startLeft, midX, tx],
                                 width: tw,
                                 height: th,
                                 borderRadius: 9999,

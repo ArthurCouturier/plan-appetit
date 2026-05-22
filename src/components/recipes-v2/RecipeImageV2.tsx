@@ -169,6 +169,7 @@ export default function RecipeImageV2({ recipeUuid, isOwner, emoji, className = 
     return (
         <div className={`${className} flex justify-center`}>
             <img
+                data-recipe-hero-image
                 src={`data:image/png;base64,${imageData}`}
                 alt="Illustration du plat"
                 onClick={() => setIsExpanded(!isExpanded)}

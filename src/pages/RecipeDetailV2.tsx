@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { SparklesIcon, TrashIcon, BookmarkIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, BookmarkIcon } from "@heroicons/react/24/solid";
 import { RecipeV2DTO } from "../api/interfaces/v2/RecipeV2";
 import RecipeV2Service, {
     RecipeV2ForbiddenError,
@@ -10,6 +10,7 @@ import RecipeService from "../api/services/RecipeService";
 import BackendService from "../api/services/BackendService";
 import useAuth from "../api/hooks/useAuth";
 import IngredientsListV2 from "../components/recipes-v2/IngredientsListV2";
+import AddToShoppingListButtonV2 from "../components/recipes-v2/AddToShoppingListButtonV2";
 import RecipeImageV2 from "../components/recipes-v2/RecipeImageV2";
 import RecipeStepsListV2 from "../components/recipes-v2/RecipeStepsListV2";
 import RecipeTimeFlipCardV2 from "../components/recipes-v2/RecipeTimeFlipCardV2";
@@ -78,15 +79,6 @@ export default function RecipeDetailV2() {
         if (!email || !token) return;
         BackendService.getUserCredits(email, token).then(setUserCredits).catch(() => undefined);
     }, [showPurchaseCreditsModal]);
-
-    const handleOpenModification = () => {
-        if (state.status !== "ok") return;
-        if (state.recipe.remainingModifications <= 0) {
-            setShowPurchaseCreditsModal(true);
-        } else {
-            setShowModificationModal(true);
-        }
-    };
 
     const handleModificationComplete = async () => {
         if (uuid) await fetchRecipe(uuid);
@@ -248,6 +240,10 @@ export default function RecipeDetailV2() {
                         <div className="lg:max-h-[calc(100dvh_-_10rem)] lg:overflow-y-auto">
                             <IngredientsListV2 ingredients={recipe.ingredients} />
                         </div>
+                        <AddToShoppingListButtonV2
+                            recipeUuid={recipe.uuid}
+                            recipeName={recipe.name}
+                        />
                     </div>
                 </aside>
 

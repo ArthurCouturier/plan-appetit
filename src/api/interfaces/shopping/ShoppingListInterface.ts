@@ -19,6 +19,9 @@ export interface ShoppingListSummaryInterface {
 
 export interface ShoppingListMemberInterface {
     userUid: string;
+    email: string;
+    displayName: string;
+    profilePhoto: string | null;
     role: ShoppingListMemberRole;
     joinedAt: string;
 }
@@ -42,10 +45,15 @@ export interface ShoppingListInterface {
     name: string;
     type: ShoppingListType;
     ownerUserUid: string;
+    inviteToken: string;
     createdAt: string;
     updatedAt: string;
     items: ShoppingListItemInterface[];
     members: ShoppingListMemberInterface[];
+}
+
+export interface AddShoppingListMemberRequest {
+    email: string;
 }
 
 export interface CreateShoppingListRequest {

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "../queryConfig";
 import ShoppingListService from "../services/ShoppingListService";
 import {
+    AddShoppingListMemberRequest,
     CreateShoppingListItemRequest,
     CreateShoppingListRequest,
     IngredientSuggestionInterface,
@@ -342,6 +343,72 @@ export function useDeleteShoppingItem(listUuid: string) {
                     if (m) setMirror(applyDeleteItem(m, itemUuid));
                 });
             }
+        },
+    });
+}
+
+export function useAddShoppingListMember(listUuid: string) {
+    const qc = useQueryClient();
+    return useMutation<ShoppingListInterface, Error, AddShoppingListMemberRequest>({
+        mutationFn: async (body) => {
+            const { email, token } = getAuthHeaders();
+            if (!email || !token) throw new Error("Non authentifié");
+            return ShoppingListService.addMember(email, token, listUuid, body);
+        },
+        onSuccess: (updated) => {
+            qc.setQueryData(queryKeys.shoppingLists.byId(listUuid), updated);
+            setCachedList(updated);
+            qc.invalidateQueries({ queryKey: queryKeys.shoppingLists.all() });
+        },
+    });
+}
+
+export function useRemoveShoppingListMember(listUuid: string) {
+    const qc = useQueryClient();
+    return useMutation<ShoppingListInterface, Error, string>({
+        mutationFn: async (targetUserUid) => {
+            const { email, token } = getAuthHeaders();
+            if (!email || !token) throw new Error("Non authentifié");
+            return ShoppingListService.removeMember(email, token, listUuid, targetUserUid);
+        },
+        onSuccess: (updated) => {
+            qc.setQueryData(queryKeys.shoppingLists.byId(listUuid), updated);
+            setCachedList(updated);
+            qc.invalidateQueries({ queryKey: queryKeys.shoppingLists.all() });
+        },
+    });
+}
+
+export function useLeaveShoppingList() {
+    const qc = useQueryClient();
+    return useMutation<ShoppingListInterface, Error, string>({
+        mutationFn: async (listUuid) => {
+            const { email, token } = getAuthHeaders();
+            if (!email || !token) throw new Error("Non authentifié");
+            return ShoppingListService.leaveList(email, token, listUuid);
+        },
+        onSuccess: (_updated, listUuid) => {
+            // L'utilisateur n'a plus accès à la liste : on retire de la cache + mirror.
+            deleteMirror(listUuid);
+            deleteCachedList(listUuid);
+            qc.removeQueries({ queryKey: queryKeys.shoppingLists.byId(listUuid) });
+            qc.invalidateQueries({ queryKey: queryKeys.shoppingLists.all() });
+        },
+    });
+}
+
+export function useJoinShoppingListByInviteToken() {
+    const qc = useQueryClient();
+    return useMutation<ShoppingListInterface, Error, string>({
+        mutationFn: async (inviteToken) => {
+            const { email, token } = getAuthHeaders();
+            if (!email || !token) throw new Error("Non authentifié");
+            return ShoppingListService.joinByInviteToken(email, token, inviteToken);
+        },
+        onSuccess: (joined) => {
+            setCachedList(joined);
+            qc.setQueryData(queryKeys.shoppingLists.byId(joined.uuid), joined);
+            qc.invalidateQueries({ queryKey: queryKeys.shoppingLists.all() });
         },
     });
 }

@@ -17,6 +17,8 @@ import { isNetworkError } from "../api/offline/networkError";
 import AddItemModal from "../components/shopping/AddItemModal";
 import DeleteListConfirmModal from "../components/shopping/DeleteListConfirmModal";
 import PageLoader from "../components/global/PageLoader";
+import ShareListSection from "../components/shopping/ShareListSection";
+import useAuth from "../api/hooks/useAuth";
 import EditableShoppingListTitle from "../components/shopping/EditableShoppingListTitle";
 import EyeToggleButton from "../components/shopping/EyeToggleButton";
 import ReconcileModal from "../components/shopping/ReconcileModal";
@@ -36,6 +38,7 @@ function readShowCheckedFromStorage(uuid: string): boolean {
 export default function ShoppingListPage() {
     const { uuid } = useParams<{ uuid: string }>();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { data: list, isLoading, isError, refetch } = useShoppingList(uuid);
     const rename = useRenameShoppingList(uuid ?? "");
     const updateItem = useUpdateShoppingItem(uuid ?? "");
@@ -238,16 +241,26 @@ export default function ShoppingListPage() {
                     </section>
                 ))}
 
-                <div className="mt-8 pt-4 border-t border-border-color">
-                    <button
-                        type="button"
-                        onClick={() => { lightHaptic(); setShowDeleteConfirm(true); }}
-                        className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-transparent border-2 border-cancel-1 text-cancel-1 font-semibold text-sm hover:bg-cancel-1/10 transition-colors"
-                    >
-                        <TrashIcon className="w-4 h-4" />
-                        Supprimer cette liste
-                    </button>
-                </div>
+                {user?.uid && (
+                    <ShareListSection
+                        list={list}
+                        currentUserUid={user.uid}
+                        onLeft={() => navigate("/shopping", { replace: true })}
+                    />
+                )}
+
+                {user?.uid === list.ownerUserUid && (
+                    <div className="mt-8 pt-4 border-t border-border-color">
+                        <button
+                            type="button"
+                            onClick={() => { lightHaptic(); setShowDeleteConfirm(true); }}
+                            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-transparent border-2 border-cancel-1 text-cancel-1 font-semibold text-sm hover:bg-cancel-1/10 transition-colors"
+                        >
+                            <TrashIcon className="w-4 h-4" />
+                            Supprimer cette liste
+                        </button>
+                    </div>
+                )}
             </div>
 
             <button

@@ -40,9 +40,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     if (result.user) {
                         console.log('Session native restaurée pour:', result.user.email);
 
-                        // Récupère le token depuis le cache (forceRefresh: false) pour ne pas hang offline.
-                        // fetchWithTokenRefresh forcera un refresh si un appel API retourne 401.
-                        const idTokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: false });
+                        // Récupérer un nouveau token
+                        const idTokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: true });
 
                         // Stocker token et email tout de suite
                         localStorage.setItem('firebaseIdToken', idTokenResult.token || "");
@@ -69,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             );
                             userData.role = backendUser.role;
                             userData.isPremium = backendUser.isPremium;
+                            if (backendUser.uid) userData.uid = backendUser.uid;
                             if (backendUser.displayName) userData.displayName = backendUser.displayName;
                             if (backendUser.profilePhoto) userData.profilePhoto = backendUser.profilePhoto;
                             queryClient.setQueryData(queryKeys.user.connect(), backendUser);

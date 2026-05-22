@@ -42,6 +42,7 @@ import RitualCalendarPage from "./pages/RitualCalendarPage";
 import RitualSettingsPage from "./pages/RitualSettingsPage";
 import ShoppingHome from "./pages/ShoppingHome";
 import ShoppingListPage from "./pages/ShoppingListPage";
+import ShoppingJoinPage from "./pages/ShoppingJoinPage";
 
 const router = createBrowserRouter([
     {
@@ -161,6 +162,10 @@ const router = createBrowserRouter([
                             {
                                 path: "shopping",
                                 element: <ShoppingHome />,
+                            },
+                            {
+                                path: "shopping/join/:token",
+                                element: <ShoppingJoinPage />,
                             },
                             {
                                 path: "shopping/:uuid",

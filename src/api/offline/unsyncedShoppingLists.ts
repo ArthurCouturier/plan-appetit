@@ -13,6 +13,7 @@ export interface UnsyncedShoppingListMirror {
     name: string;
     type: ShoppingListType;
     ownerUserUid: string;
+    inviteToken: string;
     createdAt: string;
     members: ShoppingListMemberInterface[];
     items: ShoppingListItemInterface[];
@@ -69,6 +70,7 @@ export function snapshotFromList(list: ShoppingListInterface): UnsyncedShoppingL
         name: list.name,
         type: list.type,
         ownerUserUid: list.ownerUserUid,
+        inviteToken: list.inviteToken,
         createdAt: list.createdAt,
         members: list.members.map((m) => ({ ...m })),
         items: list.items.map((it) => ({ ...it })),
@@ -95,6 +97,7 @@ export function mirrorToListInterface(mirror: UnsyncedShoppingListMirror): Shopp
         name: mirror.name,
         type: mirror.type,
         ownerUserUid: mirror.ownerUserUid,
+        inviteToken: mirror.inviteToken ?? "",
         createdAt: mirror.createdAt,
         updatedAt: mirror.switchedAt,
         items: mirror.items,

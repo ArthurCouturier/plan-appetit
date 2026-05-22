@@ -1,4 +1,5 @@
 import {
+    AddShoppingListMemberRequest,
     CreateShoppingListItemRequest,
     CreateShoppingListRequest,
     IngredientSuggestionInterface,
@@ -17,6 +18,22 @@ export class ShoppingListLimitReachedError extends Error {
         super(`Limite de ${limit} listes atteinte.`);
         this.name = "ShoppingListLimitReachedError";
         this.limit = limit;
+    }
+}
+
+export class MemberLimitReachedError extends Error {
+    readonly limit: number;
+    constructor(limit: number) {
+        super(`Limite de ${limit} membres par liste atteinte.`);
+        this.name = "MemberLimitReachedError";
+        this.limit = limit;
+    }
+}
+
+export class UserNotFoundError extends Error {
+    constructor() {
+        super("Utilisateur introuvable sur Plan'Appétit.");
+        this.name = "UserNotFoundError";
     }
 }
 
@@ -175,6 +192,77 @@ export default class ShoppingListService {
             body: JSON.stringify(body),
         });
         if (!response.ok) throw new Error("Erreur lors de la resynchronisation.");
+        return response.json();
+    }
+
+    public static async addMember(
+        email: string,
+        token: string,
+        listUuid: string,
+        body: AddShoppingListMemberRequest,
+    ): Promise<ShoppingListInterface> {
+        const response = await fetchWithTokenRefresh(`${this.endpoint()}/${listUuid}/members`, {
+            method: "POST",
+            headers: this.authHeaders(email, token),
+            body: JSON.stringify(body),
+        });
+        if (response.status === 404) {
+            const payload = await response.json().catch(() => null) as { code?: string } | null;
+            if (payload?.code === "USER_NOT_FOUND") throw new UserNotFoundError();
+        }
+        if (response.status === 409) {
+            const payload = await response.json().catch(() => null) as { code?: string; limit?: number } | null;
+            if (payload?.code === "MEMBER_LIMIT_REACHED") {
+                throw new MemberLimitReachedError(payload.limit ?? 10);
+            }
+        }
+        if (!response.ok) throw new Error("Erreur lors de l'ajout du membre.");
+        return response.json();
+    }
+
+    public static async removeMember(
+        email: string,
+        token: string,
+        listUuid: string,
+        targetUserUid: string,
+    ): Promise<ShoppingListInterface> {
+        const response = await fetchWithTokenRefresh(
+            `${this.endpoint()}/${listUuid}/members/${encodeURIComponent(targetUserUid)}`,
+            { method: "DELETE", headers: this.authHeaders(email, token) },
+        );
+        if (!response.ok) throw new Error("Erreur lors du retrait du membre.");
+        return response.json();
+    }
+
+    public static async leaveList(
+        email: string,
+        token: string,
+        listUuid: string,
+    ): Promise<ShoppingListInterface> {
+        const response = await fetchWithTokenRefresh(`${this.endpoint()}/${listUuid}/leave`, {
+            method: "DELETE",
+            headers: this.authHeaders(email, token),
+        });
+        if (!response.ok) throw new Error("Erreur lors du départ de la liste.");
+        return response.json();
+    }
+
+    public static async joinByInviteToken(
+        email: string,
+        token: string,
+        inviteToken: string,
+    ): Promise<ShoppingListInterface> {
+        const response = await fetchWithTokenRefresh(
+            `${this.endpoint()}/join/${encodeURIComponent(inviteToken)}`,
+            { method: "POST", headers: this.authHeaders(email, token) },
+        );
+        if (response.status === 409) {
+            const payload = await response.json().catch(() => null) as { code?: string; limit?: number } | null;
+            if (payload?.code === "MEMBER_LIMIT_REACHED") {
+                throw new MemberLimitReachedError(payload.limit ?? 10);
+            }
+        }
+        if (!response.ok) throw new Error("Lien invalide ou expiré.");
         return response.json();
     }
 

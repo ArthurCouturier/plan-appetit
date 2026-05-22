@@ -105,9 +105,11 @@ export default function ReconcileModal({
     onSuccess,
 }: ReconcileModalProps) {
     const diff = useMemo(() => computeDiff(mirror, remote), [mirror, remote]);
-    const [nameSide, setNameSide] = useState<ConflictSide>("local");
+    // Online-priority defaults : conflits + suppressions locales défavorisent le local,
+    // les ajouts seul-côté sont conservés par défaut (rien à arbitrer).
+    const [nameSide, setNameSide] = useState<ConflictSide>("remote");
     const [itemSides, setItemSides] = useState<Record<string, ConflictSide>>(() =>
-        Object.fromEntries(diff.itemConflicts.map((c) => [c.uuid, "local" as ConflictSide])),
+        Object.fromEntries(diff.itemConflicts.map((c) => [c.uuid, "remote" as ConflictSide])),
     );
     const [localOnlyDecisions, setLocalOnlyDecisions] = useState<Record<string, KeepDecision>>(() =>
         Object.fromEntries(diff.localOnly.map((it) => [it.uuid, "keep" as KeepDecision])),
@@ -116,7 +118,7 @@ export default function ReconcileModal({
         Object.fromEntries(diff.remoteOnly.map((it) => [it.uuid, "keep" as KeepDecision])),
     );
     const [localDeletedDecisions, setLocalDeletedDecisions] = useState<Record<string, KeepDecision>>(() =>
-        Object.fromEntries(diff.localDeleted.map((it) => [it.uuid, "discard" as KeepDecision])),
+        Object.fromEntries(diff.localDeleted.map((it) => [it.uuid, "keep" as KeepDecision])),
     );
     const reconcile = useReconcileShoppingList(mirror.sourceUuid);
 
@@ -304,7 +306,6 @@ export default function ReconcileModal({
                                         onChange={(d) => setLocalDeletedDecisions((s) => ({ ...s, [it.uuid]: d }))}
                                         keepLabel="Restaurer"
                                         discardLabel="Confirmer la suppression"
-                                        discardFirst
                                     />
                                 </li>
                             ))}

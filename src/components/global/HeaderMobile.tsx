@@ -5,6 +5,20 @@ import UserAvatar from "./UserAvatar";
 import useAuth from "../../api/hooks/useAuth";
 import NotificationBell from "../notifications/NotificationBell";
 
+export const SHOW_HEADER_EVENT = "header:show";
+export const HEADER_TRANSITION_MS = 300;
+
+let headerIsVisible = true;
+
+export function requestShowHeader(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(SHOW_HEADER_EVENT));
+}
+
+export function isMobileHeaderVisible(): boolean {
+  return headerIsVisible;
+}
+
 export default function HeaderMobile() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,6 +47,16 @@ export default function HeaderMobile() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  useEffect(() => {
+    const handleForceShow = () => setIsVisible(true);
+    window.addEventListener(SHOW_HEADER_EVENT, handleForceShow);
+    return () => window.removeEventListener(SHOW_HEADER_EVENT, handleForceShow);
+  }, []);
+
+  useEffect(() => {
+    headerIsVisible = isVisible;
+  }, [isVisible]);
 
   // Ne pas afficher le header sur la page login
   if (location.pathname === "/login") {
@@ -76,6 +100,7 @@ export default function HeaderMobile() {
 
       <div className="flex items-center gap-2">
         <button
+          data-shopping-cart-target
           onClick={() => navigate("/shopping")}
           aria-label="Liste de courses"
           className="w-10 h-10 flex items-center justify-center rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md hover:bg-cout-purple transition-colors"

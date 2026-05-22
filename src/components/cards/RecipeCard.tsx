@@ -1,14 +1,16 @@
 import { useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeSummaryInterface from "../../api/interfaces/recipes/RecipeSummaryInterface";
 import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
 import { useAddRecipeToShoppingList } from "../../api/hooks/useAddRecipeToShoppingList";
-import { UserGroupIcon, CurrencyEuroIcon, ClockIcon, CheckIcon } from "@heroicons/react/24/solid";
+import { UserGroupIcon, CurrencyEuroIcon, ClockIcon } from "@heroicons/react/24/solid";
 import { heavyHaptic } from "../../haptics/heavy";
-import { lightHaptic } from "../../haptics/light";
+import { successHaptic } from "../../haptics/success";
 import { errorHaptic } from "../../haptics/error";
 import ShoppingCartAddIcon from "../shopping/ShoppingCartAddIcon";
+import { useFlyToTarget } from "../../hooks/useFlyToTarget";
+import { HEADER_TRANSITION_MS, isMobileHeaderVisible, requestShowHeader } from "../global/HeaderMobile";
 
 type RecipeCardProps = {
     recipe: RecipeInterface | RecipeSummaryInterface;
@@ -65,29 +67,9 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     const restLabel = restTimeMin && restTimeMin > 0 ? formatDuration(restTimeMin) : null;
 
     const addToList = useAddRecipeToShoppingList();
-    const [justAdded, setJustAdded] = useState(false);
-
-    useEffect(() => {
-        if (!justAdded) return;
-        const id = window.setTimeout(() => setJustAdded(false), 1800);
-        return () => window.clearTimeout(id);
-    }, [justAdded]);
-
-    const handleAddToShoppingList = useCallback((event: React.MouseEvent | React.TouchEvent) => {
-        event.stopPropagation();
-        event.preventDefault();
-        if (addToList.isPending) return;
-        addToList.mutate(
-            { recipeUuid: String(recipe.uuid) },
-            {
-                onSuccess: () => {
-                    lightHaptic();
-                    setJustAdded(true);
-                },
-                onError: () => errorHaptic(),
-            },
-        );
-    }, [addToList, recipe.uuid]);
+    const [flying, setFlying] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
+    const { fly, portal } = useFlyToTarget();
 
     const updateRotation = useCallback((value: number) => {
         rotationRef.current = value;
@@ -239,6 +221,51 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         }, 350);
     }, [updateRotation, normalizeRotation, clearTransitionTimeout]);
 
+    const handleAddToShoppingList = useCallback((event: React.MouseEvent | React.TouchEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+        if (addToList.isPending || flying) return;
+
+        setFlying(true);
+
+        addToList.mutate(
+            { recipeUuid: String(recipe.uuid) },
+            {
+                onSuccess: () => successHaptic(),
+                onError: () => {
+                    errorHaptic();
+                    setFlying(false);
+                },
+            },
+        );
+
+        const wasFlipped = isCurrentlyFlipped();
+        if (wasFlipped) flipBack(-1);
+
+        const headerWasHidden = !isMobileHeaderVisible();
+        if (headerWasHidden) requestShowHeader();
+
+        const flipDelay = wasFlipped ? 150 : 0;
+        const headerDelay = headerWasHidden ? HEADER_TRANSITION_MS : 0;
+        const delayBeforeFly = Math.max(flipDelay, headerDelay);
+
+        setTimeout(() => {
+            if (!imgRef.current || !imageData) {
+                setFlying(false);
+                return;
+            }
+            const sourceRect = imgRef.current.getBoundingClientRect();
+            fly({
+                sourceRect,
+                targetSelector: '[data-shopping-cart-target]',
+                imageSrc: `data:image/png;base64,${imageData}`,
+                alt: recipe.name,
+                durationMs: 650,
+                onArrived: () => setFlying(false),
+            });
+        }, delayBeforeFly);
+    }, [addToList, recipe.uuid, recipe.name, flying, isCurrentlyFlipped, flipBack, fly, imageData]);
+
     const handleClick = useCallback((e: React.MouseEvent) => {
         if (didSwipeRef.current) return;
         if (transitioning) return;
@@ -317,6 +344,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                                 <div className="w-full h-full bg-gradient-to-r from-border-color via-secondary to-border-color animate-shimmer bg-[length:200%_100%]" />
                             ) : imageData ? (
                                 <img
+                                    ref={imgRef}
                                     src={`data:image/png;base64,${imageData}`}
                                     alt={recipe.name}
                                     className="w-full h-full object-cover"
@@ -383,18 +411,15 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                         onTouchEnd={handleAddToShoppingList}
                         onMouseDown={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
-                        disabled={addToList.isPending}
+                        disabled={addToList.isPending || flying}
                         aria-label="Ajouter les ingrédients à ma liste de courses"
                         className="absolute bottom-2 left-0 right-0 mx-auto w-16 h-8 flex items-center justify-center rounded-full bg-cout-yellow text-cout-purple shadow-md disabled:opacity-50 transition-transform active:scale-95"
                     >
-                        {justAdded ? (
-                            <CheckIcon className="w-4 h-4" />
-                        ) : (
-                            <ShoppingCartAddIcon />
-                        )}
+                        <ShoppingCartAddIcon />
                     </button>
                 </div>
             </div>
+            {portal}
         </div>
     );
 }

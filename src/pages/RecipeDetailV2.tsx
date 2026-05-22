@@ -191,17 +191,6 @@ export default function RecipeDetailV2() {
                         )}
 
                         <RecipeShareButtonV2 recipeName={recipe.name} fullWidth className="flex-1" />
-
-                        {isOwner && (
-                            <button
-                                onClick={handleOpenModification}
-                                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg transition-all"
-                            >
-                                <SparklesIcon className="w-5 h-5 flex-shrink-0" />
-                                <span>Assistant IA</span>
-                            </button>
-                        )}
-
                         <RecipeRemixButtonV2 recipeUuid={recipe.uuid} fullWidth className="flex-1" />
                     </div>
                 </div>
@@ -228,30 +217,12 @@ export default function RecipeDetailV2() {
                         />
                         <div className="flex flex-col gap-2 h-full">
                             <RecipeShareButtonV2 recipeName={recipe.name} fullWidth className="flex-1" />
-                            {isOwner && (
-                                <button
-                                    onClick={handleOpenModification}
-                                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg transition-all flex-1"
-                                >
-                                    <SparklesIcon className="w-5 h-5 flex-shrink-0" />
-                                    <span>Assistant IA</span>
-                                </button>
-                            )}
                             <RecipeRemixButtonV2 recipeUuid={recipe.uuid} fullWidth className="flex-1" />
                         </div>
                     </div>
                 ) : (
                     <div className="lg:hidden flex flex-col gap-2">
                         <RecipeShareButtonV2 recipeName={recipe.name} fullWidth />
-                        {isOwner && (
-                            <button
-                                onClick={handleOpenModification}
-                                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg transition-all w-full"
-                            >
-                                <SparklesIcon className="w-5 h-5 flex-shrink-0" />
-                                <span>Assistant IA</span>
-                            </button>
-                        )}
                         <RecipeRemixButtonV2 recipeUuid={recipe.uuid} fullWidth />
                     </div>
                 )}

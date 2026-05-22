@@ -50,6 +50,17 @@ export interface ShoppingListInterface {
     updatedAt: string;
     items: ShoppingListItemInterface[];
     members: ShoppingListMemberInterface[];
+    /** SHA-256 hex de l'état canonique de la liste, pour détecter une divergence après event SSE. */
+    checksum: string;
+}
+
+export type ShoppingListSseEventType = "LIST_UPDATED" | "LIST_DELETED";
+
+export interface ShoppingListSseEvent {
+    type: ShoppingListSseEventType;
+    listUuid: string;
+    checksum: string | null;
+    occurredAt: string;
 }
 
 export interface AddShoppingListMemberRequest {

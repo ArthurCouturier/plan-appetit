@@ -2,44 +2,37 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useAuth from "../api/hooks/useAuth";
 import { useJoinShoppingListByInviteToken } from "../api/hooks/useShoppingLists";
-import {
-    MemberLimitReachedError,
-} from "../api/services/ShoppingListService";
+import { MemberLimitReachedError } from "../api/services/ShoppingListService";
 import PageLoader from "../components/global/PageLoader";
-import { lightHaptic } from "../haptics/light";
-import { errorHaptic } from "../haptics/error";
 
 export default function ShoppingJoinPage() {
     const { token } = useParams<{ token: string }>();
     const navigate = useNavigate();
     const { user } = useAuth();
     const join = useJoinShoppingListByInviteToken();
-    const triggeredRef = useRef(false);
+    const firedRef = useRef(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        if (firedRef.current) return;
         if (!token) return;
         if (user === undefined) return;
         if (user === null) {
             navigate(`/login?returnTo=${encodeURIComponent(`/shopping/join/${token}`)}`, { replace: true });
             return;
         }
-        if (triggeredRef.current) return;
-        triggeredRef.current = true;
-        join.mutate(token, {
-            onSuccess: (joined) => {
-                lightHaptic();
+        firedRef.current = true;
+        join.mutateAsync(token)
+            .then((joined) => {
                 navigate(`/shopping/${joined.uuid}`, { replace: true });
-            },
-            onError: (err) => {
-                errorHaptic();
+            })
+            .catch((err) => {
                 if (err instanceof MemberLimitReachedError) {
                     setError(`Cette liste a atteint sa limite de ${err.limit} membres.`);
                 } else {
-                    setError(err.message);
+                    setError(err?.message ?? "Erreur lors du rejoin.");
                 }
-            },
-        });
+            });
     }, [token, user, navigate, join]);
 
     if (error) {

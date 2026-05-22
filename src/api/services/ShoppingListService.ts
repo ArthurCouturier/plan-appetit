@@ -6,11 +6,13 @@ import {
     ReconcileShoppingListRequest,
     ShoppingListInterface,
     ShoppingListItemInterface,
+    ShoppingListSseEvent,
     ShoppingListSummaryInterface,
     UpdateShoppingListItemRequest,
     UpdateShoppingListRequest,
 } from "../interfaces/shopping/ShoppingListInterface";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
+import { openSseConnection, SseClientOptions } from "./SseClient";
 
 export class ShoppingListLimitReachedError extends Error {
     readonly limit: number;
@@ -61,14 +63,19 @@ export default class ShoppingListService {
         };
     }
 
+    /** Timeout court pour les reads : fail fast offline plutôt que d'attendre 180s. */
+    private static readonly READ_TIMEOUT_MS = 8_000;
+
     public static async list(
         email: string,
         token: string,
     ): Promise<ShoppingListSummaryInterface[]> {
-        const response = await fetchWithTokenRefresh(this.endpoint(), {
-            method: "GET",
-            headers: this.authHeaders(email, token),
-        });
+        const response = await fetchWithTokenRefresh(
+            this.endpoint(),
+            { method: "GET", headers: this.authHeaders(email, token) },
+            2,
+            this.READ_TIMEOUT_MS,
+        );
         if (!response.ok) throw new Error("Erreur lors de la récupération des listes.");
         return response.json();
     }
@@ -78,10 +85,12 @@ export default class ShoppingListService {
         token: string,
         uuid: string,
     ): Promise<ShoppingListInterface> {
-        const response = await fetchWithTokenRefresh(`${this.endpoint()}/${uuid}`, {
-            method: "GET",
-            headers: this.authHeaders(email, token),
-        });
+        const response = await fetchWithTokenRefresh(
+            `${this.endpoint()}/${uuid}`,
+            { method: "GET", headers: this.authHeaders(email, token) },
+            2,
+            this.READ_TIMEOUT_MS,
+        );
         if (!response.ok) throw new Error("Erreur lors du chargement de la liste.");
         return response.json();
     }
@@ -282,6 +291,19 @@ export default class ShoppingListService {
         );
         if (!response.ok) throw new Error("Erreur lors de l'ajout des ingrédients de la recette.");
         return response.json();
+    }
+
+    public static subscribeEvents(
+        email: string,
+        token: string,
+        listUuid: string,
+        handlers: Pick<SseClientOptions<ShoppingListSseEvent>, "onOpen" | "onMessage" | "onError" | "onClose">,
+    ): AbortController {
+        return openSseConnection<ShoppingListSseEvent>({
+            url: `${this.endpoint()}/${listUuid}/events`,
+            headers: this.authHeaders(email, token),
+            ...handlers,
+        });
     }
 
     public static async searchIngredients(

@@ -10,10 +10,14 @@ import {
     useUpdateShoppingItem,
 } from "../api/hooks/useShoppingLists";
 import { useActiveShoppingList } from "../api/hooks/useActiveShoppingList";
+import { useSharedShoppingListLiveSync } from "../api/hooks/useSharedShoppingListLiveSync";
 import { useUnsyncedShoppingList } from "../api/hooks/useUnsyncedShoppingList";
 import { ShoppingListItemInterface, ShoppingListInterface } from "../api/interfaces/shopping/ShoppingListInterface";
 import ShoppingListService from "../api/services/ShoppingListService";
 import { isNetworkError } from "../api/offline/networkError";
+import { deleteMirror } from "../api/offline/unsyncedShoppingLists";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../api/queryConfig";
 import AddItemModal from "../components/shopping/AddItemModal";
 import DeleteListConfirmModal from "../components/shopping/DeleteListConfirmModal";
 import PageLoader from "../components/global/PageLoader";
@@ -47,6 +51,8 @@ export default function ShoppingListPage() {
     const { activeUuid, setActiveUuid } = useActiveShoppingList();
     const mirror = useUnsyncedShoppingList(uuid);
     const isOffline = !!mirror;
+    const liveSync = useSharedShoppingListLiveSync(isOffline ? undefined : list);
+    const qc = useQueryClient();
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const [showChecked, setShowChecked] = useState<boolean>(() =>
@@ -126,10 +132,14 @@ export default function ShoppingListPage() {
         return <PageLoader />;
     }
 
-    if (isError || !list) {
+    // Si on a une liste (via setQueryData après join, cache localStorage ou mirror),
+    // on l'affiche même si le dernier refetch a échoué. Le refetch silencieux retentera plus tard.
+    if (!list) {
         return (
             <div className="min-h-screen bg-bg-color px-4 pb-8 mobile-content-with-header flex flex-col items-center justify-center gap-3">
-                <p className="text-text-secondary text-sm">Liste introuvable.</p>
+                <p className="text-text-secondary text-sm">
+                    {isError ? "Erreur lors du chargement." : "Liste introuvable."}
+                </p>
                 <button
                     type="button"
                     onClick={() => refetch()}
@@ -166,6 +176,28 @@ export default function ShoppingListPage() {
                         showChecked={showChecked}
                         onToggle={handleToggleShowChecked}
                     />
+                    {list.type === "SHARED" && !isOffline && (
+                        <span
+                            aria-label={
+                                liveSync.status === "connected" ? "Synchro temps réel active"
+                                : liveSync.status === "reconnecting" ? "Reconnexion..."
+                                : liveSync.status === "connecting" ? "Connexion..."
+                                : "Synchro temps réel inactive"
+                            }
+                            title={
+                                liveSync.status === "connected" ? "Live"
+                                : liveSync.status === "reconnecting" ? "Reconnexion..."
+                                : liveSync.status === "connecting" ? "Connexion..."
+                                : "Hors live"
+                            }
+                            className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-bg-color ${
+                                liveSync.status === "connected" ? "bg-green-500"
+                                : liveSync.status === "reconnecting" ? "bg-yellow-500 animate-pulse"
+                                : liveSync.status === "connecting" ? "bg-yellow-500 animate-pulse"
+                                : "bg-text-secondary/40"
+                            }`}
+                        />
+                    )}
                 </div>
 
                 {isOffline && (
@@ -249,7 +281,7 @@ export default function ShoppingListPage() {
                     />
                 )}
 
-                {user?.uid === list.ownerUserUid && (
+                {(isOffline || user?.uid === list.ownerUserUid) && (
                     <div className="mt-8 pt-4 border-t border-border-color">
                         <button
                             type="button"
@@ -257,7 +289,7 @@ export default function ShoppingListPage() {
                             className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-transparent border-2 border-cancel-1 text-cancel-1 font-semibold text-sm hover:bg-cancel-1/10 transition-colors"
                         >
                             <TrashIcon className="w-4 h-4" />
-                            Supprimer cette liste
+                            {isOffline ? "Supprimer la copie locale" : "Supprimer cette liste"}
                         </button>
                     </div>
                 )}
@@ -290,21 +322,41 @@ export default function ShoppingListPage() {
             )}
 
             {showDeleteConfirm && (
-                <DeleteListConfirmModal
-                    listName={list.name}
-                    isPending={deleteList.isPending}
-                    onCancel={() => setShowDeleteConfirm(false)}
-                    onConfirm={() => {
-                        deleteList.mutate(list.uuid, {
-                            onSuccess: () => {
-                                lightHaptic();
-                                setShowDeleteConfirm(false);
-                                navigate("/shopping", { replace: true });
-                            },
-                            onError: () => errorHaptic(),
-                        });
-                    }}
-                />
+                isOffline ? (
+                    <DeleteListConfirmModal
+                        listName={list.name}
+                        isPending={false}
+                        title="Supprimer la copie locale"
+                        description="Tes modifications hors ligne seront perdues. La liste reste accessible en ligne (depuis tes autres devices ou à la prochaine connexion)."
+                        confirmLabel="Supprimer la copie locale"
+                        onCancel={() => setShowDeleteConfirm(false)}
+                        onConfirm={() => {
+                            lightHaptic();
+                            deleteMirror(list.uuid);
+                            // On garde le cache détail (dernier état serveur valide) pour next fetch rapide.
+                            qc.invalidateQueries({ queryKey: queryKeys.shoppingLists.byId(list.uuid) });
+                            qc.invalidateQueries({ queryKey: queryKeys.shoppingLists.all() });
+                            setShowDeleteConfirm(false);
+                            navigate("/shopping", { replace: true });
+                        }}
+                    />
+                ) : (
+                    <DeleteListConfirmModal
+                        listName={list.name}
+                        isPending={deleteList.isPending}
+                        onCancel={() => setShowDeleteConfirm(false)}
+                        onConfirm={() => {
+                            deleteList.mutate(list.uuid, {
+                                onSuccess: () => {
+                                    lightHaptic();
+                                    setShowDeleteConfirm(false);
+                                    navigate("/shopping", { replace: true });
+                                },
+                                onError: () => errorHaptic(),
+                            });
+                        }}
+                    />
+                )
             )}
         </div>
     );

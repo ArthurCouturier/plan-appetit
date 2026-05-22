@@ -93,10 +93,12 @@ export function useShoppingLists() {
                 throw err;
             }
         },
+        // Toujours retourner un array (jamais undefined) pour que isLoading=false
+        // dès le premier render → l'UI affiche instant ce qu'on a (cache + mirrors),
+        // même si vide. Le fetch background met à jour si succès, sinon on garde le local.
         initialData: () => {
             const cached = getCachedSummaries();
             const mirrors = getAllMirrors();
-            if (!cached && mirrors.length === 0) return undefined;
             return mergeSummariesPreferringMirrors(cached ?? [], mirrors);
         },
         initialDataUpdatedAt: 0,

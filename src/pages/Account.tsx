@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
@@ -6,6 +6,7 @@ import { auth } from '../api/authentication/firebase';
 import useAuth from '../api/hooks/useAuth';
 import Footer from '../components/global/Footer';
 import BackendService from '../api/services/BackendService';
+import UserProfileService from '../api/services/UserProfileService';
 import CreditPaywallModal from '../components/modals/CreditPaywallModal';
 import { SunIcon, MoonIcon, ArrowRightOnRectangleIcon, SparklesIcon, PlusIcon, WrenchScrewdriverIcon, PencilSquareIcon } from "@heroicons/react/24/solid";
 import { isPremiumUser, hasRoleLevel, UserRole } from '../api/interfaces/users/UserInterface';
@@ -57,6 +58,33 @@ export default function Account() {
             fetchAccountInfo();
         }
     }, [user, navigate]);
+
+    // Au chargement de la page Profil, refetch /me/profile pour récupérer la dernière
+    // photo / displayName. Couvre le cas où la photo a été ajoutée/changée depuis un autre
+    // device (notre cache local pourrait être null ou stale).
+    const userRef = useRef(user);
+    const loginRef = useRef(login);
+    useEffect(() => {
+        userRef.current = user;
+        loginRef.current = login;
+    });
+    useEffect(() => {
+        const token = localStorage.getItem('firebaseIdToken');
+        const email = localStorage.getItem('email');
+        if (!token || !email) return;
+        UserProfileService.getMyProfile(email, token).then((profile) => {
+            const currentUser = userRef.current;
+            if (!currentUser) return;
+            const newPhoto = profile.profilePhoto ?? '/no-pp.jpg';
+            const newName = profile.displayName || currentUser.displayName;
+            if (newPhoto !== currentUser.profilePhoto || newName !== currentUser.displayName) {
+                localStorage.setItem('profilePhoto', newPhoto);
+                loginRef.current({ ...currentUser, profilePhoto: newPhoto, displayName: newName });
+            }
+        }).catch((err) => {
+            console.warn('Profile fetch failed', err);
+        });
+    }, []);
 
     useEffect(() => {
         if (credits !== null && credits <= 1 && !isUserPremium) {

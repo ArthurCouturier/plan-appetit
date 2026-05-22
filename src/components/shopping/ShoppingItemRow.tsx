@@ -25,7 +25,7 @@ export default function ShoppingItemRow({ item, onToggle, onDelete }: ShoppingIt
 
     return (
         <li
-            className="bg-secondary border border-border-color rounded-xl p-3 flex items-center gap-3 mx-auto w-full"
+            className="bg-secondary border border-border-color rounded-xl flex items-stretch overflow-hidden mx-auto w-full"
             style={{
                 transform: item.checked ? "scale(0.9)" : "scale(1)",
                 opacity: item.checked ? 0.6 : 1,
@@ -36,47 +36,52 @@ export default function ShoppingItemRow({ item, onToggle, onDelete }: ShoppingIt
                 type="button"
                 onClick={handleToggle}
                 aria-label={item.checked ? "Décocher" : "Cocher"}
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                    item.checked
-                        ? "bg-cout-yellow border-cout-yellow text-cout-purple"
-                        : "border-border-color"
-                }`}
+                className="flex-1 flex items-center gap-3 p-3 text-left min-w-0"
             >
-                {item.checked && (
-                    <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3">
-                        <polyline points="3 8.5 6.5 12 13 5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                )}
-            </button>
-
-            <span className="text-xl flex-shrink-0" aria-hidden>
-                {item.emoji}
-            </span>
-
-            <div className="relative flex-1 min-w-0">
-                <p className="text-sm font-semibold text-text-primary truncate">
-                    {displayName}
-                    {quantityLabel && (
-                        <span className="text-text-secondary font-normal ml-2">
-                            {quantityLabel}
-                        </span>
-                    )}
-                </p>
-                <span
+                <div
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                        item.checked
+                            ? "bg-cout-yellow border-cout-yellow text-cout-purple"
+                            : "border-border-color"
+                    }`}
                     aria-hidden
-                    className="pointer-events-none absolute left-0 top-1/2 h-[2px] bg-current text-text-primary"
-                    style={{
-                        width: item.checked ? "100%" : "0%",
-                        transition: "width 200ms ease-out",
-                    }}
-                />
-            </div>
+                >
+                    {item.checked && (
+                        <svg viewBox="0 0 16 16" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3">
+                            <polyline points="3 8.5 6.5 12 13 5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                    )}
+                </div>
+
+                <span className="text-xl flex-shrink-0" aria-hidden>
+                    {item.emoji}
+                </span>
+
+                <div className="relative flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-text-primary truncate">
+                        {displayName}
+                        {quantityLabel && (
+                            <span className="text-text-secondary font-normal ml-2">
+                                {quantityLabel}
+                            </span>
+                        )}
+                    </p>
+                    <span
+                        aria-hidden
+                        className="pointer-events-none absolute left-0 top-1/2 h-[2px] bg-current text-text-primary"
+                        style={{
+                            width: item.checked ? "100%" : "0%",
+                            transition: "width 200ms ease-out",
+                        }}
+                    />
+                </div>
+            </button>
 
             <button
                 type="button"
                 onClick={onDelete}
                 aria-label="Supprimer"
-                className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-cancel-1 transition-colors flex-shrink-0"
+                className="flex items-center justify-center px-3 text-text-secondary hover:text-cancel-1 transition-colors flex-shrink-0 border-l border-border-color/50"
             >
                 <XMarkIcon className="w-5 h-5" />
             </button>

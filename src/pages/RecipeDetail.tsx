@@ -19,6 +19,7 @@ import { Share } from "@capacitor/share";
 import { useDelayedNotificationPrompt } from "../api/hooks/useDelayedNotificationPrompt";
 import useIsMobile from "../hooks/useIsMobile";
 import { useWatchRecipeSync } from "../hooks/useWatchRecipeSync";
+import PageLoader from "../components/global/PageLoader";
 
 export default function RecipeDetail() {
 
@@ -213,14 +214,7 @@ export default function RecipeDetail() {
     };
 
     if (loading) {
-        return (
-            <div className={`min-h-screen bg-bg-color ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-                <div className="bg-primary rounded-xl shadow-lg border border-border-color p-12 mt-4 text-center">
-                    <div className="animate-spin w-12 h-12 border-4 border-cout-base border-t-transparent rounded-full mx-auto mb-4"></div>
-                    <p className="text-text-secondary">Chargement de la recette...</p>
-                </div>
-            </div>
-        );
+        return <PageLoader message="Chargement de la recette..." />;
     }
 
     if (notFound || !recipe) {

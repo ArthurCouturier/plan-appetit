@@ -19,6 +19,7 @@ import Modal from '../components/modals/Modal';
 import { CookieConsentManager } from '../components/global/CookieConsentBanner';
 import { isPremiumUser } from '../api/interfaces/users/UserInterface';
 import { SubscriptionStatusInterface } from '../api/interfaces/subscription/SubscriptionStatusInterface';
+import PageLoader from '../components/global/PageLoader';
 
 export default function AccountSettings() {
     const { user } = useAuth();
@@ -115,7 +116,7 @@ export default function AccountSettings() {
 
 
     if (user === undefined) {
-        return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;
+        return <PageLoader />;
     }
 
     const handleChangePassword = async (e: React.FormEvent) => {

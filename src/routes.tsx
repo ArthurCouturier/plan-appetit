@@ -49,16 +49,16 @@ const router = createBrowserRouter([
         errorElement: <NotFound />,
         children: [
             {
-                index: true,
-                element: <Home />,
-            },
-            {
                 path: "onboarding",
                 element: <Onboarding />,
             },
             {
                 element: <Layout />,
                 children: [
+                    {
+                        index: true,
+                        element: <Home />,
+                    },
                     {
                         path: "instagram",
                         element: <InstagramImport />,

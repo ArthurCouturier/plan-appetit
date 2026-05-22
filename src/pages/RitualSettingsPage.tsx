@@ -6,6 +6,7 @@ import {
 } from "../api/hooks/useCulinaryProfile";
 import { lightHaptic } from "../haptics/light";
 import { errorHaptic } from "../haptics/error";
+import PageLoader from "../components/global/PageLoader";
 
 function timeToHHmm(value: string): string {
     return value.length >= 5 ? value.slice(0, 5) : value;
@@ -50,14 +51,7 @@ export default function RitualSettingsPage() {
     };
 
     if (isLoading) {
-        return (
-            <div
-                className="min-h-screen flex items-center justify-center bg-primary"
-                style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
-            >
-                <p className="text-text-secondary">Chargement...</p>
-            </div>
-        );
+        return <PageLoader />;
     }
 
     return (

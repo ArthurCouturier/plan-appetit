@@ -40,8 +40,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     if (result.user) {
                         console.log('Session native restaurée pour:', result.user.email);
 
-                        // Récupérer un nouveau token
-                        const idTokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: true });
+                        // Récupère le token depuis le cache (forceRefresh: false) pour ne pas hang offline.
+                        // fetchWithTokenRefresh forcera un refresh si un appel API retourne 401.
+                        const idTokenResult = await FirebaseAuthentication.getIdToken({ forceRefresh: false });
 
                         // Stocker token et email tout de suite
                         localStorage.setItem('firebaseIdToken', idTokenResult.token || "");

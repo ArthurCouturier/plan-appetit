@@ -6,6 +6,7 @@ import BatchCookingV2Service from "../api/services/BatchCookingV2Service";
 import { mapV2BcToV0Response } from "../api/adapters/batchCookingV2Adapter";
 import BatchStep4Results from "../components/batchcooking/BatchStep4Results";
 import { queryKeys } from "../api/queryConfig";
+import PageLoader from "../components/global/PageLoader";
 
 export default function BatchCookingDetail() {
     const { uuid } = useParams<{ uuid: string }>();
@@ -45,11 +46,7 @@ export default function BatchCookingDetail() {
     };
 
     if (isLoading) {
-        return (
-            <div className="min-h-screen bg-bg-color flex items-center justify-center" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 4rem)" }}>
-                <div className="animate-pulse text-text-secondary">Chargement en cours...</div>
-            </div>
-        );
+        return <PageLoader />;
     }
 
     if (isError || !batchCooking) {

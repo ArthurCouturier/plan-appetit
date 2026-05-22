@@ -17,6 +17,7 @@ import useFeedback from '../api/hooks/useFeedback';
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import ReferralSection from '../components/referral/ReferralSection';
 import EditProfileModal from '../components/profile/EditProfileModal';
+import PageLoader from '../components/global/PageLoader';
 
 export default function Account() {
     const { user, logout, login } = useAuth();
@@ -71,7 +72,7 @@ export default function Account() {
 
 
     if (user === undefined) {
-        return <div className="flex items-center justify-center min-h-screen">Chargement...</div>;
+        return <PageLoader />;
     }
 
     const handleLogout = async () => {

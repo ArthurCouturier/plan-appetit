@@ -16,6 +16,7 @@ import ShoppingListService from "../api/services/ShoppingListService";
 import { isNetworkError } from "../api/offline/networkError";
 import AddItemModal from "../components/shopping/AddItemModal";
 import DeleteListConfirmModal from "../components/shopping/DeleteListConfirmModal";
+import PageLoader from "../components/global/PageLoader";
 import EditableShoppingListTitle from "../components/shopping/EditableShoppingListTitle";
 import EyeToggleButton from "../components/shopping/EyeToggleButton";
 import ReconcileModal from "../components/shopping/ReconcileModal";
@@ -119,11 +120,7 @@ export default function ShoppingListPage() {
     };
 
     if (isLoading) {
-        return (
-            <div className="min-h-screen bg-bg-color px-4 pb-8 mobile-content-with-header">
-                <p className="text-text-secondary text-sm">Chargement...</p>
-            </div>
-        );
+        return <PageLoader />;
     }
 
     if (isError || !list) {

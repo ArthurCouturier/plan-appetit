@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     useCulinaryProfile,
@@ -7,6 +7,8 @@ import {
 import { lightHaptic } from "../haptics/light";
 import { errorHaptic } from "../haptics/error";
 import PageLoader from "../components/global/PageLoader";
+import { profileToDraft } from "../components/ritual/onboarding/types";
+import { PREFERENCE_META } from "../components/ritual/onboarding/preferenceMeta";
 
 function timeToHHmm(value: string): string {
     return value.length >= 5 ? value.slice(0, 5) : value;
@@ -23,6 +25,8 @@ export default function RitualSettingsPage() {
     const [lunchTime, setLunchTime] = useState("11:55");
     const [dinnerTime, setDinnerTime] = useState("18:55");
     const [savedAt, setSavedAt] = useState<number | null>(null);
+
+    const draft = useMemo(() => (profile ? profileToDraft(profile) : null), [profile]);
 
     useEffect(() => {
         if (profile) {
@@ -55,24 +59,34 @@ export default function RitualSettingsPage() {
     }
 
     return (
-        <div
-            className="min-h-screen bg-primary px-4 pb-12"
-            style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
-        >
+        <div className="min-h-screen bg-bg-color px-4 pb-12 mobile-content-with-header">
             <div className="max-w-md mx-auto">
-                <button
-                    type="button"
-                    onClick={() => { navigate("/ritual"); lightHaptic(); }}
-                    className="text-text-secondary text-sm mb-2"
-                >
-                    ← Retour
-                </button>
                 <h1 className="text-2xl font-bold text-text-primary mb-2">
-                    Réglages des notifications ritual
+                    Réglages ritual
                 </h1>
                 <p className="text-text-secondary text-sm mb-6">
-                    Choisis quand et pour quels repas tu veux recevoir nos rappels.
+                    Ajuste tes préférences et tes rappels.
                 </p>
+
+                <Section title="Mes préférences ritual">
+                    {!draft ? (
+                        <p className="text-text-secondary text-sm text-center p-4">
+                            Chargement…
+                        </p>
+                    ) : (
+                        PREFERENCE_META.map((meta) => (
+                            <NavRow
+                                key={meta.key}
+                                label={meta.label}
+                                sub={meta.formatValue(draft) || "—"}
+                                onClick={() => {
+                                    navigate(`/ritual/settings/preferences/${meta.key}`);
+                                    lightHaptic();
+                                }}
+                            />
+                        ))
+                    )}
+                </Section>
 
                 <Section title="Notifications">
                     <ToggleRow
@@ -181,6 +195,30 @@ function ToggleRow({
                     }`}
                 />
             </span>
+        </button>
+    );
+}
+
+function NavRow({
+    label,
+    sub,
+    onClick,
+}: {
+    label: string;
+    sub?: string;
+    onClick: () => void;
+}) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className="w-full flex items-center justify-between gap-3 p-4 text-left"
+        >
+            <div className="flex-1 min-w-0">
+                <p className="text-text-primary font-semibold">{label}</p>
+                {sub && <p className="text-text-secondary text-xs mt-0.5">{sub}</p>}
+            </div>
+            <span className="text-text-secondary text-lg">›</span>
         </button>
     );
 }

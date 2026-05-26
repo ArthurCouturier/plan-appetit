@@ -7,10 +7,7 @@ import {
     RitualDailyInterface,
 } from "../interfaces/ritual/RitualDailyInterface";
 import useAuth from "./useAuth";
-
-function todayISO(): string {
-    return new Date().toISOString().slice(0, 10);
-}
+import { localIsoDate } from "../../utils/dateUtils";
 
 function getAuthHeaders(): { email: string | null; token: string | null } {
     return {
@@ -21,7 +18,7 @@ function getAuthHeaders(): { email: string | null; token: string | null } {
 
 export function useRitualDaily(mealType: MealType, date?: string) {
     const { user } = useAuth();
-    const effectiveDate = date ?? todayISO();
+    const effectiveDate = date ?? localIsoDate();
     return useQuery<RitualDailyInterface>({
         queryKey: queryKeys.ritualDaily.byMealAndDate(mealType, effectiveDate),
         queryFn: async () => {

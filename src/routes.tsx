@@ -38,8 +38,8 @@ import NewRecipePage from "./pages/NewRecipePage";
 import RecipeDetailV2 from "./pages/RecipeDetailV2";
 import RitualOnboarding from "./pages/RitualOnboarding";
 import RitualDailyPage from "./pages/RitualDailyPage";
-import RitualCalendarPage from "./pages/RitualCalendarPage";
 import RitualSettingsPage from "./pages/RitualSettingsPage";
+import RitualPreferenceEditPage from "./pages/RitualPreferenceEditPage";
 import ShoppingHome from "./pages/ShoppingHome";
 import ShoppingListPage from "./pages/ShoppingListPage";
 import ShoppingJoinPage from "./pages/ShoppingJoinPage";
@@ -152,12 +152,12 @@ const router = createBrowserRouter([
                                 element: <RitualDailyPage />,
                             },
                             {
-                                path: "ritual/calendar",
-                                element: <RitualCalendarPage />,
-                            },
-                            {
                                 path: "ritual/settings",
                                 element: <RitualSettingsPage />,
+                            },
+                            {
+                                path: "ritual/settings/preferences/:key",
+                                element: <RitualPreferenceEditPage />,
                             },
                             {
                                 path: "shopping",

@@ -12,12 +12,16 @@ export interface RitualDailyInterface {
     buyPrice: number;
     isPublic: boolean;
     creationDate: string | null;
+    explanation: string | null;
 }
+
+export type RegenerationMode = "STANDARD" | "FLEMME";
 
 export interface RegenerateRitualDailyRequest {
     mealType: MealType;
     date?: string;
     reason?: string;
+    mode?: RegenerationMode;
 }
 
 export const REGENERATION_REASON_MAX_LENGTH = 200;

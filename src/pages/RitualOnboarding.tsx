@@ -1,69 +1,40 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import ChipToPickList from "../components/common/ChipToPickList";
-import EquipmentSelector from "../components/shared/EquipmentSelector";
-import SteppedSlider from "../components/fields/SteppedSlider";
-import dietaryRestrictionsAndAllergies from "../data/dietaryRestrictionsAndAllergies.json";
-import flavorPreferences from "../data/flavorPreferences.json";
 import {
     useCompleteCulinaryOnboarding,
     useCulinaryProfile,
     useUpdateCulinaryProfile,
 } from "../api/hooks/useCulinaryProfile";
-import type {
-    CookingLevel,
-    UpdateUserCulinaryProfileRequest,
-} from "../api/interfaces/users/UserCulinaryProfileInterface";
-import type { BudgetTarget } from "../api/interfaces/batchcooking/BatchCookingInterfaces";
+import type { UpdateUserCulinaryProfileRequest } from "../api/interfaces/users/UserCulinaryProfileInterface";
 import { lightHaptic } from "../haptics/light";
 import { mediumHaptic } from "../haptics/medium";
 import { errorHaptic } from "../haptics/error";
+import {
+    Q1Household,
+    Q2Restrictions,
+    Q3Budget,
+    Q4CookingLevel,
+    Q5TimeLunch,
+    Q6TimeDinner,
+    Q7AmbitiousMeals,
+    Q8Equipment,
+    Q9Flavors,
+} from "../components/ritual/onboarding/editors";
+import {
+    budgetLabel,
+    cookingLevelLabel,
+    formatAmbitiousMeals,
+    formatList,
+} from "../components/ritual/onboarding/labels";
+import {
+    DEFAULT_DRAFT,
+    Draft,
+    profileToDraft,
+} from "../components/ritual/onboarding/types";
+import { TOTAL_QUESTIONS } from "../components/ritual/onboarding/constants";
 
-const NONE_RESTRICTION = "Aucune restriction";
-const TIME_STEPS = [5, 10, 15, 20, 30, 45, 60, 90, 120];
 const STORAGE_KEY = "ritualOnboardingDraft";
-const TOTAL_QUESTIONS = 9;
-
-interface Draft {
-    householdSize: number;
-    dietaryRestrictions: string[];
-    customRestrictions: string;
-    budgetTarget: BudgetTarget;
-    cookingLevel: CookingLevel;
-    timeLunchWeekdayMin: number;
-    timeDinnerWeekdayMin: number;
-    ambitiousMeals: string[];
-    equipment: string[];
-    flavorPreferences: string[];
-}
-
-const DEFAULT_DRAFT: Draft = {
-    householdSize: 1,
-    dietaryRestrictions: [],
-    customRestrictions: "",
-    budgetTarget: "BALANCED",
-    cookingLevel: "INTERMEDIATE",
-    timeLunchWeekdayMin: 20,
-    timeDinnerWeekdayMin: 45,
-    ambitiousMeals: [],
-    equipment: ["Four", "Poêle", "Casserole"],
-    flavorPreferences: [],
-};
-
-const DAYS: { code: string; label: string }[] = [
-    { code: "MON", label: "Lundi" },
-    { code: "TUE", label: "Mardi" },
-    { code: "WED", label: "Mercredi" },
-    { code: "THU", label: "Jeudi" },
-    { code: "FRI", label: "Vendredi" },
-    { code: "SAT", label: "Samedi" },
-    { code: "SUN", label: "Dimanche" },
-];
-const DEFAULT_AMBITIOUS_DAYS = ["SAT", "SUN"];
-const MEAL_CODES = ["LUNCH", "DINNER"] as const;
-const MEAL_LABEL: Record<string, string> = { LUNCH: "Midi", DINNER: "Soir" };
-const DAY_LABEL: Record<string, string> = Object.fromEntries(DAYS.map((d) => [d.code, d.label]));
 
 type StepKind = "intro" | "question" | "recap";
 
@@ -199,11 +170,8 @@ export default function RitualOnboarding() {
                 : "Suivant";
 
     return (
-        <div className="min-h-screen flex flex-col bg-primary">
-            <div
-                className="px-4 pb-2"
-                style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
-            >
+        <div className="min-h-screen flex flex-col bg-bg-color mobile-content-with-header">
+            <div className="px-4 pb-2">
                 {step.kind === "question" && (
                     <ProgressHeader
                         current={(step.questionIndex ?? 0) + 1}
@@ -246,7 +214,7 @@ export default function RitualOnboarding() {
 
             {(showNext || step.kind === "recap") && (
                 <div
-                    className="fixed bottom-0 left-0 right-0 bg-primary border-t border-border-color px-4 pt-3"
+                    className="fixed bottom-0 left-0 right-0 bg-bg-color px-4 pt-3"
                     style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
                 >
                     <div className="max-w-md mx-auto flex gap-3">
@@ -287,19 +255,16 @@ function stepKey(step: Step): string {
 }
 
 function ProgressHeader({ current, total }: { current: number; total: number }) {
-    const pct = Math.round((current / total) * 100);
     return (
-        <div className="max-w-md mx-auto">
+        <div className="max-w-md mx-auto w-full">
             <div className="flex justify-between text-xs text-text-secondary mb-1.5">
-                <span>{current} / {total}</span>
-                <span>{pct}%</span>
+                <span>Question {current}</span>
+                <span>{current}/{total}</span>
             </div>
-            <div className="h-1.5 bg-border-color rounded-full overflow-hidden">
-                <motion.div
-                    className="h-full bg-cout-yellow"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.3 }}
+            <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                <div
+                    className="h-full bg-cout-yellow transition-all"
+                    style={{ width: `${(current / total) * 100}%` }}
                 />
             </div>
         </div>
@@ -380,399 +345,6 @@ function QuestionScreen({ index, draft, update, onQ2Change }: QuestionScreenProp
     );
 }
 
-function QuestionTitle({ children }: { children: React.ReactNode }) {
-    return (
-        <h2 className="text-2xl font-bold text-text-primary text-center mb-8">
-            {children}
-        </h2>
-    );
-}
-
-function Q1Household({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-    const options = [1, 2, 3, 4, 5, 6];
-    return (
-        <>
-            <QuestionTitle>Combien de personnes à table en général ?</QuestionTitle>
-            <div className="flex justify-center gap-2">
-                {options.map((n) => (
-                    <button
-                        key={n}
-                        onClick={() => { onChange(n); lightHaptic(); }}
-                        className={`w-12 h-12 rounded-full font-bold text-lg transition-all ${
-                            value === n
-                                ? "bg-cout-yellow text-cout-purple scale-110 shadow-md"
-                                : "bg-secondary border border-border-color text-text-primary"
-                        }`}
-                    >
-                        {n === 6 ? "6+" : n}
-                    </button>
-                ))}
-            </div>
-        </>
-    );
-}
-
-function Q2Restrictions({
-    selected,
-    onChange,
-    customValue,
-    onCustomChange,
-}: {
-    selected: string[];
-    onChange: (s: string[]) => void;
-    customValue: string;
-    onCustomChange: (v: string) => void;
-}) {
-    const hasNone = selected.includes(NONE_RESTRICTION);
-    const realRestrictions = selected.filter((s) => s !== NONE_RESTRICTION);
-
-    const toggleNone = () => {
-        if (hasNone) {
-            onChange(realRestrictions);
-        } else {
-            onChange([NONE_RESTRICTION]);
-        }
-        lightHaptic();
-    };
-
-    return (
-        <>
-            <QuestionTitle>As-tu des restrictions alimentaires ou allergies ?</QuestionTitle>
-            <p className="text-text-secondary text-sm text-center mb-6">
-                Sélectionne « Aucune restriction » si tu n'en as pas. Cette question est obligatoire pour ta sécurité.
-            </p>
-            <button
-                type="button"
-                onClick={toggleNone}
-                className={`w-full mb-6 px-5 py-4 rounded-2xl font-semibold transition-all ${
-                    hasNone
-                        ? "bg-cout-yellow/20 border-2 border-cout-yellow text-text-primary"
-                        : "bg-secondary border border-border-color text-text-primary"
-                }`}
-            >
-                Aucune restriction
-            </button>
-            <ChipToPickList
-                items={dietaryRestrictionsAndAllergies}
-                selected={realRestrictions}
-                onChange={(next) => onChange(next.filter((s) => s !== NONE_RESTRICTION))}
-                onPendingOtherChange={onCustomChange}
-                otherPlaceholder="Autre restriction..."
-            />
-            {customValue.trim() && !hasNone && (
-                <p className="text-xs text-text-secondary text-center mt-3">
-                    Pense à ajouter « {customValue.trim()} » avant de passer à la suite (touche +).
-                </p>
-            )}
-        </>
-    );
-}
-
-function Q3Budget({ value, onChange }: { value: BudgetTarget; onChange: (v: BudgetTarget) => void }) {
-    const options: { value: BudgetTarget; label: string; sub: string }[] = [
-        { value: "ECONOMICAL", label: "Éco", sub: "< 3 €" },
-        { value: "BALANCED", label: "Équilibré", sub: "3 - 6 €" },
-        { value: "COMFORT", label: "Confort", sub: "6 € +" },
-    ];
-    return (
-        <>
-            <QuestionTitle>Quel budget tu te donnes par personne et par repas ?</QuestionTitle>
-            <div className="flex flex-col gap-3">
-                {options.map((opt) => (
-                    <button
-                        key={opt.value}
-                        onClick={() => { onChange(opt.value); lightHaptic(); }}
-                        className={`flex justify-between items-center px-5 py-4 rounded-2xl transition-all text-left ${
-                            value === opt.value
-                                ? "bg-cout-yellow/20 border-2 border-cout-yellow"
-                                : "bg-secondary border border-border-color"
-                        }`}
-                    >
-                        <span className="font-bold text-text-primary">{opt.label}</span>
-                        <span className="text-text-secondary text-sm">{opt.sub}</span>
-                    </button>
-                ))}
-            </div>
-        </>
-    );
-}
-
-function Q4CookingLevel({
-    value,
-    onChange,
-}: {
-    value: CookingLevel;
-    onChange: (v: CookingLevel) => void;
-}) {
-    const options: { value: CookingLevel; label: string }[] = [
-        { value: "BEGINNER", label: "Je débute" },
-        { value: "INTERMEDIATE", label: "Je sais faire pas mal de trucs" },
-        { value: "ADVANCED", label: "Je maîtrise" },
-    ];
-    return (
-        <>
-            <QuestionTitle>Tu te débrouilles comment en cuisine ?</QuestionTitle>
-            <div className="flex flex-col gap-3">
-                {options.map((opt) => (
-                    <button
-                        key={opt.value}
-                        onClick={() => { onChange(opt.value); lightHaptic(); }}
-                        className={`px-5 py-4 rounded-2xl transition-all text-left font-semibold text-text-primary ${
-                            value === opt.value
-                                ? "bg-cout-yellow/20 border-2 border-cout-yellow"
-                                : "bg-secondary border border-border-color"
-                        }`}
-                    >
-                        {opt.label}
-                    </button>
-                ))}
-            </div>
-        </>
-    );
-}
-
-function Q5TimeLunch({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-    return (
-        <>
-            <QuestionTitle>Le midi en semaine, combien de temps tu as pour cuisiner ?</QuestionTitle>
-            <SteppedSlider value={value} onChange={onChange} steps={TIME_STEPS} suffix=" min" />
-        </>
-    );
-}
-
-function Q6TimeDinner({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-    return (
-        <>
-            <QuestionTitle>Et le soir en semaine ?</QuestionTitle>
-            <SteppedSlider value={value} onChange={onChange} steps={TIME_STEPS} suffix=" min" />
-        </>
-    );
-}
-
-function Q7AmbitiousMeals({
-    value,
-    onChange,
-}: {
-    value: string[];
-    onChange: (v: string[]) => void;
-}) {
-    const daysFromValue = useMemo(
-        () => Array.from(new Set(value.map((code) => code.split("_")[0]))),
-        [value],
-    );
-    const [displayedDays, setDisplayedDays] = useState<string[]>(() =>
-        daysFromValue.length > 0 ? sortDays(daysFromValue) : DEFAULT_AMBITIOUS_DAYS,
-    );
-    const [pickerOpenFor, setPickerOpenFor] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fromValue = sortDays(Array.from(new Set(value.map((c) => c.split("_")[0]))));
-        if (fromValue.length === 0) return;
-        if (!arraysEqual(fromValue, displayedDays.filter((d) => fromValue.includes(d)))) {
-            setDisplayedDays((prev) => sortDays(Array.from(new Set([...prev, ...fromValue]))));
-        }
-    }, [value]);
-
-    const toggleMeal = (day: string, meal: string) => {
-        const code = `${day}_${meal}`;
-        if (value.includes(code)) {
-            onChange(value.filter((c) => c !== code));
-        } else {
-            onChange([...value, code]);
-        }
-        lightHaptic();
-    };
-
-    const removeDay = (day: string) => {
-        setDisplayedDays((prev) => prev.filter((d) => d !== day));
-        onChange(value.filter((c) => !c.startsWith(`${day}_`)));
-        lightHaptic();
-    };
-
-    const changeDay = (oldDay: string, newDay: string) => {
-        setDisplayedDays((prev) => sortDays(prev.map((d) => (d === oldDay ? newDay : d))));
-        onChange(value.map((c) => (c.startsWith(`${oldDay}_`) ? c.replace(oldDay, newDay) : c)));
-        setPickerOpenFor(null);
-        lightHaptic();
-    };
-
-    const addDay = () => {
-        const available = DAYS.find((d) => !displayedDays.includes(d.code));
-        if (!available) return;
-        setDisplayedDays((prev) => sortDays([...prev, available.code]));
-        lightHaptic();
-    };
-
-    const canAddMore = displayedDays.length < DAYS.length;
-
-    return (
-        <>
-            <QuestionTitle>Quels repas tu aimes prendre le temps de cuisiner ?</QuestionTitle>
-            <p className="text-text-secondary text-sm text-center mb-6">
-                Configure les jours et coche les créneaux ambitieux.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {displayedDays.map((day) => (
-                    <DayCard
-                        key={day}
-                        day={day}
-                        selectedMeals={value.filter((c) => c.startsWith(`${day}_`)).map((c) => c.split("_")[1])}
-                        onToggleMeal={(meal) => toggleMeal(day, meal)}
-                        onRemove={() => removeDay(day)}
-                        pickerOpen={pickerOpenFor === day}
-                        onOpenPicker={() => setPickerOpenFor(day)}
-                        onClosePicker={() => setPickerOpenFor(null)}
-                        onChangeDay={(newDay) => changeDay(day, newDay)}
-                        excludedDays={displayedDays.filter((d) => d !== day)}
-                    />
-                ))}
-                {canAddMore && <AddDayCard onClick={addDay} />}
-            </div>
-        </>
-    );
-}
-
-function DayCard({
-    day,
-    selectedMeals,
-    onToggleMeal,
-    onRemove,
-    pickerOpen,
-    onOpenPicker,
-    onClosePicker,
-    onChangeDay,
-    excludedDays,
-}: {
-    day: string;
-    selectedMeals: string[];
-    onToggleMeal: (meal: string) => void;
-    onRemove: () => void;
-    pickerOpen: boolean;
-    onOpenPicker: () => void;
-    onClosePicker: () => void;
-    onChangeDay: (newDay: string) => void;
-    excludedDays: string[];
-}) {
-    const availableDays = DAYS.filter((d) => !excludedDays.includes(d.code));
-    return (
-        <div className="relative bg-secondary border border-border-color rounded-2xl p-3 flex flex-col gap-2">
-            <button
-                type="button"
-                onClick={onRemove}
-                aria-label="Supprimer ce jour"
-                className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary border border-border-color text-text-secondary text-xs font-bold flex items-center justify-center"
-            >
-                ×
-            </button>
-            <button
-                type="button"
-                onClick={pickerOpen ? onClosePicker : onOpenPicker}
-                className="text-left font-semibold text-text-primary pr-8 pb-1 border-b border-border-color/50"
-            >
-                {DAY_LABEL[day]} <span className="text-text-secondary text-xs">{pickerOpen ? "▲" : "▼"}</span>
-            </button>
-            <div className="flex flex-col gap-1.5">
-                {MEAL_CODES.map((meal) => {
-                    const active = selectedMeals.includes(meal);
-                    return (
-                        <button
-                            key={meal}
-                            type="button"
-                            onClick={() => onToggleMeal(meal)}
-                            className={`w-full px-3 py-2 rounded-lg font-semibold text-sm transition-all ${
-                                active
-                                    ? "bg-cout-yellow text-cout-purple"
-                                    : "bg-primary border border-border-color text-text-primary"
-                            }`}
-                        >
-                            {MEAL_LABEL[meal]}
-                        </button>
-                    );
-                })}
-            </div>
-            <AnimatePresence>
-                {pickerOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        className="absolute top-full left-0 right-0 mt-1 z-20 bg-secondary border border-border-color rounded-2xl p-2 shadow-lg"
-                    >
-                        <div className="flex flex-wrap gap-1.5">
-                            {availableDays.map((d) => (
-                                <button
-                                    key={d.code}
-                                    type="button"
-                                    onClick={() => onChangeDay(d.code)}
-                                    className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                                        d.code === day
-                                            ? "bg-cout-yellow/20 text-cout-purple border border-cout-yellow"
-                                            : "bg-primary border border-border-color text-text-primary"
-                                    }`}
-                                >
-                                    {d.label}
-                                </button>
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
-}
-
-function AddDayCard({ onClick }: { onClick: () => void }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className="bg-secondary border border-dashed border-border-color rounded-2xl flex flex-col items-center justify-center gap-1 text-text-secondary font-semibold min-h-[140px]"
-        >
-            <span className="text-3xl leading-none">+</span>
-            <span className="text-xs">Ajouter</span>
-        </button>
-    );
-}
-
-function sortDays(days: string[]): string[] {
-    const order = Object.fromEntries(DAYS.map((d, i) => [d.code, i]));
-    return [...days].sort((a, b) => order[a] - order[b]);
-}
-
-function arraysEqual(a: string[], b: string[]): boolean {
-    if (a.length !== b.length) return false;
-    return a.every((v, i) => v === b[i]);
-}
-
-function Q8Equipment({ selected, onChange }: { selected: string[]; onChange: (s: string[]) => void }) {
-    return (
-        <>
-            <QuestionTitle>Qu'est-ce que tu as comme équipement ?</QuestionTitle>
-            <EquipmentSelector
-                selected={selected}
-                onChange={onChange}
-                title=""
-                allowCustom
-                customPlaceholder="Autre équipement..."
-            />
-        </>
-    );
-}
-
-function Q9Flavors({ selected, onChange }: { selected: string[]; onChange: (s: string[]) => void }) {
-    return (
-        <>
-            <QuestionTitle>Quelles sont tes préférences dans les saveurs ?</QuestionTitle>
-            <ChipToPickList
-                items={flavorPreferences}
-                selected={selected}
-                onChange={onChange}
-                otherPlaceholder="Autre saveur..."
-            />
-        </>
-    );
-}
-
 interface RecapScreenProps {
     draft: Draft;
     onJump: (idx: number) => void;
@@ -842,42 +414,6 @@ function RecapScreen({ draft, onJump, onSubmit, isSubmitting, error }: RecapScre
     );
 }
 
-function formatList(values: string[]): string {
-    if (values.length === 0) return "Aucune préférence";
-    if (values.length <= 3) return values.join(", ");
-    return `${values.slice(0, 3).join(", ")} +${values.length - 3}`;
-}
-
-function formatAmbitiousMeals(codes: string[]): string {
-    if (codes.length === 0) return "Aucun";
-    const grouped = new Map<string, string[]>();
-    for (const code of codes) {
-        const [day, meal] = code.split("_");
-        const meals = grouped.get(day) ?? [];
-        meals.push(meal);
-        grouped.set(day, meals);
-    }
-    const ordered = sortDays(Array.from(grouped.keys()));
-    return ordered
-        .map((day) => {
-            const meals = grouped.get(day)!.map((m) => MEAL_LABEL[m].toLowerCase()).join(" + ");
-            return `${DAY_LABEL[day]} (${meals})`;
-        })
-        .join(", ");
-}
-
-function budgetLabel(b: BudgetTarget): string {
-    if (b === "ECONOMICAL") return "Éco (< 3 €)";
-    if (b === "BALANCED") return "Équilibré (3-6 €)";
-    return "Confort (6 € +)";
-}
-
-function cookingLevelLabel(c: CookingLevel): string {
-    if (c === "BEGINNER") return "Je débute";
-    if (c === "INTERMEDIATE") return "Je sais faire pas mal de trucs";
-    return "Je maîtrise";
-}
-
 function loadDraft(): Draft | null {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -914,30 +450,4 @@ function clearDraft() {
     } catch {
         // ignore
     }
-}
-
-function profileToDraft(p: {
-    householdSize: number;
-    dietaryRestrictions: string[];
-    customRestrictions: string | null;
-    budgetTarget: BudgetTarget;
-    cookingLevel: CookingLevel;
-    timeLunchWeekdayMin: number;
-    timeDinnerWeekdayMin: number;
-    ambitiousMeals: string[];
-    equipment: string[];
-    flavorPreferences: string[];
-}): Draft {
-    return {
-        householdSize: p.householdSize,
-        dietaryRestrictions: p.dietaryRestrictions,
-        customRestrictions: p.customRestrictions ?? "",
-        budgetTarget: p.budgetTarget,
-        cookingLevel: p.cookingLevel,
-        timeLunchWeekdayMin: p.timeLunchWeekdayMin,
-        timeDinnerWeekdayMin: p.timeDinnerWeekdayMin,
-        ambitiousMeals: p.ambitiousMeals,
-        equipment: p.equipment,
-        flavorPreferences: p.flavorPreferences,
-    };
 }

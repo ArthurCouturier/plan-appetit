@@ -6,21 +6,20 @@ import { useRegenerateRitualDaily, useRitualDaily } from "../api/hooks/useRitual
 import {
     MealType,
     REGENERATION_REASON_MAX_LENGTH,
+    RegenerationMode,
     RitualDailyInterface,
 } from "../api/interfaces/ritual/RitualDailyInterface";
 import RecipeCard from "../components/cards/RecipeCard";
 import RecipeSummaryInterface from "../api/interfaces/recipes/RecipeSummaryInterface";
 import Modal from "../components/modals/Modal";
 import NotificationService from "../api/services/NotificationService";
+import RitualMonthCalendar from "../components/ritual/RitualMonthCalendar";
 import { errorHaptic } from "../haptics/error";
 import { lightHaptic } from "../haptics/light";
 
 export default function RitualDailyPage() {
     return (
-        <div
-            className="min-h-screen bg-primary px-4 pb-12"
-            style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
-        >
+        <div className="min-h-screen bg-bg-color px-4 pb-12 mobile-content-with-header">
             <div className="max-w-md mx-auto">
                 <h1 className="text-3xl font-bold text-text-primary text-center mb-2">
                     Ton ritual du jour
@@ -33,23 +32,20 @@ export default function RitualDailyPage() {
                     <MealSlot mealType="LUNCH" label="Ce midi" />
                     <MealSlot mealType="DINNER" label="Ce soir" />
                 </div>
-                <Link
-                    to="/ritual/calendar"
-                    className="mt-8 block text-center px-4 py-3 rounded-full bg-secondary border border-border-color text-text-primary font-semibold"
-                >
-                    📅 Voir mon journal des repas
-                </Link>
-                <Link
-                    to="/ritual/shopping"
-                    className="mt-2 block text-center px-4 py-3 rounded-full bg-secondary border border-border-color text-text-primary font-semibold"
-                >
-                    🛒 Ma liste de courses
-                </Link>
+                <div className="mt-8">
+                    <h2 className="text-base font-semibold text-text-primary mb-1">
+                        📅 Mon journal des repas
+                    </h2>
+                    <JournalInfoLink />
+                    <div className="mt-3">
+                        <RitualMonthCalendar />
+                    </div>
+                </div>
                 <Link
                     to="/ritual/settings"
-                    className="mt-2 block text-center px-4 py-2 text-text-secondary text-sm"
+                    className="mt-4 block text-center px-4 py-3 rounded-full bg-secondary border border-border-color text-text-primary font-semibold"
                 >
-                    ⚙️ Réglages des notifications
+                    ⚙️ Réglages
                 </Link>
             </div>
         </div>
@@ -119,9 +115,13 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
     const regenerate = useRegenerateRitualDaily();
     const [reasonModalOpen, setReasonModalOpen] = useState(false);
 
-    const handleConfirmRegenerate = (reason: string) => {
+    const handleConfirmRegenerate = (reason: string, mode: RegenerationMode = "STANDARD") => {
         regenerate.mutate(
-            { mealType, reason: reason.trim() || undefined },
+            {
+                mealType,
+                reason: reason.trim() || undefined,
+                mode,
+            },
             {
                 onError: () => errorHaptic(),
                 onSuccess: () => {
@@ -146,9 +146,15 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
                     />
                 )}
                 {!query.isLoading && !query.isError && query.data && (
-                    <RecipeCard recipe={toRecipeSummary(query.data)} />
+                    <RecipeCard
+                        key={query.data.recipeUuid}
+                        recipe={toRecipeSummary(query.data)}
+                    />
                 )}
             </div>
+            {query.data?.explanation && (
+                <WhyThisDishLink explanation={query.data.explanation} />
+            )}
             <button
                 type="button"
                 onClick={() => { setReasonModalOpen(true); lightHaptic(); }}
@@ -187,7 +193,7 @@ function RegenerationReasonModal({
     label: string;
     currentRecipeName: string;
     onCancel: () => void;
-    onConfirm: (reason: string) => void;
+    onConfirm: (reason: string, mode?: RegenerationMode) => void;
     isSubmitting: boolean;
     error: string | null;
 }) {
@@ -225,13 +231,29 @@ function RegenerationReasonModal({
                     </button>
                     <button
                         type="button"
-                        onClick={() => onConfirm(reason)}
+                        onClick={() => onConfirm(reason, "STANDARD")}
                         disabled={isSubmitting}
                         className="flex-1 px-4 py-3 rounded-full bg-cout-yellow text-cout-purple font-bold disabled:opacity-50"
                     >
                         {isSubmitting ? "Génération..." : "Régénérer"}
                     </button>
                 </div>
+                <div className="my-4 flex items-center gap-2">
+                    <div className="flex-1 h-px bg-border-color" />
+                    <span className="text-text-secondary text-xs">ou</span>
+                    <div className="flex-1 h-px bg-border-color" />
+                </div>
+                <button
+                    type="button"
+                    onClick={() => onConfirm("", "FLEMME")}
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-3 rounded-full bg-secondary border border-border-color text-text-primary font-semibold disabled:opacity-50"
+                >
+                    💤 Mode flemme
+                </button>
+                <p className="text-xs text-text-secondary text-center mt-2 px-2 leading-snug">
+                    Une recette ≤ 10 min, calée sur tes habitudes des 30 derniers jours.
+                </p>
             </div>
         </Modal>
     );
@@ -249,6 +271,58 @@ function toRecipeSummary(d: RitualDailyInterface): RecipeSummaryInterface {
         restTimeMin: d.restTimeMin,
         creationDate: d.creationDate,
     };
+}
+
+function WhyThisDishLink({ explanation }: { explanation: string }) {
+    const [open, setOpen] = useState(false);
+    return (
+        <>
+            <button
+                type="button"
+                onClick={() => { setOpen(true); lightHaptic(); }}
+                className="text-xs text-text-secondary underline underline-offset-2 text-center"
+            >
+                Pourquoi ce plat ?
+            </button>
+            {open && (
+                <Modal isOpen onClose={() => setOpen(false)} title="Pourquoi ce plat ?" size="sm">
+                    <div className="p-6 text-sm text-text-primary leading-relaxed">
+                        <p>{explanation}</p>
+                    </div>
+                </Modal>
+            )}
+        </>
+    );
+}
+
+function JournalInfoLink() {
+    const [open, setOpen] = useState(false);
+    return (
+        <>
+            <button
+                type="button"
+                onClick={() => { setOpen(true); lightHaptic(); }}
+                className="text-xs text-text-secondary underline underline-offset-2"
+            >
+                En savoir plus...
+            </button>
+            {open && (
+                <Modal isOpen onClose={() => setOpen(false)} title="Pourquoi ton journal compte" size="sm">
+                    <div className="p-6 text-sm text-text-primary leading-relaxed space-y-3">
+                        <p>
+                            On utilise ce que tu notes dans ton journal des repas pour comprendre
+                            tes habitudes : ce que tu cuisines souvent, les saveurs qui reviennent,
+                            les moments où tu as plus ou moins de temps.
+                        </p>
+                        <p>
+                            Plus tu remplis ton journal, plus on peut te proposer des recettes vraiment
+                            sur mesure, en adéquation avec ce que tu aimes et ton rythme.
+                        </p>
+                    </div>
+                </Modal>
+            )}
+        </>
+    );
 }
 
 function LoadingState() {

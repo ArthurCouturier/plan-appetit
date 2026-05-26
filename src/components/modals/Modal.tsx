@@ -7,9 +7,10 @@ interface ModalProps {
   onClose: () => void;
   title: ReactNode;
   children: ReactNode;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "fluid";
   showCloseButton?: boolean;
   closeOnBackdrop?: boolean;
+  bodyClassName?: string;
 }
 
 export default function Modal({
@@ -20,6 +21,7 @@ export default function Modal({
   size = "md",
   showCloseButton = true,
   closeOnBackdrop = true,
+  bodyClassName = "p-6",
 }: ModalProps) {
   const isMobile = useIsMobile();
 
@@ -43,6 +45,7 @@ export default function Modal({
     md: "max-w-md",
     lg: "max-w-lg",
     xl: "max-w-xl",
+    fluid: "max-w-[90vw]",
   };
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -79,7 +82,7 @@ export default function Modal({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className={bodyClassName}>
           {children}
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useCallback, useRef, useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeSummaryInterface from "../../api/interfaces/recipes/RecipeSummaryInterface";
 import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
+import RecipeImageThumbnail from "../recipes/RecipeImageThumbnail";
 import { useAddRecipeToShoppingList } from "../../api/hooks/useAddRecipeToShoppingList";
 import { UserGroupIcon, CurrencyEuroIcon, ClockIcon } from "@heroicons/react/24/solid";
 import { heavyHaptic } from "../../haptics/heavy";
@@ -43,7 +44,6 @@ const ZONE_THRESHOLD = 0.3;
 export default function RecipeCard({ recipe }: RecipeCardProps) {
     const navigate = useNavigate();
     const { ref: visibilityRef, data: imageData } = useRecipeImageVisible(String(recipe.uuid));
-    const isLoading = imageData === undefined;
 
     const [rotation, setRotation] = useState(0);
     const [transitioning, setTransitioning] = useState(false);
@@ -339,23 +339,14 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                     </div>
 
                     <div className="px-[5px] pb-[5px]">
-                        <div className="w-full aspect-square rounded-tl-[3px] rounded-tr-[3px] rounded-bl-[9px] rounded-br-[9px] overflow-hidden">
-                            {isLoading ? (
-                                <div className="w-full h-full bg-gradient-to-r from-border-color via-secondary to-border-color animate-shimmer bg-[length:200%_100%]" />
-                            ) : imageData ? (
-                                <img
-                                    ref={imgRef}
-                                    src={`data:image/png;base64,${imageData}`}
-                                    alt={recipe.name}
-                                    className="w-full h-full object-cover"
-                                    draggable={false}
-                                />
-                            ) : (
-                                <div className="w-full h-full bg-border-color flex items-center justify-center">
-                                    <span className="text-2xl">🍽️</span>
-                                </div>
-                            )}
-                        </div>
+                        <RecipeImageThumbnail
+                            ref={imgRef}
+                            recipeUuid={String(recipe.uuid)}
+                            recipeName={recipe.name}
+                            fallbackEmoji="🍽️"
+                            className="w-full aspect-square rounded-tl-[3px] rounded-tr-[3px] rounded-bl-[9px] rounded-br-[9px]"
+                            fallbackEmojiClassName="text-2xl"
+                        />
                     </div>
                 </div>
 

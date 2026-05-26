@@ -59,3 +59,5 @@ android/.gradle
 android/app/build
 android/build
 *.keystore
+
+reponse-claude.*

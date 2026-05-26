@@ -99,30 +99,19 @@ export default function RitualSettingsPage() {
 
                 <div className={notifsEnabled ? "" : "opacity-40 pointer-events-none"}>
                     <Section title="Repas notifiés">
-                        <ToggleRow
+                        <MealNotifRow
                             label="Midi"
-                            sub={`Notification envoyée à ${lunchTime}`}
-                            value={lunchEnabled}
-                            onChange={setLunchEnabled}
+                            time={lunchTime}
+                            onTimeChange={setLunchTime}
+                            enabled={lunchEnabled}
+                            onEnabledChange={setLunchEnabled}
                         />
-                        <ToggleRow
+                        <MealNotifRow
                             label="Soir"
-                            sub={`Notification envoyée à ${dinnerTime}`}
-                            value={dinnerEnabled}
-                            onChange={setDinnerEnabled}
-                        />
-                    </Section>
-
-                    <Section title="Heures">
-                        <TimeRow
-                            label="Notif midi"
-                            value={lunchTime}
-                            onChange={setLunchTime}
-                        />
-                        <TimeRow
-                            label="Notif soir"
-                            value={dinnerTime}
-                            onChange={setDinnerTime}
+                            time={dinnerTime}
+                            onTimeChange={setDinnerTime}
+                            enabled={dinnerEnabled}
+                            onEnabledChange={setDinnerEnabled}
                         />
                     </Section>
                 </div>
@@ -223,24 +212,51 @@ function NavRow({
     );
 }
 
-function TimeRow({
+function MealNotifRow({
     label,
-    value,
-    onChange,
+    time,
+    onTimeChange,
+    enabled,
+    onEnabledChange,
 }: {
     label: string;
-    value: string;
-    onChange: (v: string) => void;
+    time: string;
+    onTimeChange: (v: string) => void;
+    enabled: boolean;
+    onEnabledChange: (v: boolean) => void;
 }) {
     return (
-        <div className="flex items-center justify-between gap-3 p-4">
+        <div className="w-full flex items-center justify-between gap-3 p-4">
             <span className="text-text-primary font-semibold">{label}</span>
-            <input
-                type="time"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="bg-primary border border-border-color rounded-xl px-3 py-2 text-text-primary"
-            />
+            <div className="flex items-center gap-3">
+                <input
+                    type="time"
+                    value={time}
+                    onChange={(e) => onTimeChange(e.target.value)}
+                    disabled={!enabled}
+                    className={`bg-primary border border-border-color rounded-xl px-3 py-2 text-text-primary transition-opacity ${
+                        enabled ? "" : "opacity-40 pointer-events-none"
+                    }`}
+                />
+                <button
+                    type="button"
+                    onClick={() => { onEnabledChange(!enabled); lightHaptic(); }}
+                    aria-label={`Activer ${label.toLowerCase()}`}
+                    className="shrink-0"
+                >
+                    <span
+                        className={`block w-12 h-7 rounded-full p-1 transition-colors ${
+                            enabled ? "bg-cout-yellow" : "bg-border-color"
+                        }`}
+                    >
+                        <span
+                            className={`block w-5 h-5 rounded-full bg-white transition-transform ${
+                                enabled ? "translate-x-5" : "translate-x-0"
+                            }`}
+                        />
+                    </span>
+                </button>
+            </div>
         </div>
     );
 }

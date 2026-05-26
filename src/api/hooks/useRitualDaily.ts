@@ -34,6 +34,23 @@ export function useRitualDaily(mealType: MealType, date?: string) {
     });
 }
 
+export function useRitualDailyRange(from: string, to: string) {
+    const { user } = useAuth();
+    return useQuery<RitualDailyInterface[]>({
+        queryKey: queryKeys.ritualDaily.range(from, to),
+        queryFn: async () => {
+            const { email, token } = getAuthHeaders();
+            if (!email || !token) {
+                throw new Error("Non authentifié");
+            }
+            return RitualDailyService.getRange(email, token, from, to);
+        },
+        enabled: !!user,
+        staleTime: 60 * 1000,
+        retry: 0,
+    });
+}
+
 export function useRegenerateRitualDaily() {
     const queryClient = useQueryClient();
     return useMutation<RitualDailyInterface, Error, RegenerateRitualDailyRequest>({

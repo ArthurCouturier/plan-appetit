@@ -22,6 +22,8 @@ export const queryKeys = {
     ritualDaily: {
         byMealAndDate: (mealType: string, date: string) =>
             ['ritualDaily', mealType, date] as const,
+        range: (from: string, to: string) =>
+            ['ritualDaily', 'range', from, to] as const,
     },
     ritualMealPlan: {
         week: (from: string, to: string) =>

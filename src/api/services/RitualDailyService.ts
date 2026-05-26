@@ -41,6 +41,28 @@ export default class RitualDailyService {
         return response.json();
     }
 
+    public static async getRange(
+        email: string,
+        token: string,
+        from: string,
+        to: string,
+    ): Promise<RitualDailyInterface[]> {
+        const params = new URLSearchParams({ from, to });
+        const response = await fetchWithTokenRefresh(
+            `${this.baseEndpoint()}/range?${params.toString()}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                    Email: email,
+                },
+            },
+        );
+        if (!response.ok) throw this.mapError(response.status);
+        return response.json();
+    }
+
     public static async regenerate(
         email: string,
         token: string,

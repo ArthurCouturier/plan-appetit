@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
+import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { useRegenerateRitualDaily, useRitualDaily } from "../api/hooks/useRitualDaily";
 import {
     MealType,
     REGENERATION_REASON_MAX_LENGTH,
     RegenerationMode,
-    RitualDailyInterface,
 } from "../api/interfaces/ritual/RitualDailyInterface";
 import RecipeCard from "../components/cards/RecipeCard";
-import RecipeSummaryInterface from "../api/interfaces/recipes/RecipeSummaryInterface";
+import { ritualDailyToRecipeSummary } from "../api/adapters/ritualDailyAdapter";
 import Modal from "../components/modals/Modal";
 import NotificationService from "../api/services/NotificationService";
 import RitualMonthCalendar from "../components/ritual/RitualMonthCalendar";
@@ -21,12 +21,9 @@ export default function RitualDailyPage() {
     return (
         <div className="min-h-screen bg-bg-color px-4 pb-12 mobile-content-with-header">
             <div className="max-w-md mx-auto">
-                <h1 className="text-3xl font-bold text-text-primary text-center mb-2">
-                    Ton ritual du jour
+                <h1 className="text-3xl font-bold text-text-primary text-center mb-4">
+                    Mes recettes du jour
                 </h1>
-                <p className="text-text-secondary text-center mb-6">
-                    Deux recettes pensées pour toi, midi et soir.
-                </p>
                 <NotifPermissionPrompt />
                 <div className="grid grid-cols-2 gap-4">
                     <MealSlot mealType="LUNCH" label="Ce midi" />
@@ -34,7 +31,7 @@ export default function RitualDailyPage() {
                 </div>
                 <div className="mt-8">
                     <h2 className="text-base font-semibold text-text-primary mb-1">
-                        📅 Mon journal des repas
+                        📅 Mon historique de repas
                     </h2>
                     <JournalInfoLink />
                     <div className="mt-3">
@@ -43,9 +40,10 @@ export default function RitualDailyPage() {
                 </div>
                 <Link
                     to="/ritual/settings"
-                    className="mt-4 block text-center px-4 py-3 rounded-full bg-secondary border border-border-color text-text-primary font-semibold"
+                    className="mt-8 w-full px-4 py-2.5 rounded-full bg-cout-yellow text-cout-purple font-bold text-sm flex items-center justify-center gap-2"
                 >
-                    ⚙️ Réglages
+                    <Cog6ToothIcon className="w-4 h-4" />
+                    Réglages
                 </Link>
             </div>
         </div>
@@ -98,6 +96,9 @@ function NotifPermissionPrompt() {
             <p className="text-sm text-text-primary mb-3">
                 🔔 Active les notifications pour recevoir « Qu'est-ce qu'on mange ? » à midi et le soir.
             </p>
+            <p className="text-sm text-text-primary mb-3">
+                Ça nous permet ensuite de comprendre tes habitudes pour te proposer des repas toujours plus adaptés.
+            </p>
             <button
                 type="button"
                 onClick={handleEnable}
@@ -114,6 +115,7 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
     const query = useRitualDaily(mealType);
     const regenerate = useRegenerateRitualDaily();
     const [reasonModalOpen, setReasonModalOpen] = useState(false);
+    const [flemmeModalOpen, setFlemmeModalOpen] = useState(false);
 
     const handleConfirmRegenerate = (reason: string, mode: RegenerationMode = "STANDARD") => {
         regenerate.mutate(
@@ -127,6 +129,19 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
                 onSuccess: () => {
                     lightHaptic();
                     setReasonModalOpen(false);
+                },
+            },
+        );
+    };
+
+    const handleConfirmFlemme = () => {
+        regenerate.mutate(
+            { mealType, mode: "FLEMME" },
+            {
+                onError: () => errorHaptic(),
+                onSuccess: () => {
+                    lightHaptic();
+                    setFlemmeModalOpen(false);
                 },
             },
         );
@@ -148,7 +163,7 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
                 {!query.isLoading && !query.isError && query.data && (
                     <RecipeCard
                         key={query.data.recipeUuid}
-                        recipe={toRecipeSummary(query.data)}
+                        recipe={ritualDailyToRecipeSummary(query.data)}
                     />
                 )}
             </div>
@@ -161,7 +176,15 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
                 disabled={regenerate.isPending || query.isLoading || !query.data}
                 className="px-3 py-2 rounded-full bg-secondary border border-border-color text-text-primary text-xs font-semibold disabled:opacity-50"
             >
-                {regenerate.isPending ? "..." : "↻ Autre chose"}
+                {regenerate.isPending ? "..." : "↻ Modifier"}
+            </button>
+            <button
+                type="button"
+                onClick={() => { setFlemmeModalOpen(true); lightHaptic(); }}
+                disabled={regenerate.isPending || query.isLoading || !query.data}
+                className="px-3 py-2 rounded-full bg-secondary border border-border-color text-text-primary text-xs font-semibold disabled:opacity-50"
+            >
+                💤 Mode flemme
             </button>
             {regenerate.isError && (
                 <p className="text-xs text-cancel-1 text-center">
@@ -171,9 +194,17 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
             {reasonModalOpen && (
                 <RegenerationReasonModal
                     label={label}
-                    currentRecipeName={query.data?.recipeName ?? ""}
                     onCancel={() => setReasonModalOpen(false)}
                     onConfirm={handleConfirmRegenerate}
+                    isSubmitting={regenerate.isPending}
+                    error={regenerate.error?.message ?? null}
+                />
+            )}
+            {flemmeModalOpen && (
+                <FlemmeConfirmModal
+                    label={label}
+                    onCancel={() => setFlemmeModalOpen(false)}
+                    onConfirm={handleConfirmFlemme}
                     isSubmitting={regenerate.isPending}
                     error={regenerate.error?.message ?? null}
                 />
@@ -184,14 +215,12 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
 
 function RegenerationReasonModal({
     label,
-    currentRecipeName,
     onCancel,
     onConfirm,
     isSubmitting,
     error,
 }: {
     label: string;
-    currentRecipeName: string;
     onCancel: () => void;
     onConfirm: (reason: string, mode?: RegenerationMode) => void;
     isSubmitting: boolean;
@@ -200,11 +229,7 @@ function RegenerationReasonModal({
     const [reason, setReason] = useState("");
     return (
         <Modal isOpen onClose={onCancel} title={`Changer la recette ${label.toLowerCase()}`} size="sm">
-            <div className="p-6">
-                <p className="text-text-secondary text-sm mb-3">
-                    On va remplacer <span className="font-semibold text-text-primary">{currentRecipeName || "ta recette"}</span>.
-                    Dis-nous ce qui ne te plaît pas, on en proposera une vraiment différente.
-                </p>
+            <div>
                 <label className="block text-xs font-semibold text-text-secondary mb-1.5">
                     Pourquoi tu veux autre chose ? (optionnel)
                 </label>
@@ -216,11 +241,8 @@ function RegenerationReasonModal({
                     placeholder="ex: pas envie de pâtes, trop long à faire, je n'aime pas le poisson..."
                     className="w-full px-4 py-3 bg-secondary border border-border-color rounded-xl text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-cout-yellow resize-none"
                 />
-                <div className="flex justify-between items-center mt-1 mb-4">
-                    <span className="text-xs text-text-secondary">{reason.length} / {REGENERATION_REASON_MAX_LENGTH}</span>
-                </div>
                 {error && <p className="text-xs text-cancel-1 mb-2">{error}</p>}
-                <div className="flex gap-2">
+                <div className="mt-2 flex gap-2">
                     <button
                         type="button"
                         onClick={onCancel}
@@ -238,39 +260,57 @@ function RegenerationReasonModal({
                         {isSubmitting ? "Génération..." : "Régénérer"}
                     </button>
                 </div>
-                <div className="my-4 flex items-center gap-2">
-                    <div className="flex-1 h-px bg-border-color" />
-                    <span className="text-text-secondary text-xs">ou</span>
-                    <div className="flex-1 h-px bg-border-color" />
-                </div>
-                <button
-                    type="button"
-                    onClick={() => onConfirm("", "FLEMME")}
-                    disabled={isSubmitting}
-                    className="w-full px-4 py-3 rounded-full bg-secondary border border-border-color text-text-primary font-semibold disabled:opacity-50"
-                >
-                    💤 Mode flemme
-                </button>
-                <p className="text-xs text-text-secondary text-center mt-2 px-2 leading-snug">
-                    Une recette ≤ 10 min, calée sur tes habitudes des 30 derniers jours.
-                </p>
             </div>
         </Modal>
     );
 }
 
-function toRecipeSummary(d: RitualDailyInterface): RecipeSummaryInterface {
-    return {
-        uuid: d.recipeUuid,
-        name: d.recipeName,
-        covers: d.covers,
-        buyPrice: d.buyPrice,
-        isPublic: d.isPublic,
-        displayOrder: 0,
-        totalTimeMin: d.totalTimeMin,
-        restTimeMin: d.restTimeMin,
-        creationDate: d.creationDate,
-    };
+function FlemmeConfirmModal({
+    label,
+    onCancel,
+    onConfirm,
+    isSubmitting,
+    error,
+}: {
+    label: string;
+    onCancel: () => void;
+    onConfirm: () => void;
+    isSubmitting: boolean;
+    error: string | null;
+}) {
+    return (
+        <Modal isOpen onClose={onCancel} title={`Mode flemme ${label.toLowerCase()}`} size="sm">
+            <div className="px-2 text-md text-text-primary leading-relaxed space-y-3 text-justify indent-1 font-semibold">
+                <p>
+                    On te propose une recette <span className="font-semibold">≤ 10 min</span>,
+                    calée sur tes habitudes des 30 derniers jours.
+                </p>
+                <p>
+                    Parfait quand tu n'as pas envie de réfléchir : un plat simple, dans ton style,
+                    mais équilibré et si possible avec des produit de saison.
+                </p>
+                {error && <p className="text-xs text-cancel-1 mb-2">{error}</p>}
+                <div className="mt-4 flex gap-2">
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        disabled={isSubmitting}
+                        className="flex-1 px-4 py-3 rounded-full bg-secondary border border-border-color text-text-primary font-semibold disabled:opacity-50"
+                    >
+                        Annuler
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        disabled={isSubmitting}
+                        className="flex-1 px-4 py-3 rounded-full bg-cout-yellow text-cout-purple font-bold disabled:opacity-50"
+                    >
+                        {isSubmitting ? "Génération..." : "Vas-y"}
+                    </button>
+                </div>
+            </div>
+        </Modal>
+    );
 }
 
 function WhyThisDishLink({ explanation }: { explanation: string }) {
@@ -286,7 +326,7 @@ function WhyThisDishLink({ explanation }: { explanation: string }) {
             </button>
             {open && (
                 <Modal isOpen onClose={() => setOpen(false)} title="Pourquoi ce plat ?" size="sm">
-                    <div className="p-6 text-sm text-text-primary leading-relaxed">
+                    <div className="px-2 py-4 text-md text-text-primary leading-relaxed space-y-3 text-justify indent-1 font-semibold">
                         <p>{explanation}</p>
                     </div>
                 </Modal>
@@ -307,16 +347,21 @@ function JournalInfoLink() {
                 En savoir plus...
             </button>
             {open && (
-                <Modal isOpen onClose={() => setOpen(false)} title="Pourquoi ton journal compte" size="sm">
-                    <div className="p-6 text-sm text-text-primary leading-relaxed space-y-3">
+                <Modal isOpen onClose={() => setOpen(false)} title="Pourquoi ton historique compte" size="sm">
+                    <div className="px-2 py-4 text-md text-text-primary leading-relaxed space-y-3 text-justify indent-1 font-semibold">
                         <p>
-                            On utilise ce que tu notes dans ton journal des repas pour comprendre
-                            tes habitudes : ce que tu cuisines souvent, les saveurs qui reviennent,
-                            les moments où tu as plus ou moins de temps.
+                            On utilise ce que tu notes dans ton historique de repas pour comprendre
+                            tes habitudes: ce que tu cuisines souvent, les saveurs qui reviennent,
+                            les moments où tu as plus ou moins de temps etc...
                         </p>
-                        <p>
+                        <p className="py-4">
                             Plus tu remplis ton journal, plus on peut te proposer des recettes vraiment
                             sur mesure, en adéquation avec ce que tu aimes et ton rythme.
+                        </p>
+                        <p>
+                            On prend ensuite en compte ce que tu as l'habitude de manger, tes derniers
+                            repas, pour te proposer une recette rapide et surtout équilibrée, sans
+                            bousculer tes habitudes.
                         </p>
                     </div>
                 </Modal>

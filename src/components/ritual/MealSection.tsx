@@ -1,10 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { BookOpenIcon } from "@heroicons/react/24/solid";
+import { Capacitor } from "@capacitor/core";
+import { BookOpenIcon, CameraIcon } from "@heroicons/react/24/solid";
 import { RitualDailyInterface, MealType } from "../../api/interfaces/ritual/RitualDailyInterface";
 import RecipeCard from "../cards/RecipeCard";
 import { ritualDailyToRecipeSummary } from "../../api/adapters/ritualDailyAdapter";
 import { lightHaptic } from "../../haptics/light";
+import { errorHaptic } from "../../haptics/error";
 import { RecipeV2SummaryDTO } from "../../api/interfaces/v2/RecipeV2";
+import MealPhotoService, { MealPhotoError } from "../../api/services/MealPhotoService";
+import { useIdentifyMealPhoto } from "../../api/hooks/useIdentifyMealPhoto";
+import { usePostHog } from "../../contexts/PostHogContext";
+import MealPhotoConfirmModal from "./MealPhotoConfirmModal";
+import MealPhotoLoadingModal from "./MealPhotoLoadingModal";
 
 export interface MealLocalState {
     text: string;
@@ -43,6 +50,13 @@ export default function MealSection({
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const [showLengthError, setShowLengthError] = useState(false);
     const errorTimerRef = useRef<number | null>(null);
+
+    const [photoLoading, setPhotoLoading] = useState(false);
+    const [photoDraft, setPhotoDraft] = useState<string | null>(null);
+    const [photoError, setPhotoError] = useState<string | null>(null);
+    const identifyPhoto = useIdentifyMealPhoto();
+    const { trackEvent } = usePostHog();
+    const isNativeMobile = Capacitor.isNativePlatform();
 
     const isAtMax = state.text.length >= CUSTOM_TEXT_MAX_LENGTH;
     const selectedRecipe = state.selectedRecipeUuid
@@ -103,14 +117,68 @@ export default function MealSection({
         lightHaptic();
     };
 
+    const handleTakePhoto = async () => {
+        setPhotoError(null);
+        try {
+            const base64 = await MealPhotoService.captureAndCompress();
+            setPhotoLoading(true);
+            trackEvent("ritual_meal_photo_started", { mealType });
+            const { mealName } = await identifyPhoto.mutateAsync(base64);
+            setPhotoLoading(false);
+            setPhotoDraft(mealName);
+            trackEvent("ritual_meal_photo_analyzed", { mealType, length: mealName.length });
+        } catch (e) {
+            setPhotoLoading(false);
+            const err = e as MealPhotoError;
+            if (err.code === "invalid_image" && (err.message === "Action annulée." || /cancel/i.test(err.message))) {
+                // User cancelled the native picker — silent.
+                return;
+            }
+            setPhotoError(err.message ?? "Erreur lors de l'analyse.");
+            trackEvent("ritual_meal_photo_error", { mealType, code: err.code });
+            errorHaptic();
+        }
+    };
+
+    const handlePhotoConfirm = (finalText: string) => {
+        onChange((s) => ({
+            ...s,
+            text: finalText,
+            isSkipped: false,
+            selectedRecipeUuid: null,
+        }));
+        setPhotoDraft(null);
+        lightHaptic();
+    };
+
+    const handlePhotoCancel = () => {
+        setPhotoDraft(null);
+    };
+
     return (
         <div>
             <div className="flex items-center justify-between mb-2 gap-2">
                 <span className="text-sm font-semibold text-text-primary uppercase tracking-wide">
                     {MEAL_LABELS[mealType]}
                 </span>
-                <PillToggle label="Sauté" value={state.isSkipped} onChange={toggleSkip} />
+                <div className="flex items-center gap-3 shrink-0">
+                    <PillToggle label="Sauté" value={state.isSkipped} onChange={toggleSkip} />
+                    {isNativeMobile && (
+                        <button
+                            type="button"
+                            onClick={handleTakePhoto}
+                            disabled={photoLoading || identifyPhoto.isPending}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-cout-purple text-white disabled:opacity-50"
+                            aria-label="Identifier mon plat par photo"
+                        >
+                            <CameraIcon className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
             </div>
+            {photoError && (
+                <p className="text-xs text-cancel-1 mb-2">{photoError}</p>
+            )}
 
             {state.isSkipped ? (
                 <div className="overflow-hidden transition-all duration-200 ease-out max-h-16 opacity-100">
@@ -179,6 +247,15 @@ export default function MealSection({
                         Choisir une recette
                     </button>
                 </div>
+            )}
+
+            {photoLoading && <MealPhotoLoadingModal />}
+            {photoDraft !== null && (
+                <MealPhotoConfirmModal
+                    initialText={photoDraft}
+                    onCancel={handlePhotoCancel}
+                    onConfirm={handlePhotoConfirm}
+                />
             )}
         </div>
     );

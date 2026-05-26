@@ -82,6 +82,12 @@
 	<true/>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Cette autorisation nous permet de vous proposer des publicités personnalisées et d'améliorer votre expérience.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Plan'Appétit utilise l'appareil photo pour identifier les plats que vous avez mangés à partir d'une photo.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Plan'Appétit accède à votre photothèque pour identifier les plats que vous avez mangés à partir d'une photo.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Plan'Appétit utilise votre photothèque pour identifier les plats que vous avez mangés.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<!-- TikTok / Pangle -->

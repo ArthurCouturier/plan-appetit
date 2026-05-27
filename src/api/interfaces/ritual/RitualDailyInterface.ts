@@ -24,6 +24,11 @@ export interface RegenerateRitualDailyRequest {
     mode?: RegenerationMode;
 }
 
+export interface RitualInitialDayInterface {
+    lunch: RitualDailyInterface;
+    dinner: RitualDailyInterface;
+}
+
 export const REGENERATION_REASON_MAX_LENGTH = 200;
 
 export type RitualDailyError =

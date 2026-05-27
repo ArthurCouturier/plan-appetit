@@ -3,7 +3,11 @@ import { Link } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
-import { useRegenerateRitualDaily, useRitualDaily } from "../api/hooks/useRitualDaily";
+import {
+    useRegenerateRitualDaily,
+    useRitualDaily,
+    useRitualDailyBootstrap,
+} from "../api/hooks/useRitualDaily";
 import {
     MealType,
     REGENERATION_REASON_MAX_LENGTH,
@@ -18,6 +22,7 @@ import { errorHaptic } from "../haptics/error";
 import { lightHaptic } from "../haptics/light";
 
 export default function RitualDailyPage() {
+    const bootstrap = useRitualDailyBootstrap();
     return (
         <div className="min-h-screen bg-bg-color px-4 pb-12 mobile-content-with-header">
             <div className="max-w-md mx-auto">
@@ -26,9 +31,24 @@ export default function RitualDailyPage() {
                 </h1>
                 <NotifPermissionPrompt />
                 <div className="grid grid-cols-2 gap-4">
-                    <MealSlot mealType="LUNCH" label="Ce midi" />
-                    <MealSlot mealType="DINNER" label="Ce soir" />
+                    <MealSlot
+                        mealType="LUNCH"
+                        label="Ce midi"
+                        bootstrapReady={bootstrap.ready}
+                        bootstrapLoading={bootstrap.isLoading}
+                    />
+                    <MealSlot
+                        mealType="DINNER"
+                        label="Ce soir"
+                        bootstrapReady={bootstrap.ready}
+                        bootstrapLoading={bootstrap.isLoading}
+                    />
                 </div>
+                {bootstrap.error && !bootstrap.ready && (
+                    <p className="mt-3 text-xs text-cancel-1 text-center">
+                        Erreur de préparation de la journée. Tu peux retenter.
+                    </p>
+                )}
                 <div className="mt-8">
                     <h2 className="text-base font-semibold text-text-primary mb-1">
                         📅 Mon historique de repas
@@ -111,9 +131,20 @@ function NotifPermissionPrompt() {
     );
 }
 
-function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
-    const query = useRitualDaily(mealType);
+function MealSlot({
+    mealType,
+    label,
+    bootstrapReady,
+    bootstrapLoading,
+}: {
+    mealType: MealType;
+    label: string;
+    bootstrapReady: boolean;
+    bootstrapLoading: boolean;
+}) {
+    const query = useRitualDaily(mealType, undefined, bootstrapReady);
     const regenerate = useRegenerateRitualDaily();
+    const isLoading = bootstrapLoading || (bootstrapReady && query.isLoading);
     const [reasonModalOpen, setReasonModalOpen] = useState(false);
     const [flemmeModalOpen, setFlemmeModalOpen] = useState(false);
 
@@ -153,14 +184,14 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
                 {label}
             </p>
             <div className="min-h-[200px]">
-                {query.isLoading && <LoadingState />}
-                {query.isError && (
+                {isLoading && <LoadingState />}
+                {!isLoading && query.isError && (
                     <ErrorState
                         message={query.error?.message ?? "Erreur inattendue."}
                         onRetry={() => query.refetch()}
                     />
                 )}
-                {!query.isLoading && !query.isError && query.data && (
+                {!isLoading && !query.isError && query.data && (
                     <RecipeCard
                         key={query.data.recipeUuid}
                         recipe={ritualDailyToRecipeSummary(query.data)}
@@ -173,7 +204,7 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
             <button
                 type="button"
                 onClick={() => { setReasonModalOpen(true); lightHaptic(); }}
-                disabled={regenerate.isPending || query.isLoading || !query.data}
+                disabled={regenerate.isPending || isLoading || !query.data}
                 className="px-3 py-2 rounded-full bg-secondary border border-border-color text-text-primary text-xs font-semibold disabled:opacity-50"
             >
                 {regenerate.isPending ? "..." : "↻ Modifier"}
@@ -181,7 +212,7 @@ function MealSlot({ mealType, label }: { mealType: MealType; label: string }) {
             <button
                 type="button"
                 onClick={() => { setFlemmeModalOpen(true); lightHaptic(); }}
-                disabled={regenerate.isPending || query.isLoading || !query.data}
+                disabled={regenerate.isPending || isLoading || !query.data}
                 className="px-3 py-2 rounded-full bg-secondary border border-border-color text-text-primary text-xs font-semibold disabled:opacity-50"
             >
                 💤 Mode flemme

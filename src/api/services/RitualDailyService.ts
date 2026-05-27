@@ -3,6 +3,7 @@ import {
     RegenerateRitualDailyRequest,
     RitualDailyInterface,
     RitualDailyServiceError,
+    RitualInitialDayInterface,
 } from "../interfaces/ritual/RitualDailyInterface";
 import { fetchWithTokenRefresh } from "../utils/fetchWithTokenRefresh";
 
@@ -59,6 +60,29 @@ export default class RitualDailyService {
                 },
             },
         );
+        if (!response.ok) throw this.mapError(response.status);
+        return response.json();
+    }
+
+    public static async generateInitialDay(
+        email: string,
+        token: string,
+        date?: string,
+    ): Promise<RitualInitialDayInterface> {
+        const params = new URLSearchParams();
+        if (date) params.set("date", date);
+        const query = params.toString();
+        const url = query
+            ? `${this.baseEndpoint()}/initial-day?${query}`
+            : `${this.baseEndpoint()}/initial-day`;
+        const response = await fetchWithTokenRefresh(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+                Email: email,
+            },
+        });
         if (!response.ok) throw this.mapError(response.status);
         return response.json();
     }

@@ -28,6 +28,7 @@ import AdminHaptics from "./pages/admin/AdminHaptics";
 import AdminModals from "./pages/admin/AdminModals";
 import AdminIngredientsReview from "./pages/admin/AdminIngredientsReview";
 import AdminIngredientsCleanup from "./pages/admin/AdminIngredientsCleanup";
+import AdminRitualTest from "./pages/admin/AdminRitualTest";
 import FridgeMode from "./pages/FridgeMode";
 import InstagramTwistMode from "./pages/InstagramTwistMode";
 import BatchCookingMode from "./pages/BatchCookingMode";
@@ -35,6 +36,13 @@ import BatchCookingDetail from "./pages/BatchCookingDetail";
 import NotFound from "./pages/NotFound";
 import NewRecipePage from "./pages/NewRecipePage";
 import RecipeDetailV2 from "./pages/RecipeDetailV2";
+import RitualOnboarding from "./pages/RitualOnboarding";
+import RitualDailyPage from "./pages/RitualDailyPage";
+import RitualSettingsPage from "./pages/RitualSettingsPage";
+import RitualPreferenceEditPage from "./pages/RitualPreferenceEditPage";
+import ShoppingHome from "./pages/ShoppingHome";
+import ShoppingListPage from "./pages/ShoppingListPage";
+import ShoppingJoinPage from "./pages/ShoppingJoinPage";
 
 const router = createBrowserRouter([
     {
@@ -42,16 +50,16 @@ const router = createBrowserRouter([
         errorElement: <NotFound />,
         children: [
             {
-                index: true,
-                element: <Home />,
-            },
-            {
                 path: "onboarding",
                 element: <Onboarding />,
             },
             {
                 element: <Layout />,
                 children: [
+                    {
+                        index: true,
+                        element: <Home />,
+                    },
                     {
                         path: "instagram",
                         element: <InstagramImport />,
@@ -136,6 +144,34 @@ const router = createBrowserRouter([
                                 element: <NewRecipePage />,
                             },
                             {
+                                path: "onboarding/ritual",
+                                element: <RitualOnboarding />,
+                            },
+                            {
+                                path: "ritual",
+                                element: <RitualDailyPage />,
+                            },
+                            {
+                                path: "ritual/settings",
+                                element: <RitualSettingsPage />,
+                            },
+                            {
+                                path: "ritual/settings/preferences/:key",
+                                element: <RitualPreferenceEditPage />,
+                            },
+                            {
+                                path: "shopping",
+                                element: <ShoppingHome />,
+                            },
+                            {
+                                path: "shopping/join/:token",
+                                element: <ShoppingJoinPage />,
+                            },
+                            {
+                                path: "shopping/:uuid",
+                                element: <ShoppingListPage />,
+                            },
+                            {
                                 path: "premium",
                                 element: <BecomePremium />
                             },
@@ -186,6 +222,10 @@ const router = createBrowserRouter([
                             {
                                 path: "admin/ingredients-cleanup",
                                 element: <AdminIngredientsCleanup />
+                            },
+                            {
+                                path: "admin/ritual-test",
+                                element: <AdminRitualTest />
                             }
                         ],
                     },

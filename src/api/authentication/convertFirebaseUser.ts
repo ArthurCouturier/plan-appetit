@@ -18,10 +18,12 @@ export const convertFirebaseUser = async (firebaseUser: User): Promise<UserInter
     try {
         const backendUserData = await BackendService.connectUser(email, token);
 
-        // Fusionner les données Firebase avec les données backend (backend prioritaire pour displayName/photo)
+        // Fusionner les données Firebase avec les données backend (backend prioritaire pour uid, displayName et photo).
+        // L'uid back est la source de vérité (PK utilisée pour toutes les FK : ownerUserUid, member.userUid, etc.).
+        // Le Firebase uid sert seulement de fallback si le back n'a jamais répondu.
         return {
             ...backendUserData,
-            uid: firebaseUser.uid,
+            uid: backendUserData.uid || firebaseUser.uid,
             email,
             displayName: backendUserData.displayName || firebaseUser.displayName || "",
             token,

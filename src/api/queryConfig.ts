@@ -16,4 +16,24 @@ export const queryKeys = {
     referral: {
         stats: () => ['referral', 'stats'] as const,
     },
+    culinaryProfile: {
+        me: () => ['user', 'culinaryProfile'] as const,
+    },
+    ritualDaily: {
+        byMealAndDate: (mealType: string, date: string) =>
+            ['ritualDaily', mealType, date] as const,
+        range: (from: string, to: string) =>
+            ['ritualDaily', 'range', from, to] as const,
+    },
+    ritualMealPlan: {
+        week: (from: string, to: string) =>
+            ['ritualMealPlan', from, to] as const,
+    },
+    shoppingLists: {
+        all: () => ['shoppingLists'] as const,
+        byId: (uuid: string) => ['shoppingLists', uuid] as const,
+    },
+    ingredientSearch: {
+        byQuery: (q: string) => ['ingredientSearch', q] as const,
+    },
 } as const;

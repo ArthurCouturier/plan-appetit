@@ -5,6 +5,7 @@ export type FeedbackTriggerEvent =
     | "recipe_generated"
     | "home_reached"
     | "credit_depleted"
+    | "ritual_recipe_opened"
     | string;
 
 export function dispatchFeedbackEvent(event: FeedbackTriggerEvent): void {

@@ -96,9 +96,19 @@ export function useRecipeImageVisible(recipeUuid: string) {
     const queryClient = useQueryClient();
     const ref = useRef<HTMLDivElement>(null);
     const requested = useRef(false);
+    const prevUuidRef = useRef(recipeUuid);
     const [imageData, setImageData] = useState<string | null | undefined>(() =>
         queryClient.getQueryData(queryKeys.recipes.image(recipeUuid))
     );
+
+    // Sync state lorsque recipeUuid change (ex: regénération ritual) : la state locale
+    // serait sinon figée sur l'ancien uuid → l'image ne suit pas. Pattern documenté React :
+    // https://react.dev/reference/react/useState#storing-information-from-previous-renders
+    if (prevUuidRef.current !== recipeUuid) {
+        prevUuidRef.current = recipeUuid;
+        requested.current = false;
+        setImageData(queryClient.getQueryData(queryKeys.recipes.image(recipeUuid)));
+    }
 
     queryClientRef = queryClient;
 

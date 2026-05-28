@@ -3,8 +3,15 @@ import { useCallback, useRef, useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeSummaryInterface from "../../api/interfaces/recipes/RecipeSummaryInterface";
 import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
+import RecipeImageThumbnail from "../recipes/RecipeImageThumbnail";
+import { useAddRecipeToShoppingList } from "../../api/hooks/useAddRecipeToShoppingList";
 import { UserGroupIcon, CurrencyEuroIcon, ClockIcon } from "@heroicons/react/24/solid";
 import { heavyHaptic } from "../../haptics/heavy";
+import { successHaptic } from "../../haptics/success";
+import { errorHaptic } from "../../haptics/error";
+import ShoppingCartAddIcon from "../shopping/ShoppingCartAddIcon";
+import { useFlyToTarget } from "../../hooks/useFlyToTarget";
+import { HEADER_TRANSITION_MS, isMobileHeaderVisible, requestShowHeader } from "../global/HeaderMobile";
 
 type RecipeCardProps = {
     recipe: RecipeInterface | RecipeSummaryInterface;
@@ -37,7 +44,6 @@ const ZONE_THRESHOLD = 0.3;
 export default function RecipeCard({ recipe }: RecipeCardProps) {
     const navigate = useNavigate();
     const { ref: visibilityRef, data: imageData } = useRecipeImageVisible(String(recipe.uuid));
-    const isLoading = imageData === undefined;
 
     const [rotation, setRotation] = useState(0);
     const [transitioning, setTransitioning] = useState(false);
@@ -59,6 +65,11 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     const { totalTimeMin, restTimeMin } = getRecipeTimes(recipe);
     const totalLabel = formatDuration(totalTimeMin);
     const restLabel = restTimeMin && restTimeMin > 0 ? formatDuration(restTimeMin) : null;
+
+    const addToList = useAddRecipeToShoppingList();
+    const [flying, setFlying] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
+    const { fly, portal } = useFlyToTarget();
 
     const updateRotation = useCallback((value: number) => {
         rotationRef.current = value;
@@ -210,6 +221,51 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         }, 350);
     }, [updateRotation, normalizeRotation, clearTransitionTimeout]);
 
+    const handleAddToShoppingList = useCallback((event: React.MouseEvent | React.TouchEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+        if (addToList.isPending || flying) return;
+
+        setFlying(true);
+
+        addToList.mutate(
+            { recipeUuid: String(recipe.uuid) },
+            {
+                onSuccess: () => successHaptic(),
+                onError: () => {
+                    errorHaptic();
+                    setFlying(false);
+                },
+            },
+        );
+
+        const wasFlipped = isCurrentlyFlipped();
+        if (wasFlipped) flipBack(-1);
+
+        const headerWasHidden = !isMobileHeaderVisible();
+        if (headerWasHidden) requestShowHeader();
+
+        const flipDelay = wasFlipped ? 150 : 0;
+        const headerDelay = headerWasHidden ? HEADER_TRANSITION_MS : 0;
+        const delayBeforeFly = Math.max(flipDelay, headerDelay);
+
+        setTimeout(() => {
+            if (!imgRef.current || !imageData) {
+                setFlying(false);
+                return;
+            }
+            const sourceRect = imgRef.current.getBoundingClientRect();
+            fly({
+                sourceRect,
+                targetSelector: '[data-shopping-cart-target]',
+                imageSrc: `data:image/png;base64,${imageData}`,
+                alt: recipe.name,
+                durationMs: 650,
+                onArrived: () => setFlying(false),
+            });
+        }, delayBeforeFly);
+    }, [addToList, recipe.uuid, recipe.name, flying, isCurrentlyFlipped, flipBack, fly, imageData]);
+
     const handleClick = useCallback((e: React.MouseEvent) => {
         if (didSwipeRef.current) return;
         if (transitioning) return;
@@ -283,22 +339,14 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                     </div>
 
                     <div className="px-[5px] pb-[5px]">
-                        <div className="w-full aspect-square rounded-tl-[3px] rounded-tr-[3px] rounded-bl-[9px] rounded-br-[9px] overflow-hidden">
-                            {isLoading ? (
-                                <div className="w-full h-full bg-gradient-to-r from-border-color via-secondary to-border-color animate-shimmer bg-[length:200%_100%]" />
-                            ) : imageData ? (
-                                <img
-                                    src={`data:image/png;base64,${imageData}`}
-                                    alt={recipe.name}
-                                    className="w-full h-full object-cover"
-                                    draggable={false}
-                                />
-                            ) : (
-                                <div className="w-full h-full bg-border-color flex items-center justify-center">
-                                    <span className="text-2xl">🍽️</span>
-                                </div>
-                            )}
-                        </div>
+                        <RecipeImageThumbnail
+                            ref={imgRef}
+                            recipeUuid={String(recipe.uuid)}
+                            recipeName={recipe.name}
+                            fallbackEmoji="🍽️"
+                            className="w-full aspect-square rounded-tl-[3px] rounded-tr-[3px] rounded-bl-[9px] rounded-br-[9px]"
+                            fallbackEmojiClassName="text-2xl"
+                        />
                     </div>
                 </div>
 
@@ -347,8 +395,22 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                             )}
                         </div>
                     </div>
+
+                    <button
+                        type="button"
+                        onClick={handleAddToShoppingList}
+                        onTouchEnd={handleAddToShoppingList}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        disabled={addToList.isPending || flying}
+                        aria-label="Ajouter les ingrédients à ma liste de courses"
+                        className="absolute bottom-2 left-0 right-0 mx-auto w-16 h-8 flex items-center justify-center rounded-full bg-cout-yellow text-cout-purple shadow-md disabled:opacity-50 transition-transform active:scale-95"
+                    >
+                        <ShoppingCartAddIcon />
+                    </button>
                 </div>
             </div>
+            {portal}
         </div>
     );
 }

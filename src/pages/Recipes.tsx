@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "../api/hooks/useAuth";
 import { useDefaultCollection } from "../api/hooks/useCollectionQueries";
 import { dispatchFeedbackEvent } from "../components/feedbacks/feedbackEvents";
+import PageLoader from "../components/global/PageLoader";
 
 const CACHED_DEFAULT_UUID_KEY = "defaultCollectionUuid";
 
 export default function Recipes() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { data: defaultCollection } = useDefaultCollection();
+    const { data: defaultCollection, isError, refetch } = useDefaultCollection();
     const redirectedRef = useRef(false);
 
     useEffect(() => {
@@ -47,9 +48,20 @@ export default function Recipes() {
         }
     }, [defaultCollection]);
 
-    return (
-        <div className="min-h-screen bg-bg-color flex items-center justify-center">
-            <div className="animate-pulse text-text-secondary">Chargement...</div>
-        </div>
-    );
+    if (isError) {
+        return (
+            <div className="min-h-screen bg-bg-color flex flex-col items-center justify-center gap-4">
+                <p className="font-bold text-xl text-text-secondary">Erreur lors du chargement</p>
+                <button
+                    type="button"
+                    onClick={() => refetch()}
+                    className="px-5 py-2.5 rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md text-white font-semibold"
+                >
+                    Réessayer
+                </button>
+            </div>
+        );
+    }
+
+    return <PageLoader />;
 }

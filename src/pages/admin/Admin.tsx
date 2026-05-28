@@ -76,6 +76,20 @@ export default function Admin() {
                     </button>
 
                     <button
+                        onClick={() => navigate("/admin/ritual-test")}
+                        className="w-full flex items-center justify-between px-4 py-4 bg-secondary border border-border-color rounded-lg hover:bg-tertiary transition-colors"
+                    >
+                        <div className="flex items-center gap-3">
+                            <BellAlertIcon className="w-5 h-5 text-orange-500" />
+                            <div className="text-left">
+                                <h3 className="font-semibold text-text-primary">Test push ritual</h3>
+                                <p className="text-sm text-text-secondary">Envoyer une notif ritual midi ou soir de test à soi-même ou un autre user</p>
+                            </div>
+                        </div>
+                        <span className="text-text-secondary">&rsaquo;</span>
+                    </button>
+
+                    <button
                         onClick={() => navigate("/admin/notifications/list")}
                         className="w-full flex items-center justify-between px-4 py-4 bg-secondary border border-border-color rounded-lg hover:bg-tertiary transition-colors"
                     >

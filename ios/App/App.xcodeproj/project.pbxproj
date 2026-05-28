@@ -3,12 +3,14 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		1C0AA4552F6D75E90087E1E8 /* TikTokSDKPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */; };
 		1C32B92B2F71332100AA421A /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C32B92A2F71332100AA421A /* MainViewController.swift */; };
+		1C42F0162FBF3C3D00D7AB5F /* RitualNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C42F0142FBF3C3D00D7AB5F /* RitualNotifications.swift */; };
+		1C42F0172FBF3C3D00D7AB5F /* RitualNotificationsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C42F0152FBF3C3D00D7AB5F /* RitualNotificationsPlugin.swift */; };
 		1C71D70E2F73DFAA000373DC /* SKAdNetworkPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C71D70D2F73DFAA000373DC /* SKAdNetworkPlugin.swift */; };
 		1C737B412EE89AF3003B5695 /* Products.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 1C737B402EE89AF3003B5695 /* Products.storekit */; };
 		1C7EDBCD2F98CB9E00FE5ACF /* WatchBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7EDBCB2F98CB9E00FE5ACF /* WatchBridge.swift */; };
@@ -17,6 +19,11 @@
 		1C80C3CF2F34F4F100675EBB /* FacebookBasics in Frameworks */ = {isa = PBXBuildFile; productRef = 1C80C3CE2F34F4F100675EBB /* FacebookBasics */; };
 		1C80C3D12F34F4F100675EBB /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1C80C3D02F34F4F100675EBB /* FacebookCore */; };
 		1C80C3D32F34F4F100675EBB /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 1C80C3D22F34F4F100675EBB /* FacebookLogin */; };
+		1C9EFA1D2FC60B7F00D81E9B /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 1C9EFA1C2FC60B7F00D81E9B /* CapApp-SPM */; };
+		1C9EFA212FC60BCE00D81E9B /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 1C9EFA202FC60BCE00D81E9B /* FirebaseAuth */; };
+		1C9EFA232FC60BCE00D81E9B /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1C9EFA222FC60BCE00D81E9B /* FirebaseCore */; };
+		1C9EFA252FC60BCE00D81E9B /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 1C9EFA242FC60BCE00D81E9B /* FirebaseMessaging */; };
+		1C9EFA282FC60BED00D81E9B /* TikTokBusinessSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 1C9EFA272FC60BED00D81E9B /* TikTokBusinessSDK */; };
 		1CE09BBE2F98D4260008909A /* PlanAppetitWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 1CE09BBD2F98D3E70008909A /* PlanAppetitWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1CE3A4DD2EE41733008D87DB /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CE3A4DC2EE41733008D87DB /* StoreKit.framework */; };
 		1CE3A4DF2EE4349F008D87DB /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1CE3A4DE2EE4349F008D87DB /* GoogleService-Info.plist */; };
@@ -31,7 +38,6 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
-		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +81,8 @@
 /* Begin PBXFileReference section */
 		1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TikTokSDKPlugin.swift; sourceTree = "<group>"; };
 		1C32B92A2F71332100AA421A /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		1C42F0142FBF3C3D00D7AB5F /* RitualNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RitualNotifications.swift; sourceTree = "<group>"; };
+		1C42F0152FBF3C3D00D7AB5F /* RitualNotificationsPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RitualNotificationsPlugin.swift; sourceTree = "<group>"; };
 		1C71D70D2F73DFAA000373DC /* SKAdNetworkPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SKAdNetworkPlugin.swift; sourceTree = "<group>"; };
 		1C737B402EE89AF3003B5695 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		1C7EDBCB2F98CB9E00FE5ACF /* WatchBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridge.swift; sourceTree = "<group>"; };
@@ -96,9 +104,6 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
-		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
-		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,11 +111,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1C9EFA252FC60BCE00D81E9B /* FirebaseMessaging in Frameworks */,
+				1C9EFA282FC60BED00D81E9B /* TikTokBusinessSDK in Frameworks */,
 				1C80C3CD2F34F4F100675EBB /* FacebookAEM in Frameworks */,
 				1C80C3D12F34F4F100675EBB /* FacebookCore in Frameworks */,
+				1C9EFA1D2FC60B7F00D81E9B /* CapApp-SPM in Frameworks */,
 				1C80C3D32F34F4F100675EBB /* FacebookLogin in Frameworks */,
 				1C80C3CF2F34F4F100675EBB /* FacebookBasics in Frameworks */,
-				A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */,
+				1C9EFA212FC60BCE00D81E9B /* FirebaseAuth in Frameworks */,
+				1C9EFA232FC60BCE00D81E9B /* FirebaseCore in Frameworks */,
 				1CE3A4DD2EE41733008D87DB /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -131,7 +140,6 @@
 			isa = PBXGroup;
 			children = (
 				1CE3A4DC2EE41733008D87DB /* StoreKit.framework */,
-				AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -142,7 +150,6 @@
 				1CE09BAB2F98D3E60008909A /* PlanAppetitWatch.xcodeproj */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
-				7F8756D8B27F46E3366F6CEA /* Pods */,
 				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -164,6 +171,8 @@
 				1C0AA4542F6D75E90087E1E8 /* TikTokSDKPlugin.swift */,
 				1CE3A4E22EE46AB8008D87DB /* App.entitlements */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
+				1C42F0142FBF3C3D00D7AB5F /* RitualNotifications.swift */,
+				1C42F0152FBF3C3D00D7AB5F /* RitualNotificationsPlugin.swift */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
@@ -182,15 +191,6 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		7F8756D8B27F46E3366F6CEA /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */,
-				AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -198,11 +198,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 504EC3161FED79650016851F /* Build configuration list for PBXNativeTarget "App" */;
 			buildPhases = (
-				6634F4EFEBD30273BCE97C65 /* [CP] Check Pods Manifest.lock */,
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
-				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 				1CE09BBF2F98D4260008909A /* Embed Watch Content */,
 			);
 			buildRules = (
@@ -242,6 +240,9 @@
 			mainGroup = 504EC2FB1FED79650016851F;
 			packageReferences = (
 				1C80C3CB2F34F2AF00675EBB /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
+				1C9EFA1B2FC60B7F00D81E9B /* XCLocalSwiftPackageReference "CapApp-SPM" */,
+				1C9EFA1F2FC60BCE00D81E9B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				1C9EFA262FC60BED00D81E9B /* XCRemoteSwiftPackageReference "tiktok-business-ios-sdk" */,
 			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
@@ -297,48 +298,14 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		6634F4EFEBD30273BCE97C65 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-App-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-App/Pods-App-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		504EC3001FED79650016851F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				1C32B92B2F71332100AA421A /* MainViewController.swift in Sources */,
+				1C42F0162FBF3C3D00D7AB5F /* RitualNotifications.swift in Sources */,
+				1C42F0172FBF3C3D00D7AB5F /* RitualNotificationsPlugin.swift in Sources */,
 				1C7EDBCD2F98CB9E00FE5ACF /* WatchBridge.swift in Sources */,
 				1C7EDBCE2F98CB9E00FE5ACF /* WatchBridgePlugin.swift in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
@@ -503,7 +470,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.0;
+				MARKETING_VERSION = 2.1.0;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = fr.planappetit.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -530,7 +497,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.0;
+				MARKETING_VERSION = 2.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = fr.planappetit.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -563,13 +530,36 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		1C9EFA1B2FC60B7F00D81E9B /* XCLocalSwiftPackageReference "CapApp-SPM" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "CapApp-SPM";
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		1C80C3CB2F34F2AF00675EBB /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
 			requirement = {
+				kind = exactVersion;
+				version = 17.4.0;
+			};
+		};
+		1C9EFA1F2FC60BCE00D81E9B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = exactVersion;
+				version = 12.13.0;
+			};
+		};
+		1C9EFA262FC60BED00D81E9B /* XCRemoteSwiftPackageReference "tiktok-business-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tiktok/tiktok-business-ios-sdk";
+			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 18.0.1;
+				minimumVersion = 1.6.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -594,6 +584,30 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 1C80C3CB2F34F2AF00675EBB /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
 			productName = FacebookLogin;
+		};
+		1C9EFA1C2FC60B7F00D81E9B /* CapApp-SPM */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "CapApp-SPM";
+		};
+		1C9EFA202FC60BCE00D81E9B /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C9EFA1F2FC60BCE00D81E9B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		1C9EFA222FC60BCE00D81E9B /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C9EFA1F2FC60BCE00D81E9B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		1C9EFA242FC60BCE00D81E9B /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C9EFA1F2FC60BCE00D81E9B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		1C9EFA272FC60BED00D81E9B /* TikTokBusinessSDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C9EFA262FC60BED00D81E9B /* XCRemoteSwiftPackageReference "tiktok-business-ios-sdk" */;
+			productName = TikTokBusinessSDK;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

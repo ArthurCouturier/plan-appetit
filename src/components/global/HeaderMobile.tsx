@@ -1,9 +1,23 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeftIcon, HomeIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon, HomeIcon, ShoppingCartIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
 import UserAvatar from "./UserAvatar";
 import useAuth from "../../api/hooks/useAuth";
 import NotificationBell from "../notifications/NotificationBell";
+
+export const SHOW_HEADER_EVENT = "header:show";
+export const HEADER_TRANSITION_MS = 300;
+
+let headerIsVisible = true;
+
+export function requestShowHeader(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(SHOW_HEADER_EVENT));
+}
+
+export function isMobileHeaderVisible(): boolean {
+  return headerIsVisible;
+}
 
 export default function HeaderMobile() {
   const navigate = useNavigate();
@@ -33,6 +47,16 @@ export default function HeaderMobile() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  useEffect(() => {
+    const handleForceShow = () => setIsVisible(true);
+    window.addEventListener(SHOW_HEADER_EVENT, handleForceShow);
+    return () => window.removeEventListener(SHOW_HEADER_EVENT, handleForceShow);
+  }, []);
+
+  useEffect(() => {
+    headerIsVisible = isVisible;
+  }, [isVisible]);
 
   // Ne pas afficher le header sur la page login
   if (location.pathname === "/login") {
@@ -75,6 +99,14 @@ export default function HeaderMobile() {
       </div>
 
       <div className="flex items-center gap-2">
+        <button
+          data-shopping-cart-target
+          onClick={() => navigate("/shopping")}
+          aria-label="Liste de courses"
+          className="w-10 h-10 flex items-center justify-center rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md hover:bg-cout-purple transition-colors"
+        >
+          <ShoppingCartIcon className="w-5 h-5 text-white" />
+        </button>
         <NotificationBell
           className="w-10 h-10 rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md"
         />

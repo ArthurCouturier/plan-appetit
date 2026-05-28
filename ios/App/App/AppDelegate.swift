@@ -31,6 +31,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("[TikTokSDK] Initialized at app launch with appId: \(tiktokAppId)")
 
         WatchBridge.shared.activate()
+        RitualNotifications.shared.activate()
 
         return true
     }

@@ -126,6 +126,7 @@ export default function LoginPage() {
                         );
                         userData.role = backendUser.role;
                         userData.isPremium = backendUser.isPremium;
+                        if (backendUser.uid) userData.uid = backendUser.uid;
                         if (backendUser.displayName) userData.displayName = backendUser.displayName;
                         if (backendUser.profilePhoto) userData.profilePhoto = backendUser.profilePhoto;
                     } catch (err) {
@@ -338,6 +339,7 @@ export default function LoginPage() {
                         );
                         userData.role = backendUser.role;
                         userData.isPremium = backendUser.isPremium;
+                        if (backendUser.uid) userData.uid = backendUser.uid;
                         if (backendUser.displayName) userData.displayName = backendUser.displayName;
                         if (backendUser.profilePhoto) userData.profilePhoto = backendUser.profilePhoto;
                     } catch (err) {
@@ -444,6 +446,7 @@ export default function LoginPage() {
                         );
                         userData.role = backendUser.role;
                         userData.isPremium = backendUser.isPremium;
+                        if (backendUser.uid) userData.uid = backendUser.uid;
                         if (backendUser.displayName) userData.displayName = backendUser.displayName;
                         if (backendUser.profilePhoto) userData.profilePhoto = backendUser.profilePhoto;
                     } catch (err) {

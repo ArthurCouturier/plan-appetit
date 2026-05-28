@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { SparklesIcon, TrashIcon, BookmarkIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, BookmarkIcon } from "@heroicons/react/24/solid";
 import { RecipeV2DTO } from "../api/interfaces/v2/RecipeV2";
 import RecipeV2Service, {
     RecipeV2ForbiddenError,
@@ -9,7 +9,11 @@ import RecipeV2Service, {
 import RecipeService from "../api/services/RecipeService";
 import BackendService from "../api/services/BackendService";
 import useAuth from "../api/hooks/useAuth";
+import { useRitualDailyRange } from "../api/hooks/useRitualDaily";
+import { localIsoDate } from "../utils/dateUtils";
+import { dispatchFeedbackEvent } from "../components/feedbacks/feedbackEvents";
 import IngredientsListV2 from "../components/recipes-v2/IngredientsListV2";
+import AddToShoppingListButtonV2 from "../components/recipes-v2/AddToShoppingListButtonV2";
 import RecipeImageV2 from "../components/recipes-v2/RecipeImageV2";
 import RecipeStepsListV2 from "../components/recipes-v2/RecipeStepsListV2";
 import RecipeTimeFlipCardV2 from "../components/recipes-v2/RecipeTimeFlipCardV2";
@@ -79,14 +83,19 @@ export default function RecipeDetailV2() {
         BackendService.getUserCredits(email, token).then(setUserCredits).catch(() => undefined);
     }, [showPurchaseCreditsModal]);
 
-    const handleOpenModification = () => {
+    const today = useMemo(() => localIsoDate(), []);
+    const ritualRange = useRitualDailyRange(today, today);
+    const dispatchedForUuidRef = useRef<string | null>(null);
+    useEffect(() => {
         if (state.status !== "ok") return;
-        if (state.recipe.remainingModifications <= 0) {
-            setShowPurchaseCreditsModal(true);
-        } else {
-            setShowModificationModal(true);
-        }
-    };
+        const data = ritualRange.data;
+        if (!data) return;
+        if (dispatchedForUuidRef.current === state.recipe.uuid) return;
+        const isDailyRitual = data.some((assignment) => assignment.recipeUuid === state.recipe.uuid);
+        if (!isDailyRitual) return;
+        dispatchedForUuidRef.current = state.recipe.uuid;
+        dispatchFeedbackEvent("ritual_recipe_opened");
+    }, [state, ritualRange.data]);
 
     const handleModificationComplete = async () => {
         if (uuid) await fetchRecipe(uuid);
@@ -191,17 +200,6 @@ export default function RecipeDetailV2() {
                         )}
 
                         <RecipeShareButtonV2 recipeName={recipe.name} fullWidth className="flex-1" />
-
-                        {isOwner && (
-                            <button
-                                onClick={handleOpenModification}
-                                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg transition-all"
-                            >
-                                <SparklesIcon className="w-5 h-5 flex-shrink-0" />
-                                <span>Assistant IA</span>
-                            </button>
-                        )}
-
                         <RecipeRemixButtonV2 recipeUuid={recipe.uuid} fullWidth className="flex-1" />
                     </div>
                 </div>
@@ -228,30 +226,12 @@ export default function RecipeDetailV2() {
                         />
                         <div className="flex flex-col gap-2 h-full">
                             <RecipeShareButtonV2 recipeName={recipe.name} fullWidth className="flex-1" />
-                            {isOwner && (
-                                <button
-                                    onClick={handleOpenModification}
-                                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg transition-all flex-1"
-                                >
-                                    <SparklesIcon className="w-5 h-5 flex-shrink-0" />
-                                    <span>Assistant IA</span>
-                                </button>
-                            )}
                             <RecipeRemixButtonV2 recipeUuid={recipe.uuid} fullWidth className="flex-1" />
                         </div>
                     </div>
                 ) : (
                     <div className="lg:hidden flex flex-col gap-2">
                         <RecipeShareButtonV2 recipeName={recipe.name} fullWidth />
-                        {isOwner && (
-                            <button
-                                onClick={handleOpenModification}
-                                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cout-base to-cout-purple text-white font-semibold rounded-lg hover:shadow-lg transition-all w-full"
-                            >
-                                <SparklesIcon className="w-5 h-5 flex-shrink-0" />
-                                <span>Assistant IA</span>
-                            </button>
-                        )}
                         <RecipeRemixButtonV2 recipeUuid={recipe.uuid} fullWidth />
                     </div>
                 )}
@@ -277,6 +257,10 @@ export default function RecipeDetailV2() {
                         <div className="lg:max-h-[calc(100dvh_-_10rem)] lg:overflow-y-auto">
                             <IngredientsListV2 ingredients={recipe.ingredients} />
                         </div>
+                        <AddToShoppingListButtonV2
+                            recipeUuid={recipe.uuid}
+                            recipeName={recipe.name}
+                        />
                     </div>
                 </aside>
 

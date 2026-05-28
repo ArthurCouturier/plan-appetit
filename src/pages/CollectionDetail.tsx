@@ -22,6 +22,7 @@ import useCollectionDnD from "../hooks/useCollectionDnD";
 import { useQuery } from "@tanstack/react-query";
 import useAuth from "../api/hooks/useAuth";
 import BatchCookingV2Service from "../api/services/BatchCookingV2Service";
+import PageLoader from "../components/global/PageLoader";
 
 
 interface CollectionDetailProps {
@@ -330,10 +331,6 @@ function CollectionDetailContent({
 
 // --- Utility components ---
 
-function CollectionDetailSkeleton({ isMobile }: { isMobile: boolean }) {
-    return (
-        <div className={`min-h-screen bg-bg-color flex items-center justify-center ${isMobile ? 'px-4 pb-24 mobile-content-with-header' : 'p-6'}`}>
-            <div className="animate-pulse text-text-secondary">Chargement en cours...</div>
-        </div>
-    );
+function CollectionDetailSkeleton(_: { isMobile: boolean }) {
+    return <PageLoader />;
 }

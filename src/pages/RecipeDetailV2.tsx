@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { TrashIcon, BookmarkIcon } from "@heroicons/react/24/solid";
 import { RecipeV2DTO } from "../api/interfaces/v2/RecipeV2";
@@ -9,6 +9,9 @@ import RecipeV2Service, {
 import RecipeService from "../api/services/RecipeService";
 import BackendService from "../api/services/BackendService";
 import useAuth from "../api/hooks/useAuth";
+import { useRitualDailyRange } from "../api/hooks/useRitualDaily";
+import { localIsoDate } from "../utils/dateUtils";
+import { dispatchFeedbackEvent } from "../components/feedbacks/feedbackEvents";
 import IngredientsListV2 from "../components/recipes-v2/IngredientsListV2";
 import AddToShoppingListButtonV2 from "../components/recipes-v2/AddToShoppingListButtonV2";
 import RecipeImageV2 from "../components/recipes-v2/RecipeImageV2";
@@ -79,6 +82,20 @@ export default function RecipeDetailV2() {
         if (!email || !token) return;
         BackendService.getUserCredits(email, token).then(setUserCredits).catch(() => undefined);
     }, [showPurchaseCreditsModal]);
+
+    const today = useMemo(() => localIsoDate(), []);
+    const ritualRange = useRitualDailyRange(today, today);
+    const dispatchedForUuidRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (state.status !== "ok") return;
+        const data = ritualRange.data;
+        if (!data) return;
+        if (dispatchedForUuidRef.current === state.recipe.uuid) return;
+        const isDailyRitual = data.some((assignment) => assignment.recipeUuid === state.recipe.uuid);
+        if (!isDailyRitual) return;
+        dispatchedForUuidRef.current = state.recipe.uuid;
+        dispatchFeedbackEvent("ritual_recipe_opened");
+    }, [state, ritualRange.data]);
 
     const handleModificationComplete = async () => {
         if (uuid) await fetchRecipe(uuid);

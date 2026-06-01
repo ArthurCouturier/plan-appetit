@@ -384,6 +384,7 @@ export function Q8Equipment({ selected, onChange }: { selected: string[]; onChan
                 onChange={onChange}
                 title=""
                 allowCustom
+                columns={4}
                 customPlaceholder="Autre équipement..."
             />
         </>

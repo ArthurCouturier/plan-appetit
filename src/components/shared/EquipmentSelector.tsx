@@ -10,6 +10,8 @@ interface EquipmentSelectorProps {
     allowCustom?: boolean;
     customMaxLength?: number;
     customPlaceholder?: string;
+    /** Fixed number of columns. When omitted, the column count is responsive. */
+    columns?: number;
 }
 
 function useColumnsCount(): number {
@@ -41,10 +43,12 @@ export default function EquipmentSelector({
     allowCustom = false,
     customMaxLength = 30,
     customPlaceholder = "Autre équipement...",
+    columns,
 }: EquipmentSelectorProps) {
     const [showAll, setShowAll] = useState(false);
     const [customInput, setCustomInput] = useState("");
-    const cols = useColumnsCount();
+    const responsiveCols = useColumnsCount();
+    const cols = columns ?? responsiveCols;
     const collapsedCount = cols * 3;
     const needsToggle = equipmentsData.length > collapsedCount;
     const visibleEquipments = showAll ? equipmentsData : equipmentsData.slice(0, collapsedCount);

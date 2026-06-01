@@ -5,6 +5,7 @@ import RitualDailyService from "../services/RitualDailyService";
 import {
     MealType,
     RegenerateRitualDailyRequest,
+    RitualAccessInterface,
     RitualDailyInterface,
     RitualInitialDayInterface,
 } from "../interfaces/ritual/RitualDailyInterface";
@@ -16,6 +17,23 @@ function getAuthHeaders(): { email: string | null; token: string | null } {
         email: localStorage.getItem("email"),
         token: localStorage.getItem("firebaseIdToken"),
     };
+}
+
+export function useRitualAccess() {
+    const { user } = useAuth();
+    return useQuery<RitualAccessInterface>({
+        queryKey: queryKeys.ritualDaily.access(),
+        queryFn: async () => {
+            const { email, token } = getAuthHeaders();
+            if (!email || !token) {
+                throw new Error("Non authentifié");
+            }
+            return RitualDailyService.getAccess(email, token);
+        },
+        enabled: !!user,
+        staleTime: 5 * 60 * 1000,
+        retry: 0,
+    });
 }
 
 export function useRitualDaily(mealType: MealType, date?: string, enabled: boolean = true) {

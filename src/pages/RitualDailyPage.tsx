@@ -5,9 +5,11 @@ import { FirebaseMessaging } from "@capacitor-firebase/messaging";
 import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import {
     useRegenerateRitualDaily,
+    useRitualAccess,
     useRitualDaily,
     useRitualDailyBootstrap,
 } from "../api/hooks/useRitualDaily";
+import RitualDailyLocked from "../components/ritual/RitualDailyLocked";
 import {
     MealType,
     REGENERATION_REASON_MAX_LENGTH,
@@ -22,33 +24,17 @@ import { errorHaptic } from "../haptics/error";
 import { lightHaptic } from "../haptics/light";
 
 export default function RitualDailyPage() {
-    const bootstrap = useRitualDailyBootstrap();
+    const access = useRitualAccess();
+    const hasAccess = access.data?.hasAccess === true;
     return (
         <div className="min-h-screen bg-bg-color px-4 pb-12 mobile-content-with-header">
             <div className="max-w-md mx-auto">
                 <h1 className="text-3xl font-bold text-text-primary text-center mb-4">
                     Mes recettes du jour
                 </h1>
-                <NotifPermissionPrompt />
-                <div className="grid grid-cols-2 gap-4">
-                    <MealSlot
-                        mealType="LUNCH"
-                        label="Ce midi"
-                        bootstrapReady={bootstrap.ready}
-                        bootstrapLoading={bootstrap.isLoading}
-                    />
-                    <MealSlot
-                        mealType="DINNER"
-                        label="Ce soir"
-                        bootstrapReady={bootstrap.ready}
-                        bootstrapLoading={bootstrap.isLoading}
-                    />
-                </div>
-                {bootstrap.error && !bootstrap.ready && (
-                    <p className="mt-3 text-xs text-cancel-1 text-center">
-                        Erreur de préparation de la journée. Tu peux retenter.
-                    </p>
-                )}
+                {access.isLoading && <DailyAccessLoading />}
+                {!access.isLoading && hasAccess && <RitualDailyRecipes />}
+                {!access.isLoading && !hasAccess && <RitualDailyLocked />}
                 <div className="mt-8">
                     <h2 className="text-base font-semibold text-text-primary mb-1">
                         📅 Mon historique de repas
@@ -66,6 +52,42 @@ export default function RitualDailyPage() {
                     Réglages
                 </Link>
             </div>
+        </div>
+    );
+}
+
+function RitualDailyRecipes() {
+    const bootstrap = useRitualDailyBootstrap();
+    return (
+        <>
+            <NotifPermissionPrompt />
+            <div className="grid grid-cols-2 gap-4">
+                <MealSlot
+                    mealType="LUNCH"
+                    label="Ce midi"
+                    bootstrapReady={bootstrap.ready}
+                    bootstrapLoading={bootstrap.isLoading}
+                />
+                <MealSlot
+                    mealType="DINNER"
+                    label="Ce soir"
+                    bootstrapReady={bootstrap.ready}
+                    bootstrapLoading={bootstrap.isLoading}
+                />
+            </div>
+            {bootstrap.error && !bootstrap.ready && (
+                <p className="mt-3 text-xs text-cancel-1 text-center">
+                    Erreur de préparation de la journée. Tu peux retenter.
+                </p>
+            )}
+        </>
+    );
+}
+
+function DailyAccessLoading() {
+    return (
+        <div className="rounded-3xl bg-secondary border border-border-color p-8 text-center">
+            <div className="w-8 h-8 border-2 border-cout-purple border-t-transparent rounded-full animate-spin mx-auto" />
         </div>
     );
 }

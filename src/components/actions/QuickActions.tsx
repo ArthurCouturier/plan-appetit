@@ -35,13 +35,13 @@ export default function QuickActions({
                 />
                 <QuickActionButton
                     icon="/icons/RecetteDuJour.svg"
-                    title="Recettes du jour"
+                    title="Recettes du Jour"
                     onClick={handleRitualClick}
                 />
                 <QuickActionButton
                     icon="/icons/ImportRecipe.svg"
                     iconSize={16}
-                    title="Importer une recette"
+                    title="Import de Recette"
                     onClick={() => navigate("/recettes/importer")}
                 />
             </div>

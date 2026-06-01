@@ -31,10 +31,18 @@ export interface RitualInitialDayInterface {
 
 export const REGENERATION_REASON_MAX_LENGTH = 200;
 
+export type RitualAccessReason = "PREMIUM" | "TRIAL" | "LOCKED";
+
+export interface RitualAccessInterface {
+    hasAccess: boolean;
+    reason: RitualAccessReason;
+    trialEndsAt: string | null;
+}
+
 export type RitualDailyError =
     | "UNAUTHORIZED"
     | "PROFILE_MISSING"
-    | "INSUFFICIENT_CREDITS"
+    | "LOCKED"
     | "UNKNOWN";
 
 export class RitualDailyServiceError extends Error {

@@ -9,20 +9,24 @@ const HAS_SEEN_KEY = 'paywall_has_seen_before';
 
 const FAQS = [
   {
-    question: "C'est vraiment sans CB pour le trial ?",
-    answer: "Oui. On ne demande ta CB qu'au jour 7 si tu veux continuer.",
+    question: "Et si je veux annuler ?",
+    answer: "En quelques secondes depuis ton compte, ou via l'App Store sur iPhone. Tant que tu annules avant la fin des 7 jours, rien n'est débité.",
   },
   {
-    question: "Comment annuler ?",
-    answer: "1 clic depuis Réglages > Mon abonnement. Avant J7 = aucun débit.",
+    question: "Ça coûte combien, et à partir de quand ?",
+    answer: "Le prix exact est affiché juste au-dessus, avant toute confirmation. Pendant 7 jours : 0 €. Tu n'es débité qu'ensuite, et seulement si tu continues.",
   },
   {
-    question: "Mes recettes sont sauvegardées si j'annule ?",
-    answer: "Oui, toutes tes recettes restent accessibles à vie.",
+    question: "Je m'engage sur la durée ?",
+    answer: "Aucun engagement. Tu arrêtes quand tu veux et tu gardes l'accès jusqu'à la fin de la période déjà entamée.",
   },
   {
-    question: "C'est mieux que ChatGPT ?",
-    answer: "Plan Appétit connaît ton frigo, ton planning, tes 14 derniers repas. ChatGPT non.",
+    question: "Si j'arrête, je perds mes recettes ?",
+    answer: "Jamais. Tes recettes, ton historique et tes listes restent à toi, accessibles même sans premium.",
+  },
+  {
+    question: "Pourquoi pas juste ChatGPT ou Marmiton ?",
+    answer: "Plan Appétit connaît ton frigo, ton budget, ton équipement et tes derniers repas, et associe les saveurs entre elles pour des recettes vraiment qualitatives. Plus sur mesure et plus innovant que Marmiton ou ChatGPT : une recette pensée pour toi, pas une recette générique à adapter.",
   },
 ];
 
@@ -63,7 +67,7 @@ export default function BecomePremium() {
             letterSpacing: '-0.5px',
             lineHeight: 1.15,
           }}>
-            7 jours offerts, sans CB.
+            7 jours offerts. 0 € aujourd'hui.
           </h1>
           <p style={{
             color: 'rgba(255,255,255,0.9)',

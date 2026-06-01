@@ -39,10 +39,10 @@ export default function QuickActions({
                     onClick={handleRitualClick}
                 />
                 <QuickActionButton
-                    icon="/icons/ImportInstagram.svg"
+                    icon="/icons/ImportRecipe.svg"
                     iconSize={16}
-                    title="Import Instagram"
-                    onClick={() => navigate("/instagram")}
+                    title="Importer une recette"
+                    onClick={() => navigate("/recettes/importer")}
                 />
             </div>
         </div>

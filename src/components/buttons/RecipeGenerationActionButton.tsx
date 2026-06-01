@@ -5,7 +5,11 @@ export type RecipeGenerationType =
     | "fridge"
     | "ingredient"
     | "batch"
-    | "routine";
+    | "routine"
+    | "instagram"
+    | "photo"
+    | "website"
+    | "tiktok";
 
 interface VariantConfig {
     title: string;
@@ -63,6 +67,42 @@ const VARIANTS: Record<RecipeGenerationType, VariantConfig> = {
         gradientTo: "#52b788",
         route: null,
     },
+    instagram: {
+        title: "Import Instagram",
+        subtitle: "Découvre tous les secrets d'un post ou réel",
+        subtitleColor: "#f3d1e8",
+        icon: "/icons/ImportInstagramWhite.svg",
+        gradientFrom: "#f178a0",
+        gradientTo: "#b14bbf",
+        route: "/instagram",
+    },
+    photo: {
+        title: "Import Photo",
+        subtitle: "Reproduis une recette en photo",
+        subtitleColor: "#d6def8",
+        icon: "/icons/ImportPhotoWhite.svg",
+        gradientFrom: "#9aa8f5",
+        gradientTo: "#6366f1",
+        route: "/photo-import",
+    },
+    website: {
+        title: "Import Site Web",
+        subtitle: "Récupère une recette depuis un lien",
+        subtitleColor: "#c6f1e8",
+        icon: "/icons/ImportWebsiteWhite.svg",
+        gradientFrom: "#5eead4",
+        gradientTo: "#14b8a6",
+        route: null,
+    },
+    tiktok: {
+        title: "Import TikTok",
+        subtitle: "Transforme une vidéo en recette",
+        subtitleColor: "#bdeef0",
+        icon: "/icons/ImportTikTokWhite.svg",
+        gradientFrom: "#4a4a55",
+        gradientTo: "#1c1c24",
+        route: null,
+    },
 };
 
 interface RecipeGenerationActionButtonProps {
@@ -84,11 +124,10 @@ export default function RecipeGenerationActionButton({ type }: RecipeGenerationA
         <button
             onClick={handleClick}
             disabled={comingSoon}
-            className={`relative w-full overflow-hidden rounded-[12px] h-full flex items-center gap-[16px] px-[24px] text-left transition-all duration-200 ${
-                comingSoon
-                    ? "cursor-default"
-                    : "hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
-            }`}
+            className={`relative w-full overflow-hidden rounded-[12px] h-full flex items-center gap-[16px] px-[24px] text-left transition-all duration-200 ${comingSoon
+                ? "cursor-default"
+                : "hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
+                }`}
             style={{
                 background: `linear-gradient(to bottom, ${config.gradientFrom}, ${config.gradientTo})`,
             }}

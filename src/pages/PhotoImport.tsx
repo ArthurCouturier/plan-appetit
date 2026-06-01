@@ -113,16 +113,16 @@ export default function PhotoImport() {
                 <div className="absolute bottom-10 right-20 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
             </div>
 
-            <div className="flex-grow relative z-10 pb-16" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}>
-                <div className="max-w-2xl mx-auto px-4 mb-12">
+            <div className="flex-grow relative z-10 flex flex-col pb-16" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 48px)" }}>
+                <div className="max-w-2xl mx-auto px-4 w-full flex flex-col flex-grow min-h-0">
 
                     {/* Title */}
-                    <div className="text-center mb-10">
+                    <div className="text-center mb-10 shrink-0">
                         <h1 className="text-3xl md:text-5xl font-bold text-white mb-3 leading-tight">
                             Import Photo
                         </h1>
                         <p className="text-base md:text-lg text-white/80 max-w-md mx-auto">
-                            Prends une photo d'un plat ou d'une recette : on l'analyse pour reproduire la recette.
+                            Prends une photo d'un plat ou d'une recette: on l'analyse pour reproduire la recette.
                         </p>
                         {user && quotaInfo && !quotaInfo.isSubscriber && (
                             <p className="text-sm text-cout-yellow font-semibold mt-2">
@@ -142,9 +142,14 @@ export default function PhotoImport() {
                         </div>
                     )}
 
+                    {/* Zone scrollable : centre le carré quand il y a la place,
+                        bascule en haut + scroll quand le contenu déborde (my-auto). */}
+                    <div className="flex-grow min-h-0 overflow-y-auto flex flex-col">
+                      <div className="my-auto w-full py-2">
+
                     {/* Étape 1 : gros bouton photo centré */}
                     {!imageBase64 && (
-                        <div className="flex justify-center mt-8">
+                        <div className="flex justify-center">
                             <button
                                 onClick={handlePickPhoto}
                                 className="group flex flex-col items-center justify-center gap-4 w-56 h-56 md:w-64 md:h-64 rounded-3xl bg-cout-yellow text-cout-purple font-bold shadow-2xl hover:bg-yellow-400 transform hover:scale-105 transition-all duration-300"
@@ -203,6 +208,8 @@ export default function PhotoImport() {
                             </div>
                         </div>
                     )}
+                      </div>
+                    </div>
                 </div>
             </div>
 

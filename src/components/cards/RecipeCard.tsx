@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import RecipeInterface from "../../api/interfaces/recipes/RecipeInterface";
 import RecipeSummaryInterface from "../../api/interfaces/recipes/RecipeSummaryInterface";
 import { useRecipeImageVisible } from "../../api/hooks/useRecipeImageBatch";
@@ -12,6 +12,7 @@ import { errorHaptic } from "../../haptics/error";
 import ShoppingCartAddIcon from "../shopping/ShoppingCartAddIcon";
 import { useFlyToTarget } from "../../hooks/useFlyToTarget";
 import { HEADER_TRANSITION_MS, isMobileHeaderVisible, requestShowHeader } from "../global/HeaderMobile";
+import { isFlipHintActive, recordFullFlip, registerVisibleCard } from "./recipeCardFlipHint";
 
 type RecipeCardProps = {
     recipe: RecipeInterface | RecipeSummaryInterface;
@@ -47,6 +48,9 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
 
     const [rotation, setRotation] = useState(0);
     const [transitioning, setTransitioning] = useState(false);
+    const [shaking, setShaking] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+    const shakeResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const rotationRef = useRef(0);
     const lastFaceRef = useRef<'front' | 'back'>('front');
@@ -76,12 +80,46 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         setRotation(value);
     }, []);
 
+    const shakeCard = useCallback(() => {
+        // Ne trembler que si la carte est au repos sur la face avant.
+        if (rotationRef.current !== 0 || transitioning || isDraggingRef.current) return;
+        setShaking(true);
+        if (shakeResetRef.current) clearTimeout(shakeResetRef.current);
+        shakeResetRef.current = setTimeout(() => setShaking(false), 660);
+    }, [transitioning]);
+    const shakeCardRef = useRef(shakeCard);
+    shakeCardRef.current = shakeCard;
+
+    useEffect(() => {
+        if (!isFlipHintActive()) return;
+        const el = visibilityRef.current;
+        if (!el) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsVisible(entry.isIntersecting),
+            { threshold: 0.5 },
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [visibilityRef]);
+
+    useEffect(() => {
+        if (!isFlipHintActive() || !isVisible) return;
+        return registerVisibleCard(() => shakeCardRef.current());
+    }, [isVisible]);
+
+    useEffect(() => {
+        return () => {
+            if (shakeResetRef.current) clearTimeout(shakeResetRef.current);
+        };
+    }, []);
+
     const hapticIfFaceChanged = useCallback((targetRotation: number) => {
         const normalized = ((targetRotation % 360) + 360) % 360;
         const newFace = (normalized < 90 || normalized > 270) ? 'front' : 'back';
         if (newFace !== lastFaceRef.current) {
             lastFaceRef.current = newFace;
             heavyHaptic();
+            if (newFace === 'back') recordFullFlip();
         }
     }, []);
 
@@ -320,7 +358,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
                 onTouchCancel={onTouchEnd}
                 onMouseDown={onMouseDown}
                 onTransitionEnd={handleTransitionEnd}
-                className={`relative w-full select-none ${transitioning ? 'transition-transform duration-300 ease-out' : ''}`}
+                className={`relative w-full select-none ${transitioning ? 'transition-transform duration-300 ease-out' : ''} ${shaking ? 'recipe-card-flip-hint' : ''}`}
                 style={{
                     transformStyle: 'preserve-3d',
                     transform: `rotateY(${rotation}deg)`,

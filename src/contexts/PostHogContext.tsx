@@ -7,6 +7,7 @@ interface PostHogContextValue {
   trackEvent: (eventName: string, properties?: Record<string, any>) => void;
   identify: (userId: string, properties?: Record<string, any>) => void;
   reset: () => void;
+  isFeatureEnabled: (flag: string) => boolean | undefined;
 }
 
 const PostHogContext = createContext<PostHogContextValue | undefined>(undefined);
@@ -77,11 +78,17 @@ export const PostHogProvider = ({ children }: PostHogProviderProps) => {
     }
   };
 
+  const isFeatureEnabled = (flag: string): boolean | undefined => {
+    if (!initialized || !posthog) return undefined;
+    return posthog.isFeatureEnabled(flag);
+  };
+
   const value: PostHogContextValue = {
     posthog: initialized ? posthog : null,
     trackEvent,
     identify,
     reset,
+    isFeatureEnabled,
   };
 
   return (

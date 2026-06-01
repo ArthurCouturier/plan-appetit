@@ -191,7 +191,7 @@ export default function Account() {
 
                     {/* Modal de rechargement des crédits */}
                     {showCreditModal && (
-                        <CreditPaywallModal onClose={() => setShowCreditModal(false)} />
+                        <CreditPaywallModal onClose={() => setShowCreditModal(false)} trigger="navigation" />
                     )}
 
                     {/* Modal d'édition de profil */}

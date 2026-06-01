@@ -140,7 +140,7 @@ export default function MyRecipesMobile({
 
       {/* Paywall Modal */}
       {showPaywall && (
-        <CreditPaywallModal onClose={() => setShowPaywall(false)} />
+        <CreditPaywallModal onClose={() => setShowPaywall(false)} trigger="insufficient_credits" />
       )}
     </div>
   )

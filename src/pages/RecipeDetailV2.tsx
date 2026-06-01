@@ -337,7 +337,7 @@ export default function RecipeDetailV2() {
             />
 
             {showCreditPaywallModal && (
-                <CreditPaywallModal onClose={() => setShowCreditPaywallModal(false)} />
+                <CreditPaywallModal onClose={() => setShowCreditPaywallModal(false)} trigger="insufficient_credits" />
             )}
 
             <SaveToCollectionModal

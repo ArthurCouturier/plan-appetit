@@ -197,7 +197,7 @@ export const FeedbackProvider = ({ children }: { children: React.ReactNode }) =>
                 />
             )}
             {showPaywall && (
-                <CreditPaywallModal onClose={() => setShowPaywall(false)} />
+                <CreditPaywallModal onClose={() => setShowPaywall(false)} trigger="navigation" />
             )}
         </FeedbackContext.Provider>
     );

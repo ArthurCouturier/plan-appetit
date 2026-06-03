@@ -39,7 +39,8 @@ export default function GuidedSandbox() {
     const sourceRecipeUuid = remixParam && remixParam.length > 0 ? remixParam : null;
 
     const [pageStep, setPageStep] = useState<PageStep>("seed");
-    const [seed, setSeed] = useState<string>("");
+    // Pré-remplissage depuis ?q= (ex: clic sur une image de l'état vide « aucune recette »).
+    const [seed, setSeed] = useState<string>(searchParams.get("q") ?? "");
     const [surpriseMe, setSurpriseMe] = useState<boolean>(false);
     const [turns, setTurns] = useState<GuidedSandboxTurn[]>([]);
     const [currentQuestion, setCurrentQuestion] = useState<GuidedSandboxQuestion | null>(null);

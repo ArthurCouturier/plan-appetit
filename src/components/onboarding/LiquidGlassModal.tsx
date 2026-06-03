@@ -29,8 +29,8 @@ function GlassProgressDots({ total, current }: { total: number; current: number 
         <div
           key={i}
           className={`rounded-full transition-all duration-300 ${i === current
-              ? "w-2 h-2 bg-white"
-              : "w-1.5 h-1.5 bg-white/40"
+            ? "w-2 h-2 bg-white"
+            : "w-1.5 h-1.5 bg-white/40"
             }`}
         />
       ))}
@@ -128,7 +128,7 @@ export default function LiquidGlassModal() {
             ${isOpen ? "opacity-0" : "opacity-100"}
           `}
         >
-          Générer des recettes
+          Découvrir l'application
         </span>
 
         {/* Modal content */}

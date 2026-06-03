@@ -5,7 +5,7 @@ import usePaywallProducts from "../../api/hooks/usePaywallProducts";
 import { TrackingService } from "../../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../../api/tracking/skadnetwork/SKAdNetworkService";
 import { SKAdNetworkConversionValue } from "../../api/tracking/skadnetwork/SKAdNetworkConversionValue";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import PaywallContent, { PaywallTrigger } from "../paywall/PaywallContent";
 import useIsMobile from "../../hooks/useIsMobile";
 import { usePostHog } from "../../contexts/PostHogContext";
@@ -27,39 +27,6 @@ export default function CreditPaywallModal({
     const isMobile = useIsMobile();
     const { trackEvent } = usePostHog();
     const [creditsSheetOpen, setCreditsSheetOpen] = useState(false);
-    const modalRef = useRef<HTMLDivElement>(null);
-
-    useLayoutEffect(() => {
-        if (!isMobile) return;
-        const node = modalRef.current;
-        if (!node) return;
-        const parentEl = node.parentElement;
-        if (!parentEl) return;
-
-        const update = () => {
-            (node.style as CSSStyleDeclaration & { zoom: string }).zoom = '1';
-            const naturalH = node.scrollHeight;
-            const availableH = parentEl.clientHeight;
-            const newZoom = naturalH > 0 ? Math.min(1, availableH / naturalH) : 1;
-            (node.style as CSSStyleDeclaration & { zoom: string }).zoom =
-                newZoom < 1 ? String(newZoom) : '';
-        };
-
-        const rafId = requestAnimationFrame(update);
-        window.addEventListener('resize', update);
-        window.addEventListener('orientationchange', update);
-        return () => {
-            cancelAnimationFrame(rafId);
-            window.removeEventListener('resize', update);
-            window.removeEventListener('orientationchange', update);
-        };
-    }, [
-        isMobile,
-        creditsSheetOpen,
-        products.isLoading,
-        products.isPurchasing,
-        products.purchaseError,
-    ]);
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -110,12 +77,11 @@ export default function CreditPaywallModal({
             onClick={handleBackdropClick}
         >
             <div
-                ref={modalRef}
                 className="w-full max-w-[440px] rounded-xl shadow-2xl relative"
                 style={{
                     background: 'linear-gradient(165deg, #f17c63 0%, #e8694f 25%, #f2a96f 55%, #eda391 80%, #edc79e 100%)',
                     maxHeight: '100%',
-                    overflowY: isMobile ? 'hidden' : 'auto',
+                    overflowY: 'auto',
                     WebkitOverflowScrolling: 'touch',
                 }}
                 onClick={(e) => e.stopPropagation()}

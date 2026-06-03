@@ -108,6 +108,9 @@ export default function Onboarding() {
   return (
     <div className="relative w-full h-screen h-dvh bg-gradient-to-br from-cout-purple via-cout-base to-cout-purple flex overflow-hidden">
       <LiquidGlassModal />
+      {/* En paysage (w > h), on contraint les colonnes à un ratio 9:16 centré ;
+          le dégradé de fond remplit les gouttières. En portrait, full-bleed. */}
+      <div className="flex h-full w-full overflow-hidden landscape:w-auto landscape:aspect-[9/16] landscape:mx-auto">
       {columnImages.map((images, colIndex) => {
         const tripled = [...images, ...images, ...images];
         return (
@@ -129,6 +132,7 @@ export default function Onboarding() {
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

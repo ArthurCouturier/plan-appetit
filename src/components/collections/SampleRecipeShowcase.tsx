@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { lightHaptic } from "../../haptics/light";
 
 const ALL_SAMPLE_RECIPES = [
     { image: "/onboarding/images_webp/05174abd-b372-4c04-8575-dbd473d4189f.webp", name: "Pizza margherita basilic et mozzarella" },
@@ -64,6 +65,7 @@ export default function SampleRecipeShowcase() {
     }, [expandedIndex]);
 
     const handleThumbnailClick = (index: number) => {
+        lightHaptic();
         if (expandedIndex === index) {
             setExpandedIndex(null);
             setShowOverlay(false);

@@ -7,11 +7,12 @@ import { Capacitor } from "@capacitor/core";
  * legacy (1.x.x) et nouveau format (2.0+). Le front 2.0+ doit donc toujours envoyer
  * une version >= "2.0.0" pour recevoir la nouvelle shape de réponse.
  *
- * Init asynchrone au boot via `App.getInfo()` (Capacitor) ; un fallback "2.0.0" est
- * utilisé en attendant pour ne jamais retomber sur la branche legacy.
+ * Init asynchrone au boot via `App.getInfo()` (Capacitor) sur iOS/Android. Sur desktop/web,
+ * `App.getInfo()` échoue et on garde la version issue de `package.json` (`__APP_VERSION__`,
+ * injectée par Vite) — ainsi le bump de version desktop se fait uniquement dans package.json.
  */
 
-let cachedVersion = "2.0.0";
+let cachedVersion = __APP_VERSION__;
 const cachedPlatform = Capacitor.getPlatform(); // "ios" | "android" | "web"
 
 export async function initAppVersionHeaders(): Promise<void> {

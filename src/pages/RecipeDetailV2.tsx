@@ -7,8 +7,10 @@ import RecipeV2Service, {
     RecipeV2NotFoundError,
 } from "../api/services/RecipeV2Service";
 import RecipeService from "../api/services/RecipeService";
+import CollectionService from "../api/services/CollectionService";
 import BackendService from "../api/services/BackendService";
 import useAuth from "../api/hooks/useAuth";
+import { useInvalidateCollections } from "../api/hooks/useCollectionMutations";
 import { useRitualDailyRange } from "../api/hooks/useRitualDaily";
 import { localIsoDate } from "../utils/dateUtils";
 import { dispatchFeedbackEvent } from "../components/feedbacks/feedbackEvents";
@@ -41,6 +43,7 @@ export default function RecipeDetailV2() {
     const [searchParams] = useSearchParams();
     const isFromShare = searchParams.has("share");
     const { user } = useAuth();
+    const invalidateCollections = useInvalidateCollections();
 
     const [state, setState] = useState<LoadState>({ status: "loading" });
     const [showModificationModal, setShowModificationModal] = useState(false);
@@ -110,7 +113,21 @@ export default function RecipeDetailV2() {
         if (state.status !== "ok") return;
         if (!confirm(`Êtes-vous sûr de vouloir supprimer "${state.recipe.name}" ?`)) return;
         await RecipeService.deleteRecipe(state.recipe.uuid);
+        // Rafraîchit en direct les collections montées (ex: la collection de la home) pour que
+        // la recette supprimée disparaisse sans attendre un remontage.
+        invalidateCollections();
         navigate("/recettes");
+    };
+
+    const handleRemoveFromCollection = async () => {
+        if (state.status !== "ok") return;
+        if (!confirm(`Retirer "${state.recipe.name}" de ma collection ?`)) return;
+        await CollectionService.removeRecipeFromLibrary(state.recipe.uuid);
+        // Met à jour en direct les collections montées (comme une suppression).
+        invalidateCollections();
+        // On repasse en mode "lien partagé" : la recette n'est plus dans la librairie, on
+        // réaffiche le bouton "Enregistrer dans..." pour pouvoir la ré-ajouter.
+        navigate(`/recipes-v2/${state.recipe.uuid}?share`, { replace: true });
     };
 
     const handleSaveToCollection = () => {
@@ -282,6 +299,18 @@ export default function RecipeDetailV2() {
                     </div>
                 </div>
 
+                {!isOwner && !isFromShare && (
+                    <div className="lg:col-start-2">
+                        <button
+                            onClick={handleRemoveFromCollection}
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-secondary border-2 border-red-500/50 text-red-600 font-semibold rounded-xl hover:bg-red-500/10 transition-all duration-200"
+                        >
+                            <TrashIcon className="w-5 h-5" />
+                            Retirer de ma collection
+                        </button>
+                    </div>
+                )}
+
                 {recipe.owner && !isOwner && (
                     <div className="lg:[grid-area:owner] flex items-center justify-center gap-3 p-4 bg-primary rounded-xl shadow-lg border border-border-color">
                         <span className="text-text-secondary text-sm">Recette de</span>
@@ -337,7 +366,7 @@ export default function RecipeDetailV2() {
             />
 
             {showCreditPaywallModal && (
-                <CreditPaywallModal onClose={() => setShowCreditPaywallModal(false)} />
+                <CreditPaywallModal onClose={() => setShowCreditPaywallModal(false)} trigger="insufficient_credits" />
             )}
 
             <SaveToCollectionModal

@@ -204,6 +204,28 @@ export default class CollectionService {
         return await response.json();
     }
 
+    /** Retire une recette de toute la librairie de l'utilisateur (toutes ses collections). */
+    static async removeRecipeFromLibrary(recipeUuid: string): Promise<void> {
+        const email: string = localStorage.getItem('email') as string;
+        const token: string = localStorage.getItem('firebaseIdToken') as string;
+
+        if (!email || !token) {
+            throw new Error('User not logged in');
+        }
+
+        const response = await fetchWithTokenRefresh(`${BackendService.baseUrl}:${BackendService.port}/api/v1/collections/library/recipes/${recipeUuid}`, {
+            method: 'DELETE',
+            headers: {
+                'Email': email,
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to remove recipe from library: ${response.statusText}`);
+        }
+    }
+
     static async reorderCollectionItems(
         collectionUuid: string,
         recipeOrders?: Array<{ uuid: string; displayOrder: number }>,

@@ -1,26 +1,38 @@
 import { createPortal } from "react-dom";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { ChevronLeftIcon } from "@heroicons/react/24/solid";
 import usePaywallProducts from "../../api/hooks/usePaywallProducts";
 import { TrackingService } from "../../api/tracking/TrackingService";
 import { SKAdNetworkService } from "../../api/tracking/skadnetwork/SKAdNetworkService";
 import { SKAdNetworkConversionValue } from "../../api/tracking/skadnetwork/SKAdNetworkConversionValue";
-import { useEffect } from "react";
-import PaywallContent from "../paywall/PaywallContent";
+import { useEffect, useState } from "react";
+import PaywallContent, { PaywallTrigger } from "../paywall/PaywallContent";
 import useIsMobile from "../../hooks/useIsMobile";
+import { usePostHog } from "../../contexts/PostHogContext";
 
 interface CreditPaywallModalProps {
     onClose: () => void;
+    trigger?: PaywallTrigger;
+    remainingCredits?: number;
 }
 
-export default function CreditPaywallModal({ onClose }: CreditPaywallModalProps) {
+const HAS_SEEN_KEY = 'paywall_has_seen_before';
+
+export default function CreditPaywallModal({
+    onClose,
+    trigger = 'quota_exceeded',
+    remainingCredits,
+}: CreditPaywallModalProps) {
     const products = usePaywallProducts();
     const isMobile = useIsMobile();
+    const { trackEvent } = usePostHog();
+    const [creditsSheetOpen, setCreditsSheetOpen] = useState(false);
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
 
         const COOLDOWN_KEY = 'paywall_last_tracked';
-        const COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
+        const COOLDOWN_MS = 10 * 60 * 1000;
         const lastTracked = Number(sessionStorage.getItem(COOLDOWN_KEY) || '0');
         if (Date.now() - lastTracked > COOLDOWN_MS) {
             sessionStorage.setItem(COOLDOWN_KEY, String(Date.now()));
@@ -29,12 +41,30 @@ export default function CreditPaywallModal({ onClose }: CreditPaywallModalProps)
             SKAdNetworkService.updateConversionValue(SKAdNetworkConversionValue.QUOTA_REACHED);
         }
 
+        const hasSeenBefore = localStorage.getItem(HAS_SEEN_KEY) === 'true';
+        localStorage.setItem(HAS_SEEN_KEY, 'true');
+
+        trackEvent('paywall_viewed', {
+            source: 'modal',
+            trigger,
+            remaining_credits: remainingCredits ?? null,
+            has_seen_paywall_before: hasSeenBefore,
+        });
+
         return () => { document.body.style.overflow = 'unset'; };
     }, []);
 
+    const handleClose = () => {
+        trackEvent('paywall_dismissed', {
+            reason: 'modal_close',
+            trigger,
+        });
+        onClose();
+    };
+
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) {
-            onClose();
+            handleClose();
         }
     };
 
@@ -56,22 +86,37 @@ export default function CreditPaywallModal({ onClose }: CreditPaywallModalProps)
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Close Button */}
-                <div className="sticky top-0 z-10 flex justify-end p-4 pb-0">
+                <div className="sticky top-0 z-10 flex justify-between items-center p-4 pb-0">
+                    {creditsSheetOpen ? (
+                        <button
+                            onClick={() => setCreditsSheetOpen(false)}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-white/90 shadow-md transition-colors duration-200"
+                            aria-label="Revenir à l'essai gratuit"
+                        >
+                            <ChevronLeftIcon className="w-5 h-5 -translate-x-[1px] text-black" />
+                        </button>
+                    ) : (
+                        <span className="w-8 h-8" aria-hidden="true" />
+                    )}
                     <button
-                        onClick={onClose}
-                        className={`flex items-center justify-center rounded-full transition-colors duration-200 ${
-                            isMobile
-                                ? "w-8 h-8 bg-red-500 hover:bg-red-600 shadow-lg"
-                                : "w-8 h-8 bg-white/20 hover:bg-white/30 backdrop-blur-sm"
-                        }`}
+                        onClick={handleClose}
+                        className={`flex items-center justify-center rounded-full transition-colors duration-200 ${isMobile
+                            ? "w-8 h-8 bg-red-500 hover:bg-red-600 shadow-lg"
+                            : "w-8 h-8 bg-white/20 hover:bg-white/30 backdrop-blur-sm"
+                            }`}
                         aria-label="Fermer"
                     >
                         <XMarkIcon className="w-5 h-5 text-white" />
                     </button>
                 </div>
 
-                <PaywallContent products={products} onClose={onClose} variant="modal" />
+                <PaywallContent
+                    products={products}
+                    variant="modal"
+                    trigger={trigger}
+                    creditsSheetOpen={creditsSheetOpen}
+                    onCreditsSheetOpenChange={setCreditsSheetOpen}
+                />
             </div>
         </div>,
         document.body

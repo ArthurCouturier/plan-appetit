@@ -1,29 +1,65 @@
-import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { usePostHog } from "../../contexts/PostHogContext";
-import type { PaywallProducts, SubscriptionType, CreditPack, ProductOption } from "../../api/hooks/usePaywallProducts";
-import { ArrowPathIcon } from "@heroicons/react/24/solid";
-import { getPrice, getFormattedPrice, formatPrice, monthlyEquivalent, discountPercent, pricePerRecipe } from "../../utils/priceUtils";
+import type { PaywallProducts, CreditPack, SubscriptionType } from "../../api/hooks/usePaywallProducts";
+import { ArrowPathIcon, ChevronLeftIcon } from "@heroicons/react/24/solid";
+import {
+    getPrice,
+    getFormattedPrice,
+    formatPrice,
+    monthlyEquivalent,
+    discountPercent,
+    pricePerRecipe,
+} from "../../utils/priceUtils";
+
+export type PaywallTrigger =
+    | 'quota_exceeded'
+    | 'insufficient_credits'
+    | 'navigation'
+    | 'premium_page';
 
 interface PaywallContentProps {
     products: PaywallProducts;
-    onClose?: () => void;
     variant: 'modal' | 'page';
+    trigger?: PaywallTrigger;
+    creditsSheetOpen?: boolean;
+    onCreditsSheetOpenChange?: (open: boolean) => void;
 }
 
-export default function PaywallContent({ products, onClose, variant }: PaywallContentProps) {
-    const [mode, setMode] = useState<'abo' | 'credits'>('abo');
-    const [selectedAbo, setSelectedAbo] = useState<SubscriptionType>('yearly');
-    const [selectedCredits, setSelectedCredits] = useState<CreditPack>(20);
-    const ctaRef = useRef<HTMLButtonElement>(null);
-    const navigate = useNavigate();
+const BENEFITS = [
+    "Recettes illimitées (batch cooking, frigo vide, etc...)",
+    "Recettes du jour (inclus mode flemme)",
+    "Import Instagram illimité (+ mode \"Remasteriser\")",
+    "Les prochaines mises à jour en premium",
+];
+
+const InlineBackArrow = ({ onClick }: { onClick: () => void }) => (
+    <button
+        onClick={onClick}
+        className="flex items-center justify-center w-9 h-9 rounded-full bg-white hover:bg-white/90 shadow-md text-black p-0 mt-2 mb-4 cursor-pointer transition-colors duration-200"
+        aria-label="Revenir à l'essai gratuit"
+    >
+        <ChevronLeftIcon className="w-[18px] h-[18px] -translate-x-[1px]" />
+    </button>
+);
+
+export default function PaywallContent({
+    products,
+    variant,
+    trigger = 'quota_exceeded',
+    creditsSheetOpen,
+    onCreditsSheetOpenChange,
+}: PaywallContentProps) {
     const { trackEvent } = usePostHog();
+    const isCreditsSheetControlled = creditsSheetOpen !== undefined;
+    const [internalCreditsSheetOpen, setInternalCreditsSheetOpen] = useState(false);
+    const showCreditsSheet = isCreditsSheetControlled ? creditsSheetOpen : internalCreditsSheetOpen;
+    const setShowCreditsSheet = (open: boolean) => {
+        if (isCreditsSheetControlled) onCreditsSheetOpenChange?.(open);
+        else setInternalCreditsSheetOpen(open);
+    };
+    const [selectedCredits, setSelectedCredits] = useState<CreditPack>(20);
+    const [selectedPlan, setSelectedPlan] = useState<SubscriptionType>('yearly');
 
-    useEffect(() => {
-        trackEvent('paywall_viewed', { variant });
-    }, []);
-
-    // Dynamic prices
     const yearlyRaw = getPrice(products.iapYearly, products.premiumYearly);
     const monthlyRaw = getPrice(products.iapMonthly, products.premiumMonthly);
     const credits20Raw = getPrice(products.iapCredits20, products.credit20);
@@ -35,501 +71,326 @@ export default function PaywallContent({ products, onClose, variant }: PaywallCo
     const credits10Price = getFormattedPrice(products.iapCredits10, products.credit10);
 
     const monthlyEquiv = yearlyRaw ? formatPrice(monthlyEquivalent(yearlyRaw)) : null;
-    const yearlyDiscountPct = (yearlyRaw && monthlyRaw) ? discountPercent(monthlyRaw * 12, yearlyRaw) : null;
-    const perRecipe20 = credits20Raw ? formatPrice(pricePerRecipe(credits20Raw, 20)) : null;
-    const perRecipe10 = credits10Raw ? formatPrice(pricePerRecipe(credits10Raw, 10)) : null;
-    const credits20DiscountPct = (credits20Raw && credits10Raw)
-        ? discountPercent(pricePerRecipe(credits10Raw, 10) * 20, credits20Raw) : null;
+    const yearlyDiscountPct = (yearlyRaw && monthlyRaw)
+        ? discountPercent(monthlyRaw * 12, yearlyRaw)
+        : null;
+    const perRecipe20Raw = credits20Raw ? pricePerRecipe(credits20Raw, 20) : null;
+    const perRecipe10Raw = credits10Raw ? pricePerRecipe(credits10Raw, 10) : null;
+    const cheapestPerRecipe = [perRecipe20Raw, perRecipe10Raw]
+        .filter((v): v is number => v != null)
+        .sort((a, b) => a - b)[0] ?? null;
+    const cheapestPerRecipeLabel = cheapestPerRecipe != null ? formatPrice(cheapestPerRecipe) : null;
+    const perRecipe20 = perRecipe20Raw != null ? formatPrice(perRecipe20Raw) : null;
+    const perRecipe10 = perRecipe10Raw != null ? formatPrice(perRecipe10Raw) : null;
+    const credits20DiscountPct = (perRecipe20Raw && perRecipe10Raw)
+        ? discountPercent(perRecipe10Raw * 20, perRecipe20Raw * 20)
+        : null;
 
-    const pricePlaceholder = '—';
+    const placeholder = '...';
 
-    // Free trial: 7 days on yearly plan (configured in App Store Connect)
-    const yearlyTrialText = '7 jours gratuits';
-    const selectedHasTrial = selectedAbo === 'yearly';
-    const selectedTrialText = yearlyTrialText;
-
-    const handleToggle = (tab: 'abo' | 'credits') => {
-        setMode(tab);
-        const eventName = tab === 'credits' ? 'paywall_toggle_credits' : 'paywall_toggle_subscription';
-        trackEvent(eventName);
+    const handleTrialCta = async () => {
+        trackEvent('paywall_plan_selected', {
+            plan: selectedPlan === 'yearly' ? 'annual_trial' : 'monthly',
+            trigger,
+        });
+        await products.purchaseSubscription(selectedPlan);
     };
 
-    const handleSelectOption = (option: ProductOption) => {
-        trackEvent('paywall_option_selected', { option });
-        if (option === 'yearly' || option === 'monthly') {
-            setSelectedAbo(option);
-        } else {
-            setSelectedCredits(option === 'credits_20' ? 20 : 10);
-        }
+    const handleSelectPlan = (plan: SubscriptionType) => {
+        setSelectedPlan(plan);
     };
 
-    const handleCTA = async () => {
-        if (ctaRef.current) {
-            ctaRef.current.style.transform = 'scale(0.97)';
-            setTimeout(() => {
-                if (ctaRef.current) ctaRef.current.style.transform = 'scale(1)';
-            }, 150);
-        }
-
-        if (mode === 'abo') {
-            await products.purchaseSubscription(selectedAbo);
-        } else {
-            await products.purchaseCredits(selectedCredits);
-        }
+    const handleCreditsCta = async () => {
+        trackEvent('paywall_plan_selected', {
+            plan: 'credits',
+            credits_pack: selectedCredits,
+            trigger,
+        });
+        await products.purchaseCredits(selectedCredits);
     };
 
-    const handleClose = () => {
-        if (onClose) onClose();
-        else navigate(-1);
+    const handleOpenCreditsSheet = () => {
+        trackEvent('paywall_credits_sheet_opened', { trigger });
+        setShowCreditsSheet(true);
     };
 
-    const ctaText = mode === 'abo'
-        ? selectedHasTrial
-            ? `Commencer l'essai gratuit`
-            : `S'abonner — ${monthlyPrice ?? pricePlaceholder}/mois`
-        : selectedCredits === 20
-            ? `Acheter — ${credits20Price ?? pricePlaceholder}`
-            : `Acheter — ${credits10Price ?? pricePlaceholder}`;
+    const handleCloseCreditsSheet = () => {
+        setShowCreditsSheet(false);
+    };
 
-    const isCardSelected = (sel: boolean) => sel
-        ? 'rgba(255,255,255,0.92)'
-        : 'rgba(255,255,255,0.15)';
+    const containerPbClass = variant === 'modal' ? 'pb-6' : 'pb-10';
 
-    const isCardBorder = (sel: boolean) => sel
-        ? '2px solid rgba(255,255,255,0.95)'
-        : '1px solid rgba(255,255,255,0.2)';
+    if (showCreditsSheet) {
+        return (
+            <div className={`px-6 ${containerPbClass}`}>
+                {!isCreditsSheetControlled && (
+                    <InlineBackArrow onClick={handleCloseCreditsSheet} />
+                )}
 
-    const isCardShadow = (sel: boolean) => sel
-        ? '0 8px 32px rgba(0,0,0,0.12)'
-        : 'none';
+                <h2 className="text-white text-[22px] font-extrabold mt-3 mb-1.5 tracking-[-0.4px] leading-[1.15]">
+                    Acheter des recettes
+                </h2>
+                <p className="text-white/80 text-sm mb-[18px] font-normal leading-[1.4]">
+                    Sans engagement. Tes recettes restent à vie.
+                </p>
 
-    const textDark = (sel: boolean) => sel ? '#180d0d' : 'rgba(255,255,255,0.9)';
-    const textPrice = (sel: boolean) => sel ? '#180d0d' : 'white';
-    const textSub = (sel: boolean) => sel ? '#666' : 'rgba(255,255,255,0.6)';
-    const textAccent = (sel: boolean) => sel ? '#f17c63' : 'rgba(255,255,255,0.7)';
-    const badgeBg = (sel: boolean) => sel ? 'rgba(241,124,99,0.12)' : 'rgba(255,255,255,0.1)';
-    const badgeColor = (sel: boolean) => sel ? '#e8694f' : 'rgba(255,255,255,0.7)';
+                <div className="flex flex-col gap-3">
+                    <CreditCard
+                        selected={selectedCredits === 20}
+                        title="20 recettes"
+                        price={credits20Price ?? placeholder}
+                        perRecipe={perRecipe20 ?? placeholder}
+                        discountPct={credits20DiscountPct}
+                        highlight
+                        onClick={() => setSelectedCredits(20)}
+                    />
+                    <CreditCard
+                        selected={selectedCredits === 10}
+                        title="10 recettes"
+                        price={credits10Price ?? placeholder}
+                        perRecipe={perRecipe10 ?? placeholder}
+                        discountPct={null}
+                        highlight={false}
+                        onClick={() => setSelectedCredits(10)}
+                    />
+                </div>
 
-    const RadioButton = ({ selected }: { selected: boolean }) => (
-        <div style={{
-            width: '24px', height: '24px', borderRadius: '50%',
-            border: selected ? '2px solid #f17c63' : '2px solid rgba(255,255,255,0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, transition: 'all 0.2s ease',
-        }}>
-            {selected && (
-                <div style={{
-                    width: '14px', height: '14px', borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #f17c63, #e8694f)',
-                }} />
-            )}
-        </div>
-    );
+                {products.purchaseError && (
+                    <div className="mt-3 py-2.5 px-3.5 bg-red-500/15 border border-red-500/30 rounded-xl text-white text-[13px] text-center">
+                        {products.purchaseError}
+                    </div>
+                )}
+
+                <div className="pt-5 pb-2">
+                    <button
+                        onClick={handleCreditsCta}
+                        disabled={products.isPurchasing || products.isLoading}
+                        className="w-full h-[52px] p-4 rounded-[14px] border-0 bg-[#EE6344] text-white text-[17px] font-bold tracking-[-0.2px] shadow-[0_6px_24px_rgba(24,13,13,0.18)] flex items-center justify-center gap-2 transition-transform duration-200 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+                    >
+                        {products.isPurchasing ? (
+                            <>
+                                <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
+                                Achat en cours...
+                            </>
+                        ) : (
+                            <>Acheter {selectedCredits === 20 ? credits20Price : credits10Price}</>
+                        )}
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div style={{ padding: '0 24px', paddingBottom: variant === 'modal' ? '24px' : '40px' }}>
-            {/* Header */}
+        <div className={`px-6 ${containerPbClass}`}>
             {variant === 'modal' && (
-                <div style={{ textAlign: 'center', padding: '0 6px 10px' }}>
-                    <h2 style={{
-                        color: 'white', fontSize: '28px', fontWeight: '800',
-                        margin: '0 0 6px 0', letterSpacing: '-0.5px', lineHeight: '1.15',
-                    }}>
-                        Crédits épuisés
+                <div className="text-center px-1.5 pb-1.5">
+                    <h2 className="text-white text-[28px] font-extrabold m-0 mb-1.5 tracking-[-0.5px] leading-[1.15]">
+                        7 jours offerts
                     </h2>
-                    <p style={{
-                        color: 'rgba(255,255,255,0.8)', fontSize: '15px',
-                        margin: 0, fontWeight: '400', lineHeight: '1.4',
-                    }}>
-                        Continuez à créer vos recettes
+                    <p className="text-white/85 text-[15px] m-0 font-normal leading-[1.4]">
+                        Tu décides après. Pas de mauvaise surprise.
                     </p>
                 </div>
             )}
 
-            {/* Liquid Glass Toggle */}
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0 20px' }}>
-                <div style={{
-                    display: 'flex', position: 'relative',
-                    background: 'rgba(255,255,255,0.12)',
-                    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                    borderRadius: '14px', padding: '4px',
-                    border: '1px solid rgba(255,255,255,0.18)',
-                    boxShadow: '0 2px 16px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.15)',
-                    width: '280px',
-                }}>
-                    <div style={{
-                        position: 'absolute', top: '4px',
-                        left: mode === 'abo' ? '4px' : 'calc(50%)',
-                        width: 'calc(50% - 4px)', height: 'calc(100% - 8px)',
-                        background: 'rgba(255,255,255,0.85)', borderRadius: '11px',
-                        transition: 'left 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)',
-                        zIndex: 0,
-                    }} />
-                    <button onClick={() => handleToggle('abo')} style={{
-                        flex: 1, padding: '10px 0', border: 'none', background: 'transparent',
-                        borderRadius: '11px', fontSize: '14px', fontWeight: '600',
-                        color: mode === 'abo' ? '#e8694f' : 'rgba(255,255,255,0.85)',
-                        cursor: 'pointer', transition: 'color 0.3s ease',
-                        position: 'relative', zIndex: 1, letterSpacing: '-0.2px',
-                    }}>
-                        Abonnement
-                    </button>
-                    <button onClick={() => handleToggle('credits')} style={{
-                        flex: 1, padding: '10px 0', border: 'none', background: 'transparent',
-                        borderRadius: '11px', fontSize: '14px', fontWeight: '600',
-                        color: mode === 'credits' ? '#e8694f' : 'rgba(255,255,255,0.85)',
-                        cursor: 'pointer', transition: 'color 0.3s ease',
-                        position: 'relative', zIndex: 1, letterSpacing: '-0.2px',
-                    }}>
-                        Crédits
-                    </button>
+            <div className="pt-[18px] pb-1.5 flex flex-col gap-2.5">
+                <div
+                    onClick={() => handleSelectPlan('yearly')}
+                    className={[
+                        "relative overflow-hidden backdrop-blur-xl rounded-[20px] py-[18px] px-5 cursor-pointer transition-all duration-200 border-2",
+                        selectedPlan === 'yearly'
+                            ? "bg-white/95 border-white/95 shadow-[0_8px_32px_rgba(24,13,13,0.18)]"
+                            : "bg-white/15 border-white/20 shadow-none",
+                    ].join(" ")}
+                >
+                    {yearlyDiscountPct != null && (
+                        <span className="absolute top-3 right-3 bg-[#f4cf77] text-[#180d0d] text-xs font-extrabold py-1 px-2.5 rounded-lg tracking-[0.3px]">
+                            -{yearlyDiscountPct}%
+                        </span>
+                    )}
+                    <div
+                        className={[
+                            "text-lg font-extrabold leading-[1.2]",
+                            selectedPlan === 'yearly' ? "text-[#180d0d]" : "text-white",
+                        ].join(" ")}
+                    >
+                        7 jours gratuits
+                    </div>
+                    <div
+                        className={[
+                            "mt-1.5 text-sm font-medium leading-[1.35]",
+                            selectedPlan === 'yearly' ? "text-[#5b4b4b]" : "text-white/85",
+                        ].join(" ")}
+                    >
+                        Puis {monthlyEquiv ?? placeholder}/mois{' '}
+                        <span className={selectedPlan === 'yearly' ? "text-[#8a7676]" : "text-white/65"}>
+                            (facturé {yearlyPrice ?? placeholder}/an)
+                        </span>
+                    </div>
+                </div>
+
+                <div
+                    onClick={() => handleSelectPlan('monthly')}
+                    className={[
+                        "relative overflow-hidden backdrop-blur-xl rounded-[20px] py-3.5 px-5 cursor-pointer transition-all duration-200 border-2",
+                        selectedPlan === 'monthly'
+                            ? "bg-white/95 border-white/95 shadow-[0_8px_32px_rgba(24,13,13,0.18)]"
+                            : "bg-white/15 border-white/20 shadow-none",
+                    ].join(" ")}
+                >
+                    <div className="flex items-baseline justify-between gap-2">
+                        <div
+                            className={[
+                                "text-base font-extrabold leading-[1.2]",
+                                selectedPlan === 'monthly' ? "text-[#180d0d]" : "text-white",
+                            ].join(" ")}
+                        >
+                            Mensuel
+                        </div>
+                        <div
+                            className={[
+                                "text-[15px] font-extrabold leading-none",
+                                selectedPlan === 'monthly' ? "text-[#180d0d]" : "text-white",
+                            ].join(" ")}
+                        >
+                            {monthlyPrice ?? placeholder}/mois
+                        </div>
+                    </div>
+                    <div
+                        className={[
+                            "mt-1 text-[13px] font-medium",
+                            selectedPlan === 'monthly' ? "text-[#5b4b4b]" : "text-white/70",
+                        ].join(" ")}
+                    >
+                        7 jours gratuits inclus, sans engagement
+                    </div>
                 </div>
             </div>
 
-            {/* Content */}
-            {mode === 'abo' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {/* Annual Card */}
-                    <div
-                        onClick={() => handleSelectOption('yearly')}
-                        style={{
-                            background: isCardSelected(selectedAbo === 'yearly'),
-                            backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                            borderRadius: '20px', padding: '20px',
-                            border: isCardBorder(selectedAbo === 'yearly'),
-                            cursor: 'pointer', transition: 'all 0.3s ease',
-                            position: 'relative', overflow: 'hidden',
-                            boxShadow: isCardShadow(selectedAbo === 'yearly'),
-                        }}
-                    >
-                        <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '6px' }}>
-                            <span style={{
-                                background: 'linear-gradient(135deg, #f2a96f 0%, #f17c63 100%)',
-                                color: 'white', fontSize: '11px', fontWeight: '700',
-                                padding: '4px 10px', borderRadius: '8px', letterSpacing: '0.3px',
-                            }}>
-                                ⭐ RECOMMANDÉ
-                            </span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                            <div style={{ marginTop: '2px' }}>
-                                <RadioButton selected={selectedAbo === 'yearly'} />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <span style={{
-                                    fontSize: '13px', fontWeight: '700',
-                                    color: textDark(selectedAbo === 'yearly'),
-                                    textTransform: 'uppercase', letterSpacing: '0.8px',
-                                }}>
-                                    Annuel
-                                </span>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px', marginBottom: '6px' }}>
-                                    <span style={{
-                                        fontSize: '32px', fontWeight: '800',
-                                        color: textPrice(selectedAbo === 'yearly'),
-                                        letterSpacing: '-1px', lineHeight: '1',
-                                    }}>
-                                        {yearlyPrice ?? pricePlaceholder}
-                                    </span>
-                                    <span style={{
-                                        fontSize: '15px', fontWeight: '500',
-                                        color: textSub(selectedAbo === 'yearly'),
-                                    }}>
-                                        /an
-                                    </span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{
-                                        fontSize: '14px', fontWeight: '600',
-                                        color: textAccent(selectedAbo === 'yearly'),
-                                    }}>
-                                        soit {monthlyEquiv ?? pricePlaceholder}/mois
-                                    </span>
-                                    {yearlyDiscountPct != null && (
-                                        <span style={{
-                                            background: badgeBg(selectedAbo === 'yearly'),
-                                            color: badgeColor(selectedAbo === 'yearly'),
-                                            fontSize: '12px', fontWeight: '700',
-                                            padding: '2px 8px', borderRadius: '6px',
-                                        }}>
-                                            -{yearlyDiscountPct}%
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <ul className="list-none p-0 mt-3.5 flex flex-col gap-2.5">
+                {BENEFITS.map((benefit, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-white text-sm font-medium leading-[1.4]">
+                        <span className="text-sm leading-5 flex-shrink-0" aria-hidden="true">✅</span>
+                        <span>{benefit}</span>
+                    </li>
+                ))}
+            </ul>
 
-                    {/* Monthly Card */}
-                    <div
-                        onClick={() => handleSelectOption('monthly')}
-                        style={{
-                            background: isCardSelected(selectedAbo === 'monthly'),
-                            backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                            borderRadius: '20px', padding: '18px 20px',
-                            border: isCardBorder(selectedAbo === 'monthly'),
-                            cursor: 'pointer', transition: 'all 0.3s ease',
-                            boxShadow: isCardShadow(selectedAbo === 'monthly'),
-                            position: 'relative', overflow: 'hidden',
-                        }}
-                    >
-                        {/* Pas de trial sur le mensuel */}
-                        <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                            <RadioButton selected={selectedAbo === 'monthly'} />
-                            <div style={{ flex: 1 }}>
-                                <span style={{
-                                    fontSize: '13px', fontWeight: '700',
-                                    color: textDark(selectedAbo === 'monthly'),
-                                    textTransform: 'uppercase', letterSpacing: '0.8px',
-                                }}>
-                                    Mensuel
-                                </span>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '4px' }}>
-                                    <span style={{
-                                        fontSize: '28px', fontWeight: '800',
-                                        color: textPrice(selectedAbo === 'monthly'),
-                                        letterSpacing: '-0.8px', lineHeight: '1',
-                                    }}>
-                                        {monthlyPrice ?? pricePlaceholder}
-                                    </span>
-                                    <span style={{
-                                        fontSize: '15px', fontWeight: '500',
-                                        color: textSub(selectedAbo === 'monthly'),
-                                    }}>
-                                        /mois
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Trial Badge */}
-                    <div style={{
-                        textAlign: 'center', padding: '14px 0 4px',
-                    }}>
-                        <span style={{
-                            background: 'linear-gradient(135deg, #34d399 0%, #10b981 100%)',
-                            color: 'white', fontSize: '13px', fontWeight: '700',
-                            padding: '6px 16px', borderRadius: '10px', letterSpacing: '0.3px',
-                            display: 'inline-block',
-                        }}>
-                            🎁 7 JOURS GRATUITS
-                        </span>
-                    </div>
-
-                    {/* Features List */}
-                    <div style={{ padding: '12px 4px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {["Nouvelles Recettes illimitées", "Recettes du jour complètes", "Crédits Illimités"].map((feat, i) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ fontSize: '14px', color: 'white' }}>✓</span>
-                                <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', fontWeight: '500' }}>
-                                    {feat}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {/* 20 Credits Card */}
-                    <div
-                        onClick={() => handleSelectOption('credits_20')}
-                        style={{
-                            background: isCardSelected(selectedCredits === 20),
-                            backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                            borderRadius: '20px', padding: '20px',
-                            border: isCardBorder(selectedCredits === 20),
-                            cursor: 'pointer', transition: 'all 0.3s ease',
-                            position: 'relative',
-                            boxShadow: isCardShadow(selectedCredits === 20),
-                        }}
-                    >
-                        <div style={{
-                            position: 'absolute', top: '12px', right: '12px',
-                            background: 'linear-gradient(135deg, #f2a96f 0%, #f17c63 100%)',
-                            color: 'white', fontSize: '11px', fontWeight: '700',
-                            padding: '4px 10px', borderRadius: '8px', letterSpacing: '0.3px',
-                        }}>
-                            MEILLEURE OFFRE
-                        </div>
-                        <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                            <div style={{ marginTop: '2px' }}>
-                                <RadioButton selected={selectedCredits === 20} />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <span style={{
-                                    fontSize: '13px', fontWeight: '700',
-                                    color: textDark(selectedCredits === 20),
-                                    textTransform: 'uppercase', letterSpacing: '0.8px',
-                                }}>
-                                    20 crédits
-                                </span>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '6px', marginBottom: '6px' }}>
-                                    <span style={{
-                                        fontSize: '32px', fontWeight: '800',
-                                        color: textPrice(selectedCredits === 20),
-                                        letterSpacing: '-1px', lineHeight: '1',
-                                    }}>
-                                        {credits20Price ?? pricePlaceholder}
-                                    </span>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{
-                                        fontSize: '14px', fontWeight: '600',
-                                        color: textAccent(selectedCredits === 20),
-                                    }}>
-                                        soit {perRecipe20 ?? pricePlaceholder}/recette
-                                    </span>
-                                    {credits20DiscountPct != null && (
-                                        <span style={{
-                                            background: badgeBg(selectedCredits === 20),
-                                            color: badgeColor(selectedCredits === 20),
-                                            fontSize: '12px', fontWeight: '700',
-                                            padding: '2px 8px', borderRadius: '6px',
-                                        }}>
-                                            -{credits20DiscountPct}%
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 10 Credits Card */}
-                    <div
-                        onClick={() => handleSelectOption('credits_10')}
-                        style={{
-                            background: isCardSelected(selectedCredits === 10),
-                            backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                            borderRadius: '20px', padding: '18px 20px',
-                            border: isCardBorder(selectedCredits === 10),
-                            cursor: 'pointer', transition: 'all 0.3s ease',
-                            boxShadow: isCardShadow(selectedCredits === 10),
-                        }}
-                    >
-                        <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                            <RadioButton selected={selectedCredits === 10} />
-                            <div style={{ flex: 1 }}>
-                                <span style={{
-                                    fontSize: '13px', fontWeight: '700',
-                                    color: textDark(selectedCredits === 10),
-                                    textTransform: 'uppercase', letterSpacing: '0.8px',
-                                }}>
-                                    10 crédits
-                                </span>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-                                    <span style={{
-                                        fontSize: '28px', fontWeight: '800',
-                                        color: textPrice(selectedCredits === 10),
-                                        letterSpacing: '-0.8px', lineHeight: '1',
-                                    }}>
-                                        {credits10Price ?? pricePlaceholder}
-                                    </span>
-                                    <span style={{
-                                        fontSize: '13px', fontWeight: '500',
-                                        color: selectedCredits === 10 ? '#999' : 'rgba(255,255,255,0.5)',
-                                    }}>
-                                        soit {perRecipe10 ?? pricePlaceholder}/recette
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Tip Box */}
-                    <div style={{
-                        padding: '14px 16px',
-                        background: 'rgba(255,255,255,0.08)',
-                        borderRadius: '14px',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        display: 'flex', alignItems: 'center', gap: '10px',
-                    }}>
-                        <span style={{ fontSize: '16px' }}>💡</span>
-                        <p style={{
-                            margin: 0, color: 'rgba(255,255,255,0.8)',
-                            fontSize: '13px', lineHeight: '1.4', fontWeight: '400',
-                        }}>
-                            <strong style={{ color: 'white', fontWeight: '600' }}>Astuce :</strong>{' '}
-                            L'abonnement annuel revient à{' '}
-                            <strong style={{ color: 'white' }}>{monthlyEquiv ?? pricePlaceholder}/mois</strong>{' '}
-                            pour des recettes <em>illimitées</em>
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            {/* Error */}
             {products.purchaseError && (
-                <div style={{
-                    marginTop: '12px', padding: '10px 14px',
-                    background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)',
-                    borderRadius: '12px', color: 'white', fontSize: '13px', textAlign: 'center',
-                }}>
+                <div className="mt-3 py-2.5 px-3.5 bg-red-500/15 border border-red-500/30 rounded-xl text-white text-[13px] text-center">
                     {products.purchaseError}
                 </div>
             )}
 
-            {/* CTA Button */}
-            <div style={{ padding: '24px 0 8px' }}>
+            <div className="pt-5 pb-1">
                 <button
-                    ref={ctaRef}
-                    onClick={handleCTA}
+                    onClick={handleTrialCta}
                     disabled={products.isPurchasing || products.isLoading}
-                    style={{
-                        width: '100%', padding: '17px', borderRadius: '16px',
-                        border: 'none',
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85))',
-                        color: '#e8694f', fontSize: '17px', fontWeight: '700',
-                        cursor: products.isPurchasing ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
-                        letterSpacing: '-0.2px', transition: 'transform 0.2s ease',
-                        opacity: products.isPurchasing ? 0.7 : 1,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    }}
+                    className="w-full h-[52px] px-4 rounded-[14px] border-0 bg-[#EE6344] text-white text-[17px] font-bold tracking-[-0.2px] shadow-[0_8px_24px_rgba(24,13,13,0.22)] flex items-center justify-center gap-2 transition-transform duration-200 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
                 >
                     {products.isPurchasing ? (
                         <>
-                            <ArrowPathIcon style={{ width: '18px', height: '18px' }} className="animate-spin" />
-                            Achat en cours...
+                            <ArrowPathIcon className="w-[18px] h-[18px] animate-spin" />
+                            Activation...
                         </>
-                    ) : ctaText}
+                    ) : (
+                        'Activer mes 7 jours'
+                    )}
                 </button>
+                <p className="mt-2 text-center text-white/85 text-[11px] font-medium">
+                    Annule en 1 clic. Sans engagement.
+                </p>
             </div>
 
-            {/* Continue without Premium */}
-            <p
-                onClick={handleClose}
-                style={{
-                    textAlign: 'center', color: 'rgba(255,255,255,0.5)',
-                    fontSize: '13px', margin: '4px 0 0', fontWeight: '400', cursor: 'pointer',
-                }}
-            >
-                Continuer sans Premium
-            </p>
+            <div className="flex items-center gap-2.5 mt-[18px]">
+                <div className="flex-1 h-px bg-white/25" />
+                <span className="text-white/70 text-[11px] font-semibold uppercase tracking-[0.6px]">
+                    ou
+                </span>
+                <div className="flex-1 h-px bg-white/25" />
+            </div>
 
-            {/* Legal */}
-            <p style={{
-                textAlign: 'center', color: 'rgba(255,255,255,0.3)',
-                fontSize: '10px', margin: '16px 0 0', lineHeight: '1.4',
-            }}>
-                {mode === 'abo' && selectedHasTrial ? (
-                    <>
-                        Essai gratuit de {selectedTrialText}, puis {selectedAbo === 'yearly' ? `${yearlyPrice ?? pricePlaceholder}/an` : `${monthlyPrice ?? pricePlaceholder}/mois`}.
-                        {' '}Annulable à tout moment.
-                    </>
-                ) : (
-                    <>Renouvellement automatique. Annulable à tout moment.</>
-                )}
+            <button
+                onClick={handleOpenCreditsSheet}
+                disabled={products.isPurchasing || products.isLoading}
+                className="mt-3 w-full min-h-[60px] py-2.5 px-4 rounded-[14px] border-[1.5px] border-white/85 bg-white/10 text-white flex flex-col items-center justify-center gap-0.5 transition-colors duration-200 hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
+            >
+                <span className="text-[15px] font-bold tracking-[-0.2px]">
+                    Acheter des recettes à l'unité
+                </span>
+                <span className="text-xs font-medium text-white/85">
+                    Dès {cheapestPerRecipeLabel ?? placeholder}/recette, sans abonnement
+                </span>
+            </button>
+
+            <p className="text-center text-white/45 text-[10px] mt-3.5 leading-[1.4]">
+                {selectedPlan === 'yearly'
+                    ? <>Essai gratuit de 7 jours, puis {yearlyPrice ?? placeholder}/an. Annulable à tout moment.</>
+                    : <>Essai gratuit de 7 jours, puis {monthlyPrice ?? placeholder}/mois. Annulable à tout moment.</>}
                 <br />
-                <a href="/legal/cgu" style={{ color: 'rgba(255,255,255,0.3)', textDecoration: 'underline' }}>
+                <a href="/legal/cgu" className="text-white/45 underline">
                     Conditions d'utilisation
                 </a>
                 {' · '}
-                <a href="/legal/politique-de-confidentialite" style={{ color: 'rgba(255,255,255,0.3)', textDecoration: 'underline' }}>
+                <a href="/legal/politique-de-confidentialite" className="text-white/45 underline">
                     Politique de confidentialité
                 </a>
             </p>
+        </div>
+    );
+}
+
+interface CreditCardProps {
+    selected: boolean;
+    title: string;
+    price: string;
+    perRecipe: string;
+    discountPct: number | null;
+    highlight: boolean;
+    onClick: () => void;
+}
+
+function CreditCard({ selected, title, price, perRecipe, discountPct, highlight, onClick }: CreditCardProps) {
+    return (
+        <div
+            onClick={onClick}
+            className={[
+                "relative py-4 px-[18px] rounded-[18px] cursor-pointer transition-all duration-200 border-2",
+                selected
+                    ? "bg-white/95 border-white/95 shadow-[0_6px_24px_rgba(24,13,13,0.12)]"
+                    : "bg-white/15 border-white/20 shadow-none",
+            ].join(" ")}
+        >
+            {highlight && (
+                <div className="absolute top-2.5 right-3 bg-[#f4cf77] text-[#180d0d] text-[11px] font-extrabold py-[3px] px-2 rounded-[7px] tracking-[0.3px]">
+                    MEILLEURE OFFRE{discountPct != null ? ` -${discountPct}%` : ''}
+                </div>
+            )}
+            <div
+                className={[
+                    "text-[13px] font-bold uppercase tracking-[0.8px]",
+                    selected ? "text-[#180d0d]" : "text-white/90",
+                ].join(" ")}
+            >
+                {title}
+            </div>
+            <div
+                className={[
+                    "mt-1.5 text-2xl font-extrabold leading-none tracking-[-0.6px]",
+                    selected ? "text-[#180d0d]" : "text-white",
+                ].join(" ")}
+            >
+                {price}
+            </div>
+            <div
+                className={[
+                    "mt-1 text-[13px] font-medium",
+                    selected ? "text-[#8a7676]" : "text-white/70",
+                ].join(" ")}
+            >
+                soit {perRecipe} / recette
+            </div>
         </div>
     );
 }

@@ -207,3 +207,35 @@ body {
   animation: fade-in-up 1.5s ease-in-out forwards;
 }
 
+/* Indice de retournement des RecipeCard : léger aller-retour en rotateY (< 150ms) */
+@keyframes recipe-card-flip-hint {
+  0% {
+    transform: rotateY(0deg);
+  }
+  20% {
+    transform: rotateY(20deg);
+  }
+  45% {
+    transform: rotateY(-40deg);
+  }
+  70% {
+    transform: rotateY(40deg);
+  }
+  90% {
+    transform: rotateY(-20deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.recipe-card-flip-hint {
+  animation: recipe-card-flip-hint 600ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recipe-card-flip-hint {
+    animation: none;
+  }
+}
+

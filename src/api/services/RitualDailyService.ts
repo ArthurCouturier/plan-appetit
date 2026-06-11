@@ -1,6 +1,7 @@
 import {
     MealType,
     RegenerateRitualDailyRequest,
+    RitualAccessInterface,
     RitualDailyInterface,
     RitualDailyServiceError,
     RitualInitialDayInterface,
@@ -17,6 +18,22 @@ export default class RitualDailyService {
 
     private static baseEndpoint(): string {
         return `${this.getApiUrl()}/api/v1/ritual/daily`;
+    }
+
+    public static async getAccess(
+        email: string,
+        token: string,
+    ): Promise<RitualAccessInterface> {
+        const response = await fetchWithTokenRefresh(`${this.baseEndpoint()}/access`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+                Email: email,
+            },
+        });
+        if (!response.ok) throw this.mapError(response.status);
+        return response.json();
     }
 
     public static async getDaily(
@@ -114,10 +131,10 @@ export default class RitualDailyService {
                     "PROFILE_MISSING",
                     "Termine ton onboarding ritual avant de générer une recette.",
                 );
-            case 402:
+            case 403:
                 return new RitualDailyServiceError(
-                    "INSUFFICIENT_CREDITS",
-                    "Crédits insuffisants pour régénérer la recette.",
+                    "LOCKED",
+                    "Les recettes du jour sont réservées aux membres premium.",
                 );
             default:
                 return new RitualDailyServiceError("UNKNOWN", "Erreur inattendue.");

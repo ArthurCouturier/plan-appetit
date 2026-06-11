@@ -20,6 +20,7 @@ export const queryKeys = {
         me: () => ['user', 'culinaryProfile'] as const,
     },
     ritualDaily: {
+        access: () => ['ritualDaily', 'access'] as const,
         byMealAndDate: (mealType: string, date: string) =>
             ['ritualDaily', mealType, date] as const,
         range: (from: string, to: string) =>

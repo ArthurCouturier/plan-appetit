@@ -3,6 +3,7 @@ import { ArrowLeftIcon, HomeIcon, ShoppingCartIcon } from "@heroicons/react/24/s
 import { useState, useEffect } from "react";
 import UserAvatar from "./UserAvatar";
 import useAuth from "../../api/hooks/useAuth";
+import { isPremiumUser } from "../../api/interfaces/users/UserInterface";
 import NotificationBell from "../notifications/NotificationBell";
 
 export const SHOW_HEADER_EVENT = "header:show";
@@ -23,6 +24,7 @@ export default function HeaderMobile() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const isUserPremium = user && user.role ? isPremiumUser(user.role) : false;
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -112,7 +114,7 @@ export default function HeaderMobile() {
         />
         <button
           onClick={handleProfileClick}
-          className="p-1 rounded-full bg-cout-purple/80 backdrop-blur-sm shadow-md"
+          className={`p-1 rounded-full backdrop-blur-sm shadow-md ${isUserPremium ? "bg-cout-yellow" : "bg-cout-purple/80"}`}
         >
           <UserAvatar size="md" />
         </button>

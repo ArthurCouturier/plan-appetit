@@ -31,6 +31,9 @@ import AdminIngredientsCleanup from "./pages/admin/AdminIngredientsCleanup";
 import AdminRitualTest from "./pages/admin/AdminRitualTest";
 import FridgeMode from "./pages/FridgeMode";
 import InstagramTwistMode from "./pages/InstagramTwistMode";
+import PhotoImport from "./pages/PhotoImport";
+import PhotoImportTwistMode from "./pages/PhotoImportTwistMode";
+import ImportRecipePage from "./pages/ImportRecipePage";
 import BatchCookingMode from "./pages/BatchCookingMode";
 import BatchCookingDetail from "./pages/BatchCookingDetail";
 import NotFound from "./pages/NotFound";
@@ -59,10 +62,6 @@ const router = createBrowserRouter([
                     {
                         index: true,
                         element: <Home />,
-                    },
-                    {
-                        path: "instagram",
-                        element: <InstagramImport />,
                     },
                     {
                         path: "login",
@@ -128,8 +127,24 @@ const router = createBrowserRouter([
                                 element: <FridgeMode />,
                             },
                             {
+                                path: "instagram",
+                                element: <InstagramImport />,
+                            },
+                            {
                                 path: "instagram/twist",
                                 element: <InstagramTwistMode />,
+                            },
+                            {
+                                path: "recettes/importer",
+                                element: <ImportRecipePage />,
+                            },
+                            {
+                                path: "photo-import",
+                                element: <PhotoImport />,
+                            },
+                            {
+                                path: "photo-import/twist",
+                                element: <PhotoImportTwistMode />,
                             },
                             {
                                 path: "batch-cooking",

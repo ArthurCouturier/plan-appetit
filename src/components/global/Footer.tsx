@@ -5,7 +5,8 @@ import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 
 export default function Footer() {
-    const [appVersion, setAppVersion] = useState<string | null>(null);
+    // Desktop/web : version issue de package.json. iOS/Android : version native via App.getInfo().
+    const [appVersion, setAppVersion] = useState<string | null>(__APP_VERSION__);
 
     useEffect(() => {
         if (Capacitor.isNativePlatform()) {

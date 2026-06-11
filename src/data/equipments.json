@@ -1,16 +1,18 @@
 [
   {"name": "Four", "icon": "/icons/equipment/four.svg"},
+  {"name": "Plaque de cuisson", "icon": "/icons/equipment/plaque.svg"},
   {"name": "Poêle", "icon": "/icons/equipment/poele.svg"},
+  {"name": "Wok", "icon": "/icons/equipment/wok.svg"},
   {"name": "Casserole", "icon": "/icons/equipment/casserole.svg"},
   {"name": "Cocotte", "icon": "/icons/equipment/cocotte.svg"},
-  {"name": "Blender", "icon": "/icons/equipment/blender.svg"},
-  {"name": "Robot", "icon": "/icons/equipment/robot.svg"},
-  {"name": "Wok", "icon": "/icons/equipment/wok.svg"},
-  {"name": "Plancha", "icon": "/icons/equipment/plancha.svg"},
   {"name": "Autocuiseur", "icon": "/icons/equipment/autocuiseur.svg"},
-  {"name": "Plaque de cuisson", "icon": "/icons/equipment/plaque.svg"},
+  {"name": "Plancha", "icon": "/icons/equipment/plancha.svg"},
+  {"name": "Airfryer", "icon": "/icons/equipment/airfryer.svg"},
+  {"name": "Thermomix", "icon": "/icons/equipment/thermomix.svg"},
+  {"name": "Robot", "icon": "/icons/equipment/robot.svg"},
+  {"name": "Blender", "icon": "/icons/equipment/blender.svg"},
   {"name": "Mixeur plongeant", "icon": "/icons/equipment/mixeur.svg"},
-  {"name": "Moule a cake", "icon": "/icons/equipment/moule.svg"},
   {"name": "Mandoline", "icon": "/icons/equipment/mandoline.svg"},
-  {"name": "Passoire", "icon": "/icons/equipment/passoire.svg"}
+  {"name": "Passoire", "icon": "/icons/equipment/passoire.svg"},
+  {"name": "Moule a cake", "icon": "/icons/equipment/moule.svg"}
 ]

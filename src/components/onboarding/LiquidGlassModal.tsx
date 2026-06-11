@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { successHaptic } from "../../haptics/success";
+import { lightHaptic } from "../../haptics/light";
 
 const screenshots = Object.keys(
   import.meta.glob("/public/onboarding/modal_screenshots/*", { eager: false })
@@ -29,8 +31,8 @@ function GlassProgressDots({ total, current }: { total: number; current: number 
         <div
           key={i}
           className={`rounded-full transition-all duration-300 ${i === current
-              ? "w-2 h-2 bg-white"
-              : "w-1.5 h-1.5 bg-white/40"
+            ? "w-2 h-2 bg-white"
+            : "w-1.5 h-1.5 bg-white/40"
             }`}
         />
       ))}
@@ -47,12 +49,18 @@ export default function LiquidGlassModal() {
   const isDraggingRef = useRef(false);
 
   const goNext = useCallback(() => {
-    setCurrentIndex((i) => Math.min(i + 1, screenshots.length - 1));
-  }, []);
+    if (currentIndex < screenshots.length - 1) {
+      lightHaptic();
+      setCurrentIndex(currentIndex + 1);
+    }
+  }, [currentIndex]);
 
   const goPrev = useCallback(() => {
-    setCurrentIndex((i) => Math.max(i - 1, 0));
-  }, []);
+    if (currentIndex > 0) {
+      lightHaptic();
+      setCurrentIndex(currentIndex - 1);
+    }
+  }, [currentIndex]);
 
   const handleImageClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -93,6 +101,7 @@ export default function LiquidGlassModal() {
 
   const handleOpen = useCallback(() => {
     if (!isOpen) {
+      successHaptic();
       setCurrentIndex(0);
       setIsOpen(true);
     }
@@ -113,7 +122,7 @@ export default function LiquidGlassModal() {
           transition-all duration-500 ease-in-out
           overflow-hidden
           ${isOpen
-            ? "w-[90vw] h-[80vh] h-[80dvh] bg-white/20 cursor-default"
+            ? "w-[90vw] h-[80vh] h-[80dvh] landscape:w-auto landscape:aspect-[9/16] landscape:max-w-[90vw] bg-white/20 cursor-default"
             : "w-[280px] h-[56px] bg-white/15 cursor-pointer hover:bg-white/25 hover:scale-105 active:scale-95"
           }
         `}
@@ -128,7 +137,7 @@ export default function LiquidGlassModal() {
             ${isOpen ? "opacity-0" : "opacity-100"}
           `}
         >
-          Générer des recettes
+          Découvrir l'application
         </span>
 
         {/* Modal content */}
@@ -173,8 +182,8 @@ export default function LiquidGlassModal() {
                 <GlassProgressDots total={screenshots.length} current={currentIndex} />
               </div>
               <button
-                onClick={(e) => { e.stopPropagation(); navigate("/login"); }}
-                className={`absolute h-[4vh] px-6 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold whitespace-nowrap cursor-pointer hover:bg-white/30 transition-all duration-[400ms] ${isLast ? "opacity-100 scale-100" : "opacity-0 scale-90 pointer-events-none"}`}
+                onClick={(e) => { e.stopPropagation(); successHaptic(); navigate("/login"); }}
+                className={`absolute h-[5vh] px-6 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold whitespace-nowrap cursor-pointer hover:bg-white/30 transition-all duration-[400ms] ${isLast ? "opacity-100 scale-100" : "opacity-0 scale-90 pointer-events-none"}`}
               >
                 Débuter
               </button>

@@ -37,7 +37,7 @@ export default function PersistentCollectionDetail() {
             ref={containerRef}
             style={{ display: isActive ? "block" : "none" }}
         >
-            <CollectionDetail persistentUuid={mountedUuid} />
+            <CollectionDetail persistentUuid={mountedUuid} isActive={isActive} />
         </div>
     );
 }

@@ -27,9 +27,10 @@ import PageLoader from "../components/global/PageLoader";
 
 interface CollectionDetailProps {
     persistentUuid?: string;
+    isActive?: boolean;
 }
 
-export default function CollectionDetail({ persistentUuid }: CollectionDetailProps = {}) {
+export default function CollectionDetail({ persistentUuid, isActive = true }: CollectionDetailProps = {}) {
     const { uuid: paramUuid } = useParams<{ uuid: string }>();
     const navigate = useNavigate();
     const uuid = persistentUuid ?? paramUuid;
@@ -54,6 +55,22 @@ export default function CollectionDetail({ persistentUuid }: CollectionDetailPro
     useEffect(() => {
         fallbackAttemptedRef.current = false;
     }, [uuid]);
+
+    // Cas spécial onboarding : ce composant reste monté en permanence (cf. PersistentCollectionDetail),
+    // donc rien ne rafraîchit la collection au simple retour sur la home. Quand on revient sur une
+    // collection encore vide (CTA d'onboarding affiché), on force un refetch pour révéler immédiatement
+    // une recette créée entre-temps, sans attendre le refetchInterval.
+    const wasActiveRef = useRef(isActive);
+    useEffect(() => {
+        const becameActive = isActive && !wasActiveRef.current;
+        wasActiveRef.current = isActive;
+        if (!becameActive) return;
+        const isEmpty = !collection
+            || ((collection.subCollections?.length ?? 0) === 0 && (collection.recipes?.length ?? 0) === 0);
+        if (isEmpty) {
+            refetch();
+        }
+    }, [isActive, collection, refetch]);
 
     const dnd = useCollectionDnD({ collection, uuid, isMobile, refetch });
 

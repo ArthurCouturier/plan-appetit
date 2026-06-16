@@ -340,7 +340,7 @@ function FlemmeConfirmModal({
                 </p>
                 <p>
                     Parfait quand tu n'as pas envie de réfléchir : un plat simple, dans ton style,
-                    mais équilibré et si possible avec des produit de saison.
+                    mais équilibré et si possible avec des produits de saison.
                 </p>
                 {error && <p className="text-xs text-cancel-1 mb-2">{error}</p>}
                 <div className="mt-4 flex gap-2">
